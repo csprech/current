@@ -919,5 +919,39 @@ describe("/api/models route", () => {
       expect(data.success).toBe(true);
       expect(data.models.find((m: { id: string }) => m.id === "black-forest/flux")).toBeDefined();
     });
+
+    it("GET: skips the search API when the cached list already has enough matches", async () => {
+      process.env.REPLICATE_API_KEY = "test-key";
+
+      let searchApiCalled = false;
+      mockFetch.mockImplementation((url: string) => {
+        if (url.includes("/search?query=")) {
+          searchApiCalled = true;
+          return Promise.resolve({ ok: true, json: () => Promise.resolve({ results: [] }) });
+        }
+        if (url.includes("replicate.com")) {
+          // List returns more than REPLICATE_SEARCH_MIN_RESULTS matches for "flux"
+          return Promise.resolve(
+            createReplicateResponse([
+              { owner: "a", name: "flux-1", description: "flux" },
+              { owner: "b", name: "flux-2", description: "flux" },
+              { owner: "c", name: "flux-3", description: "flux" },
+              { owner: "d", name: "flux-4", description: "flux" },
+              { owner: "e", name: "flux-5", description: "flux" },
+              { owner: "f", name: "flux-6", description: "flux" },
+            ])
+          );
+        }
+        return Promise.reject(new Error("Unknown URL"));
+      });
+
+      const request = createMockGetRequest({ provider: "replicate", search: "flux" });
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(searchApiCalled).toBe(false);
+      expect(data.models.length).toBeGreaterThanOrEqual(5);
+    });
   });
 });

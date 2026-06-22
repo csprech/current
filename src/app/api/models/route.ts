@@ -41,6 +41,10 @@ import {
 // API base URLs
 const REPLICATE_API_BASE = "https://api.replicate.com/v1";
 const FAL_API_BASE = "https://api.fal.ai/v1";
+
+// When the cached catalogue already yields at least this many matches for a
+// search, skip Replicate's (slower) search API — the local results are enough.
+const REPLICATE_SEARCH_MIN_RESULTS = 5;
 const WAVESPEED_API_BASE = "https://api.wavespeed.ai/api/v3";
 
 // Categories we care about for image/video/3D/audio generation (fal.ai)
@@ -1402,11 +1406,22 @@ export async function GET(
       }
     }
 
-    // Replicate server-side search: the bulk list only covers ~15 pages, so a
+    // Replicate search: the cached catalogue only covers ~15 pages, so a
     // fragment search (e.g. "topaz") can't find models outside that window.
-    // Query Replicate's search and merge in any models not already present.
-    if (provider === "replicate" && searchQuery) {
-      const searchModels = await searchReplicateModels(replicateKey!, searchQuery);
+    // Search against the cache first and only call Replicate's slower search API
+    // when the local matches are too few — then cache those results per query so
+    // repeat searches stay fast.
+    if (
+      provider === "replicate" &&
+      searchQuery &&
+      models.length < REPLICATE_SEARCH_MIN_RESULTS
+    ) {
+      const searchCacheKey = getCacheKey(provider, searchQuery);
+      let searchModels = refresh ? null : getCachedModels(searchCacheKey);
+      if (!searchModels) {
+        searchModels = await searchReplicateModels(replicateKey!, searchQuery);
+        setCachedModels(searchCacheKey, searchModels);
+      }
       if (searchModels.length > 0) {
         const seen = new Set(models.map((m) => m.id.toLowerCase()));
         const fresh: ProviderModel[] = [];
