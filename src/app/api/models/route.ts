@@ -841,6 +841,73 @@ async function fetchReplicateModelById(
 }
 
 /**
+ * Extract valid Replicate models from a search response. Handles both the
+ * /v1/search shape ({ results: [{ model: {...} }] }) and a direct-model shape
+ * ({ results: [{...model}] }), skipping non-model results (collections, docs).
+ */
+function extractReplicateSearchModels(data: unknown): ProviderModel[] {
+  const results = (data as { results?: unknown[] })?.results;
+  if (!Array.isArray(results)) return [];
+
+  const models: ProviderModel[] = [];
+  for (const result of results) {
+    const candidate = ((result as { model?: unknown })?.model ?? result) as {
+      owner?: unknown;
+      name?: unknown;
+    };
+    if (candidate && typeof candidate.owner === "string" && typeof candidate.name === "string") {
+      models.push(mapReplicateModel(candidate as ReplicateModel));
+    }
+  }
+  return models;
+}
+
+/**
+ * Search Replicate's full catalogue server-side for a text query.
+ *
+ * The bulk listing only covers the first ~15 pages, so a fragment search like
+ * "topaz" can't find models outside that window. This hits Replicate's search
+ * so any public model is discoverable by name. Tries the dedicated /v1/search
+ * endpoint first, then falls back to QUERY /v1/models. Always returns an array
+ * (never throws) so a flaky/again-unreliable search can only ADD results, never
+ * break the request — list results and the by-id fallback still apply.
+ */
+async function searchReplicateModels(apiKey: string, query: string): Promise<ProviderModel[]> {
+  // 1) GET /v1/search?query=... (searches models, collections, docs)
+  try {
+    const response = await fetch(
+      `${REPLICATE_API_BASE}/search?query=${encodeURIComponent(query)}`,
+      { headers: { Authorization: `Bearer ${apiKey}` } }
+    );
+    if (response.ok) {
+      const models = extractReplicateSearchModels(await response.json());
+      if (models.length > 0) return models;
+    }
+  } catch {
+    // fall through to the models search
+  }
+
+  // 2) QUERY /v1/models (dedicated model search; plain-text body)
+  try {
+    const response = await fetch(`${REPLICATE_API_BASE}/models`, {
+      method: "QUERY",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "text/plain",
+      },
+      body: query,
+    });
+    if (response.ok) {
+      return extractReplicateSearchModels(await response.json());
+    }
+  } catch {
+    // ignore — search is best-effort
+  }
+
+  return [];
+}
+
+/**
  * Filter models by search query (client-side filtering for Replicate)
  */
 function filterModelsBySearch(
@@ -1332,6 +1399,27 @@ export async function GET(
           error: errorMessage,
         };
         continue;
+      }
+    }
+
+    // Replicate server-side search: the bulk list only covers ~15 pages, so a
+    // fragment search (e.g. "topaz") can't find models outside that window.
+    // Query Replicate's search and merge in any models not already present.
+    if (provider === "replicate" && searchQuery) {
+      const searchModels = await searchReplicateModels(replicateKey!, searchQuery);
+      if (searchModels.length > 0) {
+        const seen = new Set(models.map((m) => m.id.toLowerCase()));
+        const fresh: ProviderModel[] = [];
+        for (const m of searchModels) {
+          const key = m.id.toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            fresh.push(m);
+          }
+        }
+        if (fresh.length > 0) {
+          models = [...models, ...fresh];
+        }
       }
     }
 
