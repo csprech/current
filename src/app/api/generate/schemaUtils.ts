@@ -19,8 +19,9 @@ export const INPUT_PATTERNS: Record<string, string[]> = {
 
   // Video inputs (e.g. video-to-video upscalers/restorers). The connected video
   // normally travels via dynamicInputs under its exact schema name; this is a
-  // defensive mapping for the non-dynamic fallback path.
-  videoInput: ["video_url", "video_urls", "video", "input_video", "source_video",
+  // defensive mapping for the non-dynamic fallback path. (Bare "video" is
+  // omitted — it would partial-match params like "video_length"/"video_strength".)
+  videoInput: ["video_url", "video_urls", "input_video", "source_video",
                "init_video", "reference_video", "driving_video", "control_video"],
 
   // Video/media settings

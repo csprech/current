@@ -116,15 +116,19 @@ export async function POST(request: NextRequest) {
     const hasImageInputs = dynamicInputs && Object.keys(dynamicInputs).some(key =>
       key.includes('frame') || key.includes('image')
     );
-    const hasMediaInputs = dynamicInputs && Object.keys(dynamicInputs).some(key =>
-      key.includes('video') || key.includes('audio')
+    const hasMediaInputs = dynamicInputs && Object.entries(dynamicInputs).some(([key, value]) =>
+      (key.includes('video') || key.includes('audio')) &&
+      (
+        (typeof value === 'string' && value.trim().length > 0) ||
+        (Array.isArray(value) && value.some((v) => typeof v === 'string' && v.trim().length > 0))
+      )
     );
 
     if (!hasPrompt && !hasImages && !hasImageInputs && !hasMediaInputs) {
       return NextResponse.json<GenerateResponse>(
         {
           success: false,
-          error: "Prompt or image input is required",
+          error: "Prompt, image, video, or audio input is required",
         },
         { status: 400 }
       );
