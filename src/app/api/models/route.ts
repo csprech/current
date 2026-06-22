@@ -704,6 +704,19 @@ function inferReplicateCapabilities(model: ReplicateModel): ModelCapability[] {
     return capabilities;
   }
 
+  // Video-processing models (upscalers, restorers, frame interpolators) often
+  // don't say "video" in their name — gate them on a processing verb paired with
+  // a video signal so they still land under the Video node instead of Image.
+  const hasVideoProcessingSignal =
+    (searchText.includes("upscale") ||
+      searchText.includes("restore") ||
+      searchText.includes("interpolat")) &&
+    (searchText.includes("video") ||
+      searchText.includes("clip") ||
+      searchText.includes("footage") ||
+      searchText.includes("fps") ||
+      searchText.includes("frames"));
+
   // Check for video-related keywords
   const isVideoModel =
     searchText.includes("video") ||
@@ -711,14 +724,17 @@ function inferReplicateCapabilities(model: ReplicateModel): ModelCapability[] {
     searchText.includes("motion") ||
     searchText.includes("luma") ||
     searchText.includes("kling") ||
-    searchText.includes("minimax");
+    searchText.includes("minimax") ||
+    hasVideoProcessingSignal;
 
   if (isVideoModel) {
-    // Video model - determine video capability type
+    // Video model - determine video capability type. Processing models consume a
+    // media (video/frame) input, so treat them as image-to-video rather than text.
     if (
       searchText.includes("img2vid") ||
       searchText.includes("image-to-video") ||
-      searchText.includes("i2v")
+      searchText.includes("i2v") ||
+      hasVideoProcessingSignal
     ) {
       capabilities.push("image-to-video");
     } else {
@@ -785,6 +801,43 @@ async function fetchReplicateModels(apiKey: string): Promise<ProviderModel[]> {
   }
 
   return allModels;
+}
+
+/**
+ * Fetch a single Replicate model by its full "owner/name" id.
+ *
+ * The bulk listing in fetchReplicateModels only covers the first ~15 pages of
+ * Replicate's catalogue, so most models (e.g. topazlabs/video-upscale) never
+ * appear there. This direct lookup is the fallback used when a user searches by
+ * an exact model id. Returns null on a malformed id or any non-OK response
+ * (including 404) so a typo never fails the whole /api/models request.
+ */
+async function fetchReplicateModelById(
+  apiKey: string,
+  modelId: string
+): Promise<ProviderModel | null> {
+  const parts = modelId.split("/");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return null;
+  }
+  const [owner, name] = parts;
+
+  try {
+    const response = await fetch(`${REPLICATE_API_BASE}/models/${owner}/${name}`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const model: ReplicateModel = await response.json();
+    return mapReplicateModel(model);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -1279,6 +1332,29 @@ export async function GET(
           error: errorMessage,
         };
         continue;
+      }
+    }
+
+    // Replicate fallback: if the user searched by an exact "owner/name" id that
+    // isn't in the paginated catalogue, resolve it directly so any public model
+    // is reachable (O(1) lookup rather than unbounded extra pagination).
+    if (
+      provider === "replicate" &&
+      searchQuery &&
+      searchQuery.includes("/") &&
+      !models.some((m) => m.id.toLowerCase() === searchQuery.toLowerCase())
+    ) {
+      const byId = await fetchReplicateModelById(replicateKey!, searchQuery);
+      if (byId) {
+        models = [...models, byId];
+        // Warm the cached full list so repeat searches resolve without a refetch.
+        const cachedFull = getCachedModels(cacheKey);
+        if (
+          cachedFull &&
+          !cachedFull.some((m) => m.id.toLowerCase() === byId.id.toLowerCase())
+        ) {
+          setCachedModels(cacheKey, [...cachedFull, byId]);
+        }
       }
     }
 

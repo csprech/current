@@ -775,4 +775,76 @@ describe("/api/models route", () => {
       expect(data.models[10].name).toBe("zebra");
     });
   });
+
+  describe("Replicate fetch-by-id fallback", () => {
+    it("GET: resolves an exact owner/name that isn't in the paginated catalogue", async () => {
+      process.env.REPLICATE_API_KEY = "test-key";
+
+      mockFetch.mockImplementation((url: string) => {
+        // Direct single-model lookup (checked first — more specific path)
+        if (url.includes("/models/topazlabs/video-upscale")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              owner: "topazlabs",
+              name: "video-upscale",
+              description: "Professional-grade video upscaling powered by AI.",
+              visibility: "public",
+              run_count: 100,
+            }),
+          });
+        }
+        // Bulk catalogue list — deliberately does NOT include the topaz model
+        if (url.includes("replicate.com")) {
+          return Promise.resolve(
+            createReplicateResponse([
+              { owner: "stability-ai", name: "sdxl", description: "SDXL model" },
+            ])
+          );
+        }
+        return Promise.reject(new Error("Unknown URL"));
+      });
+
+      const request = createMockGetRequest({ provider: "replicate", search: "topazlabs/video-upscale" });
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      const found = data.models.find((m: { id: string }) => m.id === "topazlabs/video-upscale");
+      expect(found).toBeDefined();
+      // A video upscaler must land under a video capability (visible in the Video node)
+      expect(found.capabilities).toContain("image-to-video");
+      // The direct lookup endpoint must have been hit
+      expect(
+        mockFetch.mock.calls.some((c: unknown[]) => String(c[0]).includes("/models/topazlabs/video-upscale"))
+      ).toBe(true);
+    });
+
+    it("GET: a non-existent owner/name 404s gracefully without failing the request", async () => {
+      process.env.REPLICATE_API_KEY = "test-key";
+
+      mockFetch.mockImplementation((url: string) => {
+        if (url.includes("/models/ghost/missing-model")) {
+          return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) });
+        }
+        if (url.includes("replicate.com")) {
+          return Promise.resolve(
+            createReplicateResponse([
+              { owner: "stability-ai", name: "sdxl", description: "SDXL model" },
+            ])
+          );
+        }
+        return Promise.reject(new Error("Unknown URL"));
+      });
+
+      const request = createMockGetRequest({ provider: "replicate", search: "ghost/missing-model" });
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.models.find((m: { id: string }) => m.id === "ghost/missing-model")).toBeUndefined();
+    });
+  });
 });
