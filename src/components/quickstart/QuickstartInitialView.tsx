@@ -20,15 +20,26 @@ export function QuickstartInitialView({
         <div className="flex-1 flex flex-col">
           <div className="mb-4">
             <div className="flex items-center gap-2">
-              <img src="/banana_icon.png" alt="" className="w-7 h-7" />
-              <h1 className="text-2xl font-medium text-neutral-100">
-                Node Banana
+              <svg viewBox="0 0 40 40" className="w-7 h-7" aria-hidden="true">
+                <defs>
+                  <linearGradient id="irisMarkQs" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="#7b6cf6" />
+                    <stop offset="0.35" stopColor="#35c9e6" />
+                    <stop offset="0.7" stopColor="#35d39a" />
+                    <stop offset="1" stopColor="#f77a8e" />
+                  </linearGradient>
+                </defs>
+                <circle cx="20" cy="20" r="18" fill="url(#irisMarkQs)" />
+                <circle cx="20" cy="20" r="7" fill="#171717" />
+              </svg>
+              <h1 className="text-2xl font-medium text-neutral-100 lowercase">
+                iris
               </h1>
             </div>
           </div>
 
           <p className="text-sm text-neutral-400 leading-relaxed mb-6">
-            A node based workflow editor for generative AI pipelines. Connect nodes to build pipelines that transform and generate images, video, audio and 3D assets.
+            The creative canvas where a sentence becomes an image, a scene, a film. Connect nodes on an infinite board to generate and transform images, video, audio, and 3D — routed to the best models, with your files kept on your own machine.
           </p>
 
           <div className="flex flex-col gap-2.5 mt-auto">

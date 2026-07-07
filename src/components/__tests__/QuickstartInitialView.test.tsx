@@ -17,7 +17,7 @@ describe("QuickstartInitialView", () => {
   });
 
   describe("Basic Rendering", () => {
-    it("should render the Node Banana title and logo", () => {
+    it("should render the iris title and logo", () => {
       render(
         <QuickstartInitialView
           onNewProject={mockOnNewProject}
@@ -27,7 +27,7 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      expect(screen.getByText("Node Banana")).toBeInTheDocument();
+      expect(screen.getByText("iris")).toBeInTheDocument();
       expect(screen.getAllByAltText("").length).toBeGreaterThan(0); // Logo images
     });
 
@@ -42,7 +42,7 @@ describe("QuickstartInitialView", () => {
       );
 
       expect(
-        screen.getByText(/node based workflow editor for generative AI pipelines/i)
+        screen.getByText(/a sentence becomes an image, a scene, a film/i)
       ).toBeInTheDocument();
     });
 

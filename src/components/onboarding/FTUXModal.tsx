@@ -69,9 +69,20 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
           <div className="px-8 pt-8 pb-4 border-b border-neutral-700/50 shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img src="/banana_icon.png" alt="" className="w-6 h-6" />
+                <svg viewBox="0 0 40 40" className="w-6 h-6" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="irisMarkFtux" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stopColor="#7b6cf6" />
+                      <stop offset="0.35" stopColor="#35c9e6" />
+                      <stop offset="0.7" stopColor="#35d39a" />
+                      <stop offset="1" stopColor="#f77a8e" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="20" cy="20" r="18" fill="url(#irisMarkFtux)" />
+                  <circle cx="20" cy="20" r="7" fill="#171717" />
+                </svg>
                 <h2 className="text-xl font-medium text-neutral-100">
-                  Welcome to Node Banana
+                  Welcome to <span className="lowercase">iris</span>
                 </h2>
               </div>
               <button

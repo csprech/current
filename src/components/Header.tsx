@@ -237,9 +237,20 @@ export function Header() {
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             title="Open welcome screen"
           >
-            <img src="/banana_icon.png" alt="Banana" className="w-6 h-6" />
-            <h1 className="text-2xl font-semibold text-neutral-100 tracking-tight">
-              Node Banana
+            <svg viewBox="0 0 40 40" className="w-6 h-6" aria-hidden="true">
+              <defs>
+                <linearGradient id="irisMark" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stopColor="#7b6cf6" />
+                  <stop offset="0.35" stopColor="#35c9e6" />
+                  <stop offset="0.7" stopColor="#35d39a" />
+                  <stop offset="1" stopColor="#f77a8e" />
+                </linearGradient>
+              </defs>
+              <circle cx="20" cy="20" r="18" fill="url(#irisMark)" />
+              <circle cx="20" cy="20" r="7" fill="#171717" />
+            </svg>
+            <h1 className="text-2xl font-semibold text-neutral-100 tracking-tight lowercase">
+              iris
             </h1>
           </button>
 
