@@ -893,7 +893,7 @@ describe("ProjectSetupModal", () => {
         />
       );
 
-      const modalDiv = container.querySelector(".bg-neutral-800");
+      const modalDiv = container.querySelector(".iris-glass");
       fireEvent.keyDown(modalDiv!, { key: "Escape" });
 
       expect(onClose).toHaveBeenCalled();
@@ -935,7 +935,7 @@ describe("ProjectSetupModal", () => {
         target: { value: "/path/to/project" },
       });
 
-      const modalDiv = container.querySelector(".bg-neutral-800");
+      const modalDiv = container.querySelector(".iris-glass");
       fireEvent.keyDown(modalDiv!, { key: "Enter" });
 
       await waitFor(() => {

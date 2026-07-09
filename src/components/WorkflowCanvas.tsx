@@ -2055,7 +2055,7 @@ export function WorkflowCanvas() {
       {/* Drop overlay indicator */}
       {isDragOver && (
         <div className="absolute inset-0 bg-blue-500/10 z-50 pointer-events-none flex items-center justify-center">
-          <div className="bg-neutral-800 border border-neutral-600 rounded-lg px-6 py-4 shadow-xl">
+          <div className="iris-glass rounded-lg px-6 py-4 shadow-xl">
             <p className="text-neutral-200 text-sm font-medium">
               {dropType === "workflow"
                 ? "Drop to load workflow"
@@ -2072,7 +2072,7 @@ export function WorkflowCanvas() {
       {/* Splitting indicator */}
       {isSplitting && (
         <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-neutral-800 border border-neutral-600 rounded-lg px-6 py-4 shadow-xl flex items-center gap-3">
+          <div className="iris-glass rounded-lg px-6 py-4 shadow-xl flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-neutral-200 text-sm font-medium">Splitting image grid...</p>
           </div>

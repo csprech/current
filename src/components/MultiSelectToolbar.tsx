@@ -219,7 +219,7 @@ export function MultiSelectToolbar() {
 
   return (
     <div
-      className="fixed z-[100] flex items-center gap-1 bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-1"
+      className="fixed z-[100] flex items-center gap-1 iris-glass rounded-lg shadow-xl p-1"
       style={{
         left: toolbarPosition.x,
         top: toolbarPosition.y,

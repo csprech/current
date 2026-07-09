@@ -94,11 +94,11 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="w-80 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl p-4"
+        className="w-80 iris-glass rounded-lg shadow-xl p-4"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-sm font-semibold text-neutral-200 mb-3">

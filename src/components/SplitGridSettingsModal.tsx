@@ -185,9 +185,9 @@ export function SplitGridSettingsModal({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div
-        className="bg-neutral-800 rounded-lg p-6 w-[600px] border border-neutral-700 shadow-xl"
+        className="iris-glass rounded-lg p-6 w-[600px] shadow-xl"
         onKeyDown={handleKeyDown}
       >
         <h2 className="text-lg font-semibold text-neutral-100 mb-4">

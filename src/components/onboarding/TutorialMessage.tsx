@@ -29,7 +29,7 @@ export function TutorialMessage({ message, position = "center", waitForClick = f
   };
 
   return (
-    <div className={`absolute ${positionClasses[position]} max-w-sm px-6 py-4 bg-neutral-800/95 backdrop-blur rounded-lg shadow-xl transition-opacity duration-300 opacity-100 pointer-events-auto`}>
+    <div className={`absolute ${positionClasses[position]} max-w-sm px-6 py-4 iris-glass rounded-lg shadow-xl transition-opacity duration-300 opacity-100 pointer-events-auto`}>
       <p className="text-neutral-100 text-base leading-relaxed text-center whitespace-pre-line">{displayedText}</p>
       {links && links.length > 0 && (
         <div className="mt-3 flex flex-col gap-2">

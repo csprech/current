@@ -417,7 +417,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
             {(showCommentTooltip || isCommentFocused) && comment && !isEditingComment && tooltipPosition && createPortal(
               <div
                 ref={tooltipRef}
-                className="fixed z-[9999] p-3 text-sm text-neutral-200 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl"
+                className="fixed z-[9999] p-3 text-sm text-neutral-200 iris-glass rounded-lg shadow-xl"
                 style={{
                   top: tooltipPosition.top,
                   left: tooltipPosition.left,
@@ -464,7 +464,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
 
             {/* Comment Edit Popover */}
             {isEditingComment && (
-              <div className="absolute z-[60] right-0 top-full mt-1 w-64 p-2 bg-neutral-800 border border-neutral-600 rounded shadow-lg">
+              <div className="absolute z-[60] right-0 top-full mt-1 w-64 p-2 iris-glass rounded shadow-lg">
                 <textarea
                   value={editCommentValue}
                   onChange={(e) => setEditCommentValue(e.target.value)}

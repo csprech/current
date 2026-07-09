@@ -762,7 +762,7 @@ export function ConnectionDropMenu({
       ref={menuRef}
       tabIndex={-1}
       data-tutorial="connection-drop-menu"
-      className="fixed z-100 bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl overflow-hidden min-w-[160px] outline-none"
+      className="fixed z-100 iris-glass rounded-lg shadow-xl overflow-hidden min-w-[160px] outline-none"
       style={{
         left: position.x,
         top: position.y,

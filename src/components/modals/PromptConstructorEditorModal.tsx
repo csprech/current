@@ -175,10 +175,10 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="relative bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col mx-4">
+      <div className="relative iris-glass rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col mx-4">
         {/* Header */}
         <div className="px-6 pt-6 pb-4 flex items-center gap-3">
           <h2 className="text-xl font-semibold text-neutral-100">Edit Prompt Constructor</h2>
@@ -240,7 +240,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
             {/* Autocomplete dropdown */}
             {showAutocomplete && filteredAutocompleteVars.length > 0 && (
               <div
-                className="absolute z-10 bg-neutral-800 border border-neutral-600 rounded shadow-xl max-h-40 overflow-y-auto"
+                className="absolute z-10 iris-glass rounded shadow-xl max-h-40 overflow-y-auto"
                 style={{
                   top: autocompletePosition.top + 16,
                   left: autocompletePosition.left + 24,
@@ -304,7 +304,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
             className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg"
             onClick={handleConfirmationBackdropClick}
           >
-            <div className="relative bg-neutral-800 border border-neutral-600 rounded-lg p-6 mx-4 max-w-sm shadow-xl">
+            <div className="relative iris-glass rounded-lg p-6 mx-4 max-w-sm shadow-xl">
               <button
                 onClick={handleDismissConfirmation}
                 className="absolute top-3 right-3 text-neutral-400 hover:text-neutral-200 transition-colors focus:outline-none"

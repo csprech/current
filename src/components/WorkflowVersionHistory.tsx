@@ -104,7 +104,7 @@ export function WorkflowVersionHistory() {
         createPortal(
           <div
             ref={panelRef}
-            className="fixed w-72 max-h-[380px] bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl z-[300] flex flex-col"
+            className="fixed w-72 max-h-[380px] iris-glass rounded-lg shadow-2xl z-[300] flex flex-col"
             style={{ top: rect.bottom + 6, left: Math.max(8, rect.right - 288) }}
           >
             <div className="px-3 py-2 border-b border-neutral-700 flex items-center justify-between shrink-0">

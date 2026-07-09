@@ -132,7 +132,7 @@ function HistorySidebar({
   return createPortal(
     <div
       ref={sidebarRef}
-      className="w-80 max-h-[420px] bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl flex flex-col"
+      className="w-80 max-h-[420px] iris-glass rounded-lg shadow-xl flex flex-col"
       style={sidebarStyle}
     >
       {/* Header */}

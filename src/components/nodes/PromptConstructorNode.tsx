@@ -228,7 +228,7 @@ export function PromptConstructorNode({ id, data, selected }: NodeProps<PromptCo
           {/* Autocomplete dropdown */}
           {showAutocomplete && filteredAutocompleteVars.length > 0 && (
             <div
-              className="absolute z-20 bg-neutral-800 border border-neutral-600 rounded shadow-xl max-h-40 overflow-y-auto"
+              className="absolute z-20 iris-glass rounded shadow-xl max-h-40 overflow-y-auto"
               style={{
                 top: autocompletePosition.top,
                 left: autocompletePosition.left,

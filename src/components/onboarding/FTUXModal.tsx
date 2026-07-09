@@ -60,10 +60,10 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onWheelCapture={(e) => e.stopPropagation()}
     >
-      <div className={`relative bg-neutral-800 rounded-xl w-full ${currentStep === 4 ? 'max-w-[420px]' : 'max-w-[640px]'} mx-4 border border-neutral-700 shadow-2xl overflow-clip flex flex-col ${currentStep === 4 ? '' : 'max-h-[80vh]'}`}>
+      <div className={`relative iris-glass rounded-xl w-full ${currentStep === 4 ? 'max-w-[420px]' : 'max-w-[640px]'} mx-4 shadow-2xl overflow-clip flex flex-col ${currentStep === 4 ? '' : 'max-h-[80vh]'}`}>
         {/* Header */}
         {currentStep !== 4 && (
           <div className="px-8 pt-8 pb-4 border-b border-neutral-700/50 shrink-0">
@@ -160,7 +160,7 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
         {/* Skip confirmation dialog */}
         {showSkipConfirm && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
-            <div className="bg-neutral-800 rounded-xl p-6 border border-neutral-700 shadow-2xl max-w-sm mx-4">
+            <div className="iris-glass rounded-xl p-6 shadow-2xl max-w-sm mx-4">
               <h3 className="text-lg font-semibold text-neutral-100 mb-2">
                 Skip setup?
               </h3>

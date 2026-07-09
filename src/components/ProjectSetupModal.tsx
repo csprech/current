@@ -384,19 +384,30 @@ export function ProjectSetupModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
       onWheelCapture={(e) => e.stopPropagation()}
     >
       <div
-        className="bg-neutral-800 rounded-xl w-[520px] border border-neutral-700 shadow-2xl overflow-clip flex flex-col max-h-[80vh]"
+        className="iris-glass rounded-xl w-[520px] shadow-2xl overflow-clip flex flex-col max-h-[80vh]"
         onKeyDown={handleKeyDown}
       >
         <div className="px-8 pt-8 pb-0 shrink-0">
           <div className="flex items-center gap-2 mb-5">
-            <img src="/banana_icon.png" alt="" className="w-6 h-6" />
+            <svg viewBox="0 0 40 40" className="w-6 h-6" aria-hidden="true">
+              <defs>
+                <linearGradient id="irisMarkSetup" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stopColor="#7b6cf6" />
+                  <stop offset="0.35" stopColor="#35c9e6" />
+                  <stop offset="0.7" stopColor="#35d39a" />
+                  <stop offset="1" stopColor="#f77a8e" />
+                </linearGradient>
+              </defs>
+              <circle cx="20" cy="20" r="18" fill="url(#irisMarkSetup)" />
+              <circle cx="20" cy="20" r="7" fill="#171717" />
+            </svg>
             <h2 className="text-xl font-medium text-neutral-100">
               {mode === "new" ? "New Project" : "Project Settings"}
             </h2>

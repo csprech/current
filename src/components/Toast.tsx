@@ -22,7 +22,7 @@ export const useToast = create<ToastState>((set) => ({
 }));
 
 const typeStyles = {
-  info: "bg-neutral-800 border-neutral-600 text-neutral-100",
+  info: "iris-glass text-neutral-100",
   success: "bg-green-900 border-green-700 text-green-100",
   warning: "bg-orange-900 border-orange-600 text-orange-100",
   error: "bg-red-900 border-red-700 text-red-100",

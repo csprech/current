@@ -177,7 +177,7 @@ function GenerateComboButton() {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl overflow-hidden min-w-[140px]">
+        <div className="absolute bottom-full left-0 mb-2 iris-glass rounded-lg shadow-xl overflow-hidden min-w-[140px]">
           <button
             onClick={() => handleAddNode("nanoBanana")}
             draggable
@@ -287,7 +287,7 @@ function AllNodesMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl overflow-hidden min-w-[180px] max-h-[400px] overflow-y-auto">
+        <div className="absolute bottom-full left-0 mb-2 iris-glass rounded-lg shadow-xl overflow-hidden min-w-[180px] max-h-[400px] overflow-y-auto">
           {ALL_NODES_CATEGORIES.map((category, catIndex) => (
             <div key={category.label}>
               <div className={`px-3 py-1 text-[10px] text-neutral-500 uppercase tracking-wide${catIndex > 0 ? " border-t border-neutral-700" : ""}`}>
@@ -598,7 +598,7 @@ export function FloatingActionBar() {
           {runMenuOpen && !isRunning && (
             <div
               data-tutorial="floating-run-menu"
-              className="absolute bottom-full right-0 mb-2 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl overflow-hidden min-w-[180px]"
+              className="absolute bottom-full right-0 mb-2 iris-glass rounded-lg shadow-xl overflow-hidden min-w-[180px]"
             >
               <button
                 onClick={() => {

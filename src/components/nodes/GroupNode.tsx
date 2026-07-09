@@ -201,7 +201,7 @@ export function GroupNode({ id, data, selected }: NodeProps<GroupNodeType>) {
               title="Change color"
             />
             {showColorPicker && (
-              <div className="absolute top-full right-0 mt-1 p-2 bg-neutral-800 rounded-lg shadow-xl border border-neutral-600 grid grid-cols-4 gap-1.5 z-50">
+              <div className="absolute top-full right-0 mt-1 p-2 iris-glass rounded-lg shadow-xl grid grid-cols-4 gap-1.5 z-50">
                 {COLOR_OPTIONS.map(({ color, label }) => (
                   <button
                     key={color}

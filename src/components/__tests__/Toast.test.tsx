@@ -53,7 +53,7 @@ describe("Toast", () => {
 
       const { container } = render(<Toast />);
 
-      const toastContainer = container.querySelector(".bg-neutral-800");
+      const toastContainer = container.querySelector(".iris-glass");
       expect(toastContainer).toBeInTheDocument();
     });
 

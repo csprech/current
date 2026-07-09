@@ -145,7 +145,7 @@ function AssetLightbox({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-8"
+      className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
       onClick={onClose}
     >
       <div className="max-w-[90vw] max-h-[90vh] flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
@@ -247,7 +247,7 @@ export function AssetLibrary() {
 
       {isOpen &&
         createPortal(
-          <div className="fixed top-0 right-0 h-full w-96 bg-neutral-800 border-l border-neutral-700 shadow-2xl z-[200] flex flex-col">
+          <div className="fixed top-0 right-0 h-full w-96 iris-glass shadow-2xl z-[200] flex flex-col">
             {/* Header */}
             <div className="px-4 py-3 border-b border-neutral-700 flex items-center justify-between shrink-0">
               <span className="text-sm font-medium text-neutral-200">Asset Library</span>

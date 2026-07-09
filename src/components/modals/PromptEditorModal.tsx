@@ -113,10 +113,10 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="relative bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col mx-4">
+      <div className="relative iris-glass rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col mx-4">
         {/* Header */}
         <div className="px-6 pt-6 pb-4">
           <h2 className="text-xl font-semibold text-neutral-100">
@@ -175,7 +175,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
             className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg"
             onClick={handleConfirmationBackdropClick}
           >
-            <div className="relative bg-neutral-800 border border-neutral-600 rounded-lg p-6 mx-4 max-w-sm shadow-xl">
+            <div className="relative iris-glass rounded-lg p-6 mx-4 max-w-sm shadow-xl">
               {/* Close button */}
               <button
                 onClick={handleDismissConfirmation}

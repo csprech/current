@@ -263,7 +263,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
       {lightboxIndex !== null && currentItem && typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-8"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center p-8"
             onClick={closeLightbox}
           >
             <div className="relative max-w-full max-h-full" onClick={(e) => e.stopPropagation()}>

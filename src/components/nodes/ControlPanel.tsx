@@ -134,7 +134,7 @@ export function ControlPanel() {
   return (
     <div className="fixed top-0 right-6 h-screen z-[90] flex items-center pointer-events-none">
       <div
-        className="w-80 bg-neutral-800 border border-neutral-700 rounded-xl max-h-[80vh] overflow-y-auto pointer-events-auto transition-opacity duration-200 nowheel"
+        className="w-80 iris-glass rounded-xl max-h-[80vh] overflow-y-auto pointer-events-auto transition-opacity duration-200 nowheel"
         style={{
           boxShadow: [
             '-1px 0 2px rgba(0,0,0,0.18)',
@@ -1033,7 +1033,7 @@ function EaseCurveControls({ node }: { node: Node }) {
       {showPresets && typeof document !== 'undefined' && createPortal(
         <div
           ref={presetsPopupRef}
-          className="fixed z-[100] bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-2 max-h-[60vh] overflow-y-auto nowheel"
+          className="fixed z-[100] iris-glass rounded-lg shadow-xl p-2 max-h-[60vh] overflow-y-auto nowheel"
           style={{
             top: presetsButtonRef.current?.getBoundingClientRect().bottom || 0,
             right: window.innerWidth - (presetsButtonRef.current?.getBoundingClientRect().left || 0),
