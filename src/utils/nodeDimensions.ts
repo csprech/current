@@ -261,15 +261,22 @@ export function calculateNodeSizePreservingHeight(
 
   // Preserve height, calculate width to maintain aspect ratio
   const chromeHeight = skipChromeOffset ? 0 : NODE_CHROME_HEIGHT;
-  const contentHeight = currentHeight - chromeHeight;
+  let contentHeight = currentHeight - chromeHeight;
   let newWidth = contentHeight * aspectRatio;
 
-  // Clamp width to constraints
-  newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newWidth));
+  // If width busts a bound, scale both dimensions so the ratio stays exact —
+  // the aspect ratio always wins over the preserved height.
+  if (newWidth > MAX_WIDTH) {
+    contentHeight *= MAX_WIDTH / newWidth;
+    newWidth = MAX_WIDTH;
+  } else if (newWidth < MIN_WIDTH) {
+    contentHeight *= MIN_WIDTH / newWidth;
+    newWidth = MIN_WIDTH;
+  }
 
   return {
     width: Math.round(newWidth),
-    height: Math.round(currentHeight),
+    height: Math.round(contentHeight + chromeHeight),
   };
 }
 
@@ -300,36 +307,20 @@ export function calculateNodeSizeForFullBleed(
     };
   }
 
-  // Start with base width and calculate height
+  // Start with base width and calculate height, then scale proportionally so
+  // the aspect ratio is always exact. Grow to reach minimums, then shrink to
+  // respect maximums — the max box wins over the min box for extreme ratios
+  // (a panorama gets a short node, a long screenshot gets a narrow one).
   let width = 300; // Default starting width
   let height = width / aspectRatio;
 
-  // Check if height exceeds max - if so, scale down width to fit
-  if (height > MAX_HEIGHT) {
-    height = MAX_HEIGHT;
-    width = height * aspectRatio;
-  }
+  const grow = Math.max(MIN_WIDTH / width, MIN_HEIGHT / height, 1);
+  width *= grow;
+  height *= grow;
 
-  // Check if height is below min - if so, scale up width to fit
-  if (height < MIN_HEIGHT) {
-    height = MIN_HEIGHT;
-    width = height * aspectRatio;
-  }
-
-  // Clamp width to constraints
-  if (width > MAX_WIDTH) {
-    width = MAX_WIDTH;
-    height = width / aspectRatio;
-    // Re-clamp height
-    height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
-  }
-
-  if (width < MIN_WIDTH) {
-    width = MIN_WIDTH;
-    height = width / aspectRatio;
-    // Re-clamp height
-    height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
-  }
+  const shrink = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height, 1);
+  width *= shrink;
+  height *= shrink;
 
   return {
     width: Math.round(width),

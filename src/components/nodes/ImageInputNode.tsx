@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useRef } from "react";
-import { Handle, Position, NodeProps, Node } from "@xyflow/react";
+import { useCallback, useEffect, useRef } from "react";
+import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
+import { getImageDimensions, calculateNodeSizeForFullBleed } from "@/utils/nodeDimensions";
 import { useCommentNavigation } from "@/hooks/useCommentNavigation";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { ImageInputNodeData } from "@/types";
@@ -20,6 +21,43 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const showLabels = useShowHandleLabels(selected);
+  const { setNodes } = useReactFlow();
+
+  // Auto-resize the node to the image's native aspect ratio whenever a new
+  // image lands (upload, canvas drop, history drag, asset library) — same
+  // behavior as GenerateImageNode's output auto-fit.
+  const prevImageRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!nodeData.image || nodeData.image === prevImageRef.current) {
+      prevImageRef.current = nodeData.image ?? null;
+      return;
+    }
+    prevImageRef.current = nodeData.image;
+
+    // requestAnimationFrame avoids React Flow update conflicts
+    requestAnimationFrame(() => {
+      const dimsPromise = nodeData.dimensions
+        ? Promise.resolve(nodeData.dimensions)
+        : getImageDimensions(nodeData.image!);
+      dimsPromise.then((dims) => {
+        if (!dims || !dims.width || !dims.height) return;
+
+        const aspectRatio = dims.width / dims.height;
+
+        setNodes((nodes) =>
+          nodes.map((node) => {
+            if (node.id !== id) return node;
+
+            // Always place at the image's native ratio — the node is
+            // full-bleed, so the card IS the image.
+            const newSize = calculateNodeSizeForFullBleed(aspectRatio);
+
+            return { ...node, style: { ...node.style, width: newSize.width, height: newSize.height } };
+          })
+        );
+      });
+    });
+  }, [id, nodeData.image, nodeData.dimensions, setNodes]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

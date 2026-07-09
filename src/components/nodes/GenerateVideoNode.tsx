@@ -383,7 +383,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
               ? node.style.height
               : undefined;
 
-            const newSize = calculateNodeSizePreservingHeight(aspectRatio, currentHeight);
+            const newSize = calculateNodeSizePreservingHeight(aspectRatio, currentHeight, true);
 
             return { ...node, style: { ...node.style, width: newSize.width, height: newSize.height } };
           })
