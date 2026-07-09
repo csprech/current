@@ -46,18 +46,23 @@
   --handle-color-video: #f77a8e;
 }
 
-/* iris signature: the spectral primary action — creation happens here.
-   The one bold, saturated moment in an otherwise quiet, precise interface. */
+/* iris signature: the primary action. One calm accent — a top-lit violet
+   pill with a soft halo, the way macOS renders its default button. */
 .iris-run {
-  background: linear-gradient(105deg, var(--iris-s1), var(--iris-s2), var(--iris-s3), var(--iris-s4), var(--iris-s5), var(--iris-s6));
+  background: linear-gradient(180deg, #8b7ef8 0%, #6f5ff0 100%);
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  box-shadow: 0 2px 14px rgba(74, 134, 247, 0.28);
-  transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  box-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 4px 18px -2px rgba(123, 108, 246, 0.45);
+  transition: filter 0.15s ease, box-shadow 0.2s ease;
 }
 .iris-run:hover {
-  filter: brightness(1.06) saturate(1.06);
-  box-shadow: 0 3px 18px rgba(123, 108, 246, 0.42);
+  filter: brightness(1.07);
+  box-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 5px 22px -2px rgba(123, 108, 246, 0.6);
 }
 @media (prefers-reduced-motion: reduce) {
   .iris-run { transition: none; }

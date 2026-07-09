@@ -28,7 +28,6 @@ describe("QuickstartInitialView", () => {
       );
 
       expect(screen.getByText("iris")).toBeInTheDocument();
-      expect(screen.getAllByAltText("").length).toBeGreaterThan(0); // Logo images
     });
 
     it("should render the description text", () => {
@@ -174,7 +173,7 @@ describe("QuickstartInitialView", () => {
   });
 
   describe("External Links", () => {
-    it("should render Discord link with correct URL", () => {
+    it("should not render any external brand links", () => {
       render(
         <QuickstartInitialView
           onNewProject={mockOnNewProject}
@@ -184,45 +183,10 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      const discordLink = screen.getByText("Discord").closest("a");
-      expect(discordLink).toHaveAttribute(
-        "href",
-        "https://discord.com/invite/89Nr6EKkTf"
-      );
-      expect(discordLink).toHaveAttribute("target", "_blank");
-      expect(discordLink).toHaveAttribute("rel", "noopener noreferrer");
-    });
-
-    it("should render Twitter/X link with correct URL", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      const twitterLink = screen.getByText("Willie").closest("a");
-      expect(twitterLink).toHaveAttribute("href", "https://x.com/ReflctWillie");
-      expect(twitterLink).toHaveAttribute("target", "_blank");
-      expect(twitterLink).toHaveAttribute("rel", "noopener noreferrer");
-    });
-
-    it("should render docs link", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      const docsLink = screen.getByText("Docs").closest("a");
-      expect(docsLink).toHaveAttribute("href", "https://node-banana-docs.vercel.app/");
-      expect(docsLink).toHaveAttribute("target", "_blank");
-      expect(docsLink).toHaveAttribute("rel", "noopener noreferrer");
+      expect(screen.queryByText("Discord")).not.toBeInTheDocument();
+      expect(screen.queryByText("Willie")).not.toBeInTheDocument();
+      expect(screen.queryByText("Docs")).not.toBeInTheDocument();
+      expect(screen.queryByText("NB Pro Waitlist")).not.toBeInTheDocument();
     });
   });
 

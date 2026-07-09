@@ -112,7 +112,7 @@ function NodeButton({ type, label, dataTutorial }: NodeButtonProps) {
       draggable
       onDragStart={handleDragStart}
       data-tutorial={dataTutorial}
-      className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors cursor-grab active:cursor-grabbing"
+      className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-white/10 rounded-lg transition-colors cursor-grab active:cursor-grabbing"
     >
       {label}
     </button>
@@ -162,7 +162,7 @@ function GenerateComboButton() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors flex items-center gap-1"
+        className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-1"
       >
         Generate
         <svg
@@ -272,7 +272,7 @@ function AllNodesMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors flex items-center gap-1"
+        className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-1"
       >
         All nodes
         <svg
@@ -483,7 +483,7 @@ export function FloatingActionBar() {
 
   return (
     <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
-      <div className="flex items-center gap-0.5 iris-glass rounded-xl px-1.5 py-1">
+      <div className="flex items-center gap-0.5 iris-glass rounded-2xl px-2 py-1.5">
         <NodeButton type="imageInput" label="Image" dataTutorial="image-button" />
         <NodeButton type="videoInput" label="Video" />
         <NodeButton type="prompt" label="Prompt" dataTutorial="prompt-button" />
@@ -492,21 +492,21 @@ export function FloatingActionBar() {
         <AllNodesMenu />
 
         {/* All models button */}
-        <div className="w-px h-5 bg-neutral-600 mx-1.5" />
+        <div className="w-px h-5 bg-white/10 mx-1.5" />
         <button
           onClick={() => setModelSearchOpen(true)}
           title="Browse models"
-          className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
+          className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-white/10 rounded-lg transition-colors"
         >
           All models
         </button>
 
-        <div className="w-px h-5 bg-neutral-600 mx-1.5" />
+        <div className="w-px h-5 bg-white/10 mx-1.5" />
 
         <button
           onClick={toggleEdgeStyle}
           title={`Switch to ${edgeStyle === "angular" ? "curved" : "angular"} connectors`}
-          className="p-1.5 text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
+          className="p-1.5 text-neutral-400 hover:text-neutral-100 hover:bg-white/10 rounded-lg transition-colors"
         >
           {edgeStyle === "angular" ? (
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -519,7 +519,7 @@ export function FloatingActionBar() {
           )}
         </button>
 
-        <div className="w-px h-5 bg-neutral-600 mx-1.5" />
+        <div className="w-px h-5 bg-white/10 mx-1.5" />
 
         <div className="relative flex items-center" ref={runMenuRef}>
           <button
@@ -527,12 +527,12 @@ export function FloatingActionBar() {
             disabled={!valid && !isRunning}
             title={!valid ? errors.join("\n") : isRunning ? "Stop" : "Run"}
             data-tutorial="floating-run-button"
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium transition-colors ${
+            className={`flex items-center gap-1.5 py-1.5 text-[11px] font-medium transition-colors ${
               isRunning
-                ? "bg-white text-neutral-900 hover:bg-neutral-200 rounded"
+                ? "bg-white text-neutral-900 hover:bg-neutral-200 rounded-full px-3.5"
                 : valid
-                ? "iris-run rounded-l"
-                : "bg-neutral-700 text-neutral-500 cursor-not-allowed rounded"
+                ? "iris-run rounded-l-full pl-3.5 pr-2.5"
+                : "bg-neutral-700 text-neutral-500 cursor-not-allowed rounded-full px-3.5"
             }`}
           >
             {isRunning ? (
@@ -579,7 +579,7 @@ export function FloatingActionBar() {
             <button
               onClick={() => setRunMenuOpen(!runMenuOpen)}
               data-tutorial="floating-run-dropdown"
-              className="flex items-center self-stretch px-1.5 rounded-r bg-white text-neutral-900 hover:bg-neutral-200 border-l border-neutral-200 transition-colors"
+              className="iris-run flex items-center self-stretch pl-1.5 pr-2.5 rounded-r-full border-l border-white/25 transition-colors"
               title="Run options"
             >
               <svg

@@ -83,16 +83,10 @@ describe("Header", () => {
       expect(screen.getByText("iris")).toBeInTheDocument();
     });
 
-    it("should render 'Made by Willie' link", () => {
+    it("should not render any external brand links", () => {
       render(<Header />);
-      const link = screen.getByText("Made by Willie");
-      expect(link).toHaveAttribute("href", "https://x.com/ReflctWillie");
-    });
-
-    it("should render Discord support link", () => {
-      render(<Header />);
-      const link = screen.getByTitle("Support");
-      expect(link).toHaveAttribute("href", "https://discord.com/invite/89Nr6EKkTf");
+      expect(screen.queryByText("Made by Willie")).not.toBeInTheDocument();
+      expect(screen.queryByTitle("Support")).not.toBeInTheDocument();
     });
   });
 
