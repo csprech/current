@@ -86,7 +86,7 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".ring-2.ring-blue-500\\/40");
+      const nodeDiv = container.querySelector(".iris-card-selected");
       expect(nodeDiv).toBeInTheDocument();
     });
 
@@ -97,7 +97,7 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".border-blue-500.ring-1");
+      const nodeDiv = container.querySelector(".iris-card-exec");
       expect(nodeDiv).toBeInTheDocument();
     });
 
@@ -117,7 +117,7 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".border-blue-500.ring-1");
+      const nodeDiv = container.querySelector(".iris-card-exec");
       expect(nodeDiv).toBeInTheDocument();
     });
 
@@ -128,7 +128,7 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".border-red-500");
+      const nodeDiv = container.querySelector(".iris-card-error");
       expect(nodeDiv).toBeInTheDocument();
     });
   });

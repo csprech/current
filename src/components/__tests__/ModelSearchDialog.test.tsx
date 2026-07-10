@@ -593,8 +593,8 @@ describe("ModelSearchDialog", () => {
         </TestWrapper>
       );
 
-      // Click on the backdrop (the outer div with bg-black/60)
-      const backdrop = container.querySelector(".bg-black\\/60");
+      // Click on the backdrop (the outer div with bg-black/25)
+      const backdrop = container.querySelector(".bg-black\\/25");
       fireEvent.click(backdrop!);
 
       expect(onClose).toHaveBeenCalled();
