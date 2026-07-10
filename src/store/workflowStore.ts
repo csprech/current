@@ -213,6 +213,10 @@ interface ClipboardData {
   edges: WorkflowEdge[];
 }
 
+export type LeftWorkspacePanel = "library" | null;
+export type RightWorkspacePanel = "assistant" | "activity" | null;
+export type WorkspaceView = "canvas" | "outputs";
+
 interface WorkflowStore {
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
@@ -263,10 +267,18 @@ interface WorkflowStore {
   isModalOpen: boolean;
   showQuickstart: boolean;
   hoveredNodeId: string | null;
+  activeLeftPanel: LeftWorkspacePanel;
+  activeRightPanel: RightWorkspacePanel;
+  workspaceView: WorkspaceView;
   incrementModalCount: () => void;
   decrementModalCount: () => void;
   setShowQuickstart: (show: boolean) => void;
   setHoveredNodeId: (id: string | null) => void;
+  setActiveLeftPanel: (panel: LeftWorkspacePanel) => void;
+  setActiveRightPanel: (panel: RightWorkspacePanel) => void;
+  toggleLeftPanel: (panel: Exclude<LeftWorkspacePanel, null>) => void;
+  toggleRightPanel: (panel: Exclude<RightWorkspacePanel, null>) => void;
+  setWorkspaceView: (view: WorkspaceView) => void;
 
   // Execution
   isRunning: boolean;
@@ -537,6 +549,9 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   isModalOpen: false,
   showQuickstart: true,
   hoveredNodeId: null,
+  activeLeftPanel: null,
+  activeRightPanel: null,
+  workspaceView: "canvas",
   isRunning: false,
   currentNodeIds: [],  // Changed from currentNodeId for parallel execution
   pausedAtNodeId: null,
@@ -593,6 +608,16 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   // Undo/Redo initial state
   canUndo: false,
   canRedo: false,
+
+  setActiveLeftPanel: (activeLeftPanel) => set({ activeLeftPanel }),
+  setActiveRightPanel: (activeRightPanel) => set({ activeRightPanel }),
+  toggleLeftPanel: (panel) => set((state) => ({
+    activeLeftPanel: state.activeLeftPanel === panel ? null : panel,
+  })),
+  toggleRightPanel: (panel) => set((state) => ({
+    activeRightPanel: state.activeRightPanel === panel ? null : panel,
+  })),
+  setWorkspaceView: (workspaceView) => set({ workspaceView }),
 
   undo: () => {
     // Flush any pending debounced data snapshot so the pre-edit state is preserved
