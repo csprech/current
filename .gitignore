@@ -49,4 +49,8 @@ logs/*.json
 # agents
 .agents/
 
+# local agent workspaces
+.worktrees/
+.superpowers/
+
 .superset/
