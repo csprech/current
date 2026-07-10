@@ -9,6 +9,16 @@ describe("CurrentMark", () => {
     expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
   });
 
+  it("contributes one accessible name when composed in a button", () => {
+    render(
+      <button type="button">
+        <CurrentMark showWordmark />
+      </button>,
+    );
+
+    expect(screen.getByRole("button")).toHaveAccessibleName("Current");
+  });
+
   it("uses a unique gradient for each mark", () => {
     const { container } = render(
       <>
@@ -17,7 +27,13 @@ describe("CurrentMark", () => {
       </>,
     );
     const gradients = Array.from(container.querySelectorAll("linearGradient"));
+    const rectangles = Array.from(container.querySelectorAll("rect"));
 
+    expect(gradients).toHaveLength(2);
+    expect(rectangles).toHaveLength(2);
     expect(new Set(gradients.map((gradient) => gradient.id)).size).toBe(2);
+    rectangles.forEach((rectangle, index) => {
+      expect(rectangle).toHaveAttribute("fill", `url(#${gradients[index].id})`);
+    });
   });
 });
