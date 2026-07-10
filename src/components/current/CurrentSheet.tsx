@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, type MouseEvent, type ReactNode, type RefObject } from "react";
+import { useCallback, useEffect, useId, useState, type MouseEvent, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "./CurrentIcons";
 import { CurrentIconButton } from "./CurrentIconButton";
@@ -34,10 +34,15 @@ export function CurrentSheetSurface({
   hideClose = false,
 }: CurrentSheetSurfaceProps) {
   const titleId = `current-sheet-title-${useId().replace(/:/g, "")}`;
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const close = useCallback(() => {
     onClose();
     returnFocusRef?.current?.focus();
   }, [onClose, returnFocusRef]);
+
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -49,7 +54,7 @@ export function CurrentSheetSurface({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [close, open]);
 
-  if (!open) return null;
+  if (!open || !portalTarget) return null;
 
   const handleBackdropClick = (event: MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) close();
@@ -76,7 +81,7 @@ export function CurrentSheetSurface({
         <div className="current-sheet__content">{children}</div>
       </section>
     </div>,
-    document.body,
+    portalTarget,
   );
 }
 

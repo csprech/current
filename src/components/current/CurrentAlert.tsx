@@ -28,6 +28,10 @@ export function CurrentAlert({
   returnFocusRef,
 }: CurrentAlertProps) {
   const descriptionId = `current-alert-description-${useId().replace(/:/g, "")}`;
+  const completeAction = (action: () => void) => {
+    action();
+    returnFocusRef?.current?.focus();
+  };
 
   return (
     <CurrentSheetSurface
@@ -43,8 +47,8 @@ export function CurrentAlert({
     >
       <div id={descriptionId} className="current-alert__description">{description}</div>
       <div className="current-alert__actions">
-        <CurrentButton variant="secondary" onClick={onCancel}>{cancelLabel}</CurrentButton>
-        <CurrentButton variant={danger ? "danger" : "primary"} onClick={onConfirm}>{confirmLabel}</CurrentButton>
+        <CurrentButton variant="secondary" onClick={() => completeAction(onCancel)}>{cancelLabel}</CurrentButton>
+        <CurrentButton variant={danger ? "danger" : "primary"} onClick={() => completeAction(onConfirm)}>{confirmLabel}</CurrentButton>
       </div>
     </CurrentSheetSurface>
   );

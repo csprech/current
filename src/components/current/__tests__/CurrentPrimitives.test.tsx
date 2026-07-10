@@ -1,4 +1,5 @@
-import { createRef } from "react";
+import { createRef, useRef, useState } from "react";
+import { renderToString } from "react-dom/server";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -112,6 +113,14 @@ describe("Current surface primitives", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("does not access the portal target during server rendering", () => {
+    expect(() => renderToString(
+      <CurrentSheet open title="Project settings" onClose={vi.fn()}>
+        <p>Settings</p>
+      </CurrentSheet>,
+    )).not.toThrow();
+  });
+
   it("renders a labelled modal sheet with its requested width", () => {
     render(
       <CurrentSheet open title="Project settings" onClose={vi.fn()} width="wide">
@@ -196,6 +205,24 @@ describe("Current surface primitives", () => {
     expect(screen.getByRole("button", { name: "Delete project" })).toHaveAttribute("data-variant", "danger");
   });
 
+  it("returns focus when an alert is cancelled", () => {
+    const onCancel = vi.fn();
+    render(<StatefulAlert onCancel={onCancel} onConfirm={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(onCancel).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "Open destructive action" })).toHaveFocus();
+  });
+
+  it("returns focus when an alert is confirmed", () => {
+    const onConfirm = vi.fn();
+    render(<StatefulAlert onCancel={vi.fn()} onConfirm={onConfirm} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "Open destructive action" })).toHaveFocus();
+  });
+
   it("uses alert semantics for errors and status semantics for other notices", () => {
     const { rerender } = render(<InlineNotice tone="error">Upload failed</InlineNotice>);
     expect(screen.getByRole("alert")).toHaveTextContent("Upload failed");
@@ -216,6 +243,31 @@ describe("Current surface primitives", () => {
     expect(onDismiss).toHaveBeenCalledOnce();
   });
 });
+
+function StatefulAlert({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  const [open, setOpen] = useState(true);
+  const returnFocusRef = useRef<HTMLButtonElement>(null);
+
+  return (
+    <>
+      <button ref={returnFocusRef}>Open destructive action</button>
+      <CurrentAlert
+        open={open}
+        title="Reset costs?"
+        description="This cannot be undone."
+        onCancel={() => {
+          onCancel();
+          setOpen(false);
+        }}
+        onConfirm={() => {
+          onConfirm();
+          setOpen(false);
+        }}
+        returnFocusRef={returnFocusRef}
+      />
+    </>
+  );
+}
 
 describe("Current icons", () => {
   it("exports decorative currentColor icons", () => {
