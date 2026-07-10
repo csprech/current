@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
-import { Header } from "@/components/Header";
+import { CurrentCommandBar } from "@/components/workspace/CurrentCommandBar";
 import { WorkflowCanvas } from "@/components/WorkflowCanvas";
 import { FloatingActionBar } from "@/components/FloatingActionBar";
 import { useWorkflowStore } from "@/store/workflowStore";
@@ -55,7 +55,7 @@ export default function Home() {
   return (
     <ReactFlowProvider>
       <div className="h-screen flex flex-col">
-        <Header />
+        <CurrentCommandBar />
         <WorkflowCanvas />
         <FloatingActionBar />
         {showFTUX && (
