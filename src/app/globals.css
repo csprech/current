@@ -266,6 +266,13 @@
     transition: none;
     transform: none;
   }
+
+  .current-button:hover:not(:disabled),
+  .current-button:active:not(:disabled),
+  .current-icon-button:hover:not(:disabled),
+  .current-icon-button:active:not(:disabled) {
+    transform: none;
+  }
 }
 
 /* iris signature: the primary action. A luminous lime pill with a soft

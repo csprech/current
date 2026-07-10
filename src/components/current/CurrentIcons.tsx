@@ -8,6 +8,7 @@ function Icon({ children, ...props }: CurrentIconProps) {
       viewBox="0 0 24 24"
       width="18"
       height="18"
+      {...props}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.75"
@@ -15,7 +16,6 @@ function Icon({ children, ...props }: CurrentIconProps) {
       strokeLinejoin="round"
       aria-hidden="true"
       focusable="false"
-      {...props}
     >
       {children}
     </svg>

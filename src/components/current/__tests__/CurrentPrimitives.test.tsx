@@ -22,6 +22,7 @@ import {
   StopIcon,
   UndoIcon,
 } from "@/components/current";
+import { CurrentSheetSurface } from "@/components/current/CurrentSheet";
 
 describe("Current control primitives", () => {
   it("labels icon-only controls", () => {
@@ -134,21 +135,131 @@ describe("Current surface primitives", () => {
     expect(sheet).toHaveAttribute("aria-labelledby", screen.getByRole("heading", { name: "Project settings" }).id);
   });
 
-  it("closes a sheet with Escape and returns focus", () => {
+  it("focuses the first control when a sheet opens", () => {
+    render(
+      <CurrentSheet open title="Project settings" onClose={vi.fn()}>
+        <button>Save</button>
+      </CurrentSheet>,
+    );
+
+    expect(screen.getByRole("button", { name: "Close Project settings" })).toHaveFocus();
+  });
+
+  it("focuses the dialog when a sheet has no controls", () => {
+    render(
+      <CurrentSheetSurface open title="Empty sheet" onClose={vi.fn()} role="dialog" hideClose>
+        <p>No controls</p>
+      </CurrentSheetSurface>,
+    );
+
+    expect(screen.getByRole("dialog", { name: "Empty sheet" })).toHaveFocus();
+  });
+
+  it("wraps Tab and Shift+Tab within the sheet", () => {
+    render(<StatefulSheet onClose={vi.fn()} />);
+    const first = screen.getByRole("button", { name: "Close Project settings" });
+    const last = screen.getByRole("button", { name: "Last control" });
+
+    last.focus();
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(first).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+    expect(last).toHaveFocus();
+  });
+
+  it("closes a sheet with Escape before returning focus", () => {
     const onClose = vi.fn();
+    render(<StatefulSheet onClose={onClose} />);
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("dialog", { name: "Project settings" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open settings" })).toHaveFocus();
+  });
+
+  it("returns focus after a programmatic controlled close", () => {
+    render(<StatefulSheet onClose={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Close programmatically" }));
+    expect(screen.queryByRole("dialog", { name: "Project settings" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open settings" })).toHaveFocus();
+  });
+
+  it("does not return focus while the sheet remains open", () => {
     const returnFocusRef = createRef<HTMLButtonElement>();
     render(
       <>
         <button ref={returnFocusRef}>Open settings</button>
-        <CurrentSheet open title="Project settings" onClose={onClose} returnFocusRef={returnFocusRef}>
+        <CurrentSheet open title="Project settings" onClose={vi.fn()} returnFocusRef={returnFocusRef}>
           <p>Settings</p>
         </CurrentSheet>
       </>,
     );
 
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(onClose).toHaveBeenCalledOnce();
-    expect(returnFocusRef.current).toHaveFocus();
+    expect(screen.getByRole("dialog", { name: "Project settings" })).toBeInTheDocument();
+    expect(returnFocusRef.current).not.toHaveFocus();
+  });
+
+  it("isolates the background and restores each prior inert state", () => {
+    const preexistingInert = document.createElement("div");
+    preexistingInert.setAttribute("inert", "");
+    document.body.appendChild(preexistingInert);
+    try {
+      const { container } = render(<StatefulSheet onClose={vi.fn()} />);
+
+      expect(container).toHaveAttribute("inert");
+      expect(preexistingInert).toHaveAttribute("inert");
+      fireEvent.click(screen.getByRole("button", { name: "Close programmatically" }));
+      expect(container).not.toHaveAttribute("inert");
+      expect(preexistingInert).toHaveAttribute("inert");
+    } finally {
+      preexistingInert.remove();
+    }
+  });
+
+  it("lets only the topmost sheet handle Escape and restores stack focus", () => {
+    const firstClose = vi.fn();
+    const secondClose = vi.fn();
+    render(<StackedSheets firstClose={firstClose} secondClose={secondClose} />);
+
+    expect(screen.getByRole("button", { name: "Close Second sheet" })).toHaveFocus();
+    screen.getByRole("button", { name: "Open second sheet" }).focus();
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(screen.getByRole("button", { name: "Close Second sheet" })).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(secondClose).toHaveBeenCalledOnce();
+    expect(firstClose).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog", { name: "Second sheet" })).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "First sheet" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open second sheet" })).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(firstClose).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open first sheet" })).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(firstClose).toHaveBeenCalledOnce();
+    expect(secondClose).toHaveBeenCalledOnce();
+  });
+
+  it("removes the shared keydown listener after the final sheet unmounts", () => {
+    const addListener = vi.spyOn(document, "addEventListener");
+    const removeListener = vi.spyOn(document, "removeEventListener");
+    const { unmount } = render(
+      <CurrentSheet open title="Project settings" onClose={vi.fn()}>
+        Settings
+      </CurrentSheet>,
+    );
+
+    expect(addListener.mock.calls.filter(([type]) => type === "keydown")).toHaveLength(1);
+    unmount();
+    expect(removeListener.mock.calls.filter(([type]) => type === "keydown")).toHaveLength(1);
+    addListener.mockRestore();
+    removeListener.mockRestore();
   });
 
   it("closes only when the sheet backdrop itself is clicked", () => {
@@ -269,6 +380,60 @@ function StatefulAlert({ onCancel, onConfirm }: { onCancel: () => void; onConfir
   );
 }
 
+function StatefulSheet({ onClose }: { onClose: () => void }) {
+  const [open, setOpen] = useState(true);
+  const returnFocusRef = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    onClose();
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <button ref={returnFocusRef}>Open settings</button>
+      <CurrentSheet open={open} title="Project settings" onClose={close} returnFocusRef={returnFocusRef}>
+        <button onClick={close}>Close programmatically</button>
+        <button>Last control</button>
+      </CurrentSheet>
+    </>
+  );
+}
+
+function StackedSheets({ firstClose, secondClose }: { firstClose: () => void; secondClose: () => void }) {
+  const [firstOpen, setFirstOpen] = useState(true);
+  const [secondOpen, setSecondOpen] = useState(true);
+  const firstTriggerRef = useRef<HTMLButtonElement>(null);
+  const secondTriggerRef = useRef<HTMLButtonElement>(null);
+
+  return (
+    <>
+      <button ref={firstTriggerRef}>Open first sheet</button>
+      <CurrentSheet
+        open={firstOpen}
+        title="First sheet"
+        returnFocusRef={firstTriggerRef}
+        onClose={() => {
+          firstClose();
+          setFirstOpen(false);
+        }}
+      >
+        <button ref={secondTriggerRef}>Open second sheet</button>
+      </CurrentSheet>
+      <CurrentSheet
+        open={secondOpen}
+        title="Second sheet"
+        returnFocusRef={secondTriggerRef}
+        onClose={() => {
+          secondClose();
+          setSecondOpen(false);
+        }}
+      >
+        Second content
+      </CurrentSheet>
+    </>
+  );
+}
+
 describe("Current icons", () => {
   it("exports decorative currentColor icons", () => {
     const icons = [
@@ -296,5 +461,13 @@ describe("Current icons", () => {
       expect(icon).toHaveAttribute("focusable", "false");
       expect(icon).toHaveAttribute("stroke", "currentColor");
     }
+  });
+
+  it("does not allow callers to override decorative semantics", () => {
+    render(<AddIcon data-testid="icon" aria-hidden="false" focusable="true" />);
+    const icon = screen.getByTestId("icon");
+
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    expect(icon).toHaveAttribute("focusable", "false");
   });
 });
