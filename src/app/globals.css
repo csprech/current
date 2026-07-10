@@ -32,6 +32,20 @@
 :root {
   --background: #f2f2f5;
   --foreground: #1b1b21;
+  --current-blue: #5578f6;
+  --current-aqua: #47cbb3;
+  --current-blue-indigo: #6a70e8;
+  --current-aqua-cyan: #3db9c4;
+  --current-steel-blue: #528adf;
+  --current-paper: #ffffff;
+  --current-canvas: #f4f5f7;
+  --current-divider: #d9dbe0;
+  --current-graphite: #4c4e55;
+  --current-inspector: #25262b;
+  --current-danger: #e5484d;
+  --current-warning: #d99a2b;
+  --current-success: #2fa66d;
+  --current-focus: 0 0 0 3px rgb(85 120 246 / 22%);
   /* iris spectrum stops (violet → rose) */
   --iris-s1: #7b6cf6;
   --iris-s2: #4a86f7;
@@ -45,6 +59,24 @@
   --handle-color-3d: #f6a445;
   --handle-color-audio: #7b6cf6;
   --handle-color-video: #f77a8e;
+}
+
+.current-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.current-mark {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+}
+
+.current-wordmark {
+  font-weight: 650;
+  line-height: 1;
 }
 
 /* iris signature: the primary action. A luminous lime pill with a soft
