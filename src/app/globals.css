@@ -79,6 +79,195 @@
   line-height: 1;
 }
 
+.current-button,
+.current-icon-button,
+.current-segmented-control button {
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.current-button {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease, transform 140ms ease;
+}
+
+.current-button:hover:not(:disabled) { transform: translateY(-1px); }
+.current-button:active:not(:disabled) { transform: translateY(0); }
+.current-button:focus-visible,
+.current-icon-button:focus-visible,
+.current-segmented-control button:focus-visible { outline: none; box-shadow: var(--current-focus); }
+.current-button:disabled,
+.current-icon-button:disabled { cursor: not-allowed; opacity: 0.45; }
+.current-button--primary { color: var(--current-paper); background: var(--current-blue); }
+.current-button--primary:hover:not(:disabled) { background: var(--current-steel-blue); }
+.current-button--secondary { color: var(--current-inspector); background: var(--current-paper); border-color: var(--current-divider); }
+.current-button--secondary:hover:not(:disabled) { background: var(--current-canvas); }
+.current-button--quiet { color: var(--current-graphite); background: transparent; }
+.current-button--quiet:hover:not(:disabled) { background: rgb(76 78 85 / 8%); }
+.current-button--danger { color: var(--current-paper); background: var(--current-danger); }
+.current-button--danger:hover:not(:disabled) { background: #cc3f44; }
+
+.current-icon-button {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, opacity 140ms ease, transform 140ms ease;
+}
+
+.current-icon-button:hover:not(:disabled) { background: rgb(76 78 85 / 10%); }
+.current-icon-button:active:not(:disabled) { transform: scale(0.96); }
+
+.current-segmented-control {
+  display: inline-flex;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border: 1px solid var(--current-divider);
+  border-radius: 0.625rem;
+  background: rgb(76 78 85 / 7%);
+}
+
+.current-segmented-control button {
+  min-height: 1.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 0;
+  border-radius: 0.4375rem;
+  color: var(--current-graphite);
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.current-segmented-control button[aria-pressed="true"] {
+  color: var(--current-inspector);
+  background: var(--current-paper);
+  box-shadow: 0 1px 3px rgb(37 38 43 / 12%);
+}
+
+.current-panel {
+  display: flex;
+  height: 100%;
+  min-width: 15rem;
+  flex-direction: column;
+  color: var(--current-inspector);
+  background: var(--current-paper);
+  border-color: var(--current-divider);
+  box-shadow: 0 12px 36px rgb(37 38 43 / 12%);
+  transition: opacity 210ms ease, transform 210ms ease;
+}
+
+.current-panel[data-side="left"] { border-right-width: 1px; }
+.current-panel[data-side="right"] {
+  color: var(--current-paper);
+  background: var(--current-inspector);
+  border-left: 1px solid rgb(255 255 255 / 9%);
+}
+.current-panel__header,
+.current-sheet__header {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--current-divider);
+}
+.current-panel[data-side="right"] .current-panel__header { border-bottom-color: rgb(255 255 255 / 10%); }
+.current-panel__header h2,
+.current-sheet__header h2 { margin: 0; font-size: 0.9375rem; font-weight: 650; }
+.current-panel__content,
+.current-sheet__content { min-height: 0; flex: 1; overflow: auto; padding: 1rem; }
+.current-panel__actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--current-divider); }
+
+.current-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: rgb(37 38 43 / 42%);
+  animation: current-backdrop-in 200ms ease both;
+}
+
+.current-sheet {
+  display: flex;
+  width: min(100%, 36rem);
+  max-height: min(48rem, calc(100vh - 4rem));
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--current-inspector);
+  background: var(--current-paper);
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 1rem;
+  box-shadow: 0 24px 80px rgb(37 38 43 / 28%);
+  animation: current-sheet-in 220ms ease both;
+}
+.current-sheet[data-width="compact"] { width: min(100%, 28rem); }
+.current-sheet[data-width="standard"] { width: min(100%, 36rem); }
+.current-sheet[data-width="wide"] { width: min(100%, 52rem); }
+.current-sheet__content { flex: initial; }
+
+.current-alert { border-top: 3px solid var(--current-blue); }
+.current-alert--danger { border-top-color: var(--current-danger); }
+.current-alert__description { color: var(--current-graphite); font-size: 0.875rem; line-height: 1.5; }
+.current-alert__actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
+
+.current-inline-notice {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--current-divider);
+  border-radius: 0.625rem;
+  color: var(--current-graphite);
+  background: var(--current-canvas);
+  font-size: 0.8125rem;
+}
+.current-inline-notice__content { min-width: 0; flex: 1; }
+.current-inline-notice--error { color: #9b2429; background: #fff5f5; border-color: rgb(229 72 77 / 35%); }
+.current-inline-notice--warning { color: #79510b; background: #fff9ec; border-color: rgb(217 154 43 / 38%); }
+.current-inline-notice--success { color: #176940; background: #effaf4; border-color: rgb(47 166 109 / 35%); }
+.current-inline-notice--info { color: #3158b5; background: #f1f5ff; border-color: rgb(85 120 246 / 32%); }
+
+@keyframes current-backdrop-in { from { opacity: 0; } }
+@keyframes current-sheet-in { from { opacity: 0; transform: translateY(0.75rem) scale(0.985); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .current-button,
+  .current-icon-button,
+  .current-segmented-control button,
+  .current-panel,
+  .current-sheet-backdrop,
+  .current-sheet {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
+
 /* iris signature: the primary action. A luminous lime pill with a soft
    halo — the single saturated moment on an otherwise paper-quiet surface. */
 .iris-run {
