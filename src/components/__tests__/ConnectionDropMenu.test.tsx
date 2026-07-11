@@ -52,9 +52,9 @@ describe("ConnectionDropMenu", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="image" connectionType="source" />);
 
       expect(screen.getByText("Annotate")).toBeInTheDocument();
-      expect(screen.getByText("Generate Image")).toBeInTheDocument();
-      expect(screen.getByText("Generate Video")).toBeInTheDocument();
-      expect(screen.getByText("Split Grid Node")).toBeInTheDocument();
+      expect(screen.getByText("Generate image")).toBeInTheDocument();
+      expect(screen.getByText("Generate video")).toBeInTheDocument();
+      expect(screen.getByText("Split grid")).toBeInTheDocument();
       expect(screen.getByText("Split Grid Now")).toBeInTheDocument();
       expect(screen.getByText("Output")).toBeInTheDocument();
     });
@@ -62,9 +62,9 @@ describe("ConnectionDropMenu", () => {
     it("should show text-accepting nodes when dragging from text output", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="text" connectionType="source" />);
 
-      expect(screen.getByText("Generate Image")).toBeInTheDocument();
-      expect(screen.getByText("Generate Video")).toBeInTheDocument();
-      expect(screen.getByText("LLM Generate")).toBeInTheDocument();
+      expect(screen.getByText("Generate image")).toBeInTheDocument();
+      expect(screen.getByText("Generate video")).toBeInTheDocument();
+      expect(screen.getByText("Generate text")).toBeInTheDocument();
       // Should NOT show image-only nodes
       expect(screen.queryByText("Annotate")).not.toBeInTheDocument();
       expect(screen.queryByText("Output")).not.toBeInTheDocument();
@@ -73,21 +73,21 @@ describe("ConnectionDropMenu", () => {
     it("should show video-accepting nodes when dragging from video output", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="video" connectionType="source" />);
 
-      expect(screen.getByText("Generate Video")).toBeInTheDocument();
+      expect(screen.getByText("Generate video")).toBeInTheDocument();
       expect(screen.getByText("Output")).toBeInTheDocument();
       // Should NOT show image/text-only nodes
       expect(screen.queryByText("Annotate")).not.toBeInTheDocument();
-      expect(screen.queryByText("LLM Generate")).not.toBeInTheDocument();
+      expect(screen.queryByText("Generate text")).not.toBeInTheDocument();
     });
 
     it("should show 3D-accepting nodes when dragging from 3D output", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="3d" connectionType="source" />);
 
-      expect(screen.getByText("3D Viewer")).toBeInTheDocument();
+      expect(screen.getByText("3D viewer")).toBeInTheDocument();
       // Should NOT show image/text/video nodes
       expect(screen.queryByText("Annotate")).not.toBeInTheDocument();
-      expect(screen.queryByText("Generate Image")).not.toBeInTheDocument();
-      expect(screen.queryByText("Generate Video")).not.toBeInTheDocument();
+      expect(screen.queryByText("Generate image")).not.toBeInTheDocument();
+      expect(screen.queryByText("Generate video")).not.toBeInTheDocument();
     });
   });
 
@@ -95,9 +95,9 @@ describe("ConnectionDropMenu", () => {
     it("should show image-producing nodes when dragging from image input", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="image" connectionType="target" />);
 
-      expect(screen.getByText("Image Input")).toBeInTheDocument();
+      expect(screen.getByText("Image input")).toBeInTheDocument();
       expect(screen.getByText("Annotate")).toBeInTheDocument();
-      expect(screen.getByText("Generate Image")).toBeInTheDocument();
+      expect(screen.getByText("Generate image")).toBeInTheDocument();
       // Should NOT show text nodes
       expect(screen.queryByText("Prompt")).not.toBeInTheDocument();
     });
@@ -106,18 +106,18 @@ describe("ConnectionDropMenu", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="text" connectionType="target" />);
 
       expect(screen.getByText("Prompt")).toBeInTheDocument();
-      expect(screen.getByText("LLM Generate")).toBeInTheDocument();
+      expect(screen.getByText("Generate text")).toBeInTheDocument();
       // Should NOT show image-only nodes
-      expect(screen.queryByText("Image Input")).not.toBeInTheDocument();
+      expect(screen.queryByText("Image input")).not.toBeInTheDocument();
       expect(screen.queryByText("Annotate")).not.toBeInTheDocument();
     });
 
     it("should show video-producing nodes when dragging from video input", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="video" connectionType="target" />);
 
-      expect(screen.getByText("Generate Video")).toBeInTheDocument();
+      expect(screen.getByText("Generate video")).toBeInTheDocument();
       // Should NOT show other nodes
-      expect(screen.queryByText("Image Input")).not.toBeInTheDocument();
+      expect(screen.queryByText("Image input")).not.toBeInTheDocument();
       expect(screen.queryByText("Prompt")).not.toBeInTheDocument();
     });
 
@@ -126,8 +126,8 @@ describe("ConnectionDropMenu", () => {
 
       expect(screen.getByText("Generate 3D")).toBeInTheDocument();
       // Should NOT show other nodes
-      expect(screen.queryByText("Image Input")).not.toBeInTheDocument();
-      expect(screen.queryByText("Generate Image")).not.toBeInTheDocument();
+      expect(screen.queryByText("Image input")).not.toBeInTheDocument();
+      expect(screen.queryByText("Generate image")).not.toBeInTheDocument();
     });
   });
 
@@ -153,7 +153,7 @@ describe("ConnectionDropMenu", () => {
     it("should call onSelect with nanoBanana type for Generate Image", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="text" connectionType="source" />);
 
-      const generateButton = screen.getByText("Generate Image");
+      const generateButton = screen.getByText("Generate image");
       fireEvent.click(generateButton);
 
       expect(mockOnSelect).toHaveBeenCalledWith({ type: "nanoBanana", isAction: false });
@@ -207,7 +207,7 @@ describe("ConnectionDropMenu", () => {
       fireEvent.keyDown(document, { key: "ArrowDown" });
 
       // Second item should now be highlighted
-      const secondButton = screen.getByText("Generate Image").closest("button");
+      const secondButton = screen.getByText("Generate image").closest("button");
       expect(secondButton).toHaveClass("bg-neutral-700");
     });
 
@@ -261,7 +261,7 @@ describe("ConnectionDropMenu", () => {
     it("should highlight item on mouse enter", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType="image" connectionType="source" />);
 
-      const secondItem = screen.getByText("Generate Image");
+      const secondItem = screen.getByText("Generate image");
       fireEvent.mouseEnter(secondItem);
 
       // Second item should now be highlighted

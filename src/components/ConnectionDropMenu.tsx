@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { NodeType } from "@/types";
+import { NODE_CATALOG_BY_TYPE } from "@/components/workspace/nodeCatalog";
 
 // Actions are special menu items that trigger behavior instead of creating a node
 export type MenuAction = "splitGridImmediate";
@@ -704,7 +705,10 @@ export function ConnectionDropMenu({
     }
   }, [handleType, connectionType]);
 
-  const options = getOptions();
+  const options = getOptions().map((option) => option.isAction ? option : ({
+    ...option,
+    label: NODE_CATALOG_BY_TYPE.get(option.type as NodeType)?.label || option.label,
+  }));
 
   // Handle keyboard navigation
   useEffect(() => {

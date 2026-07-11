@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { CurrentCommandBar } from "@/components/workspace/CurrentCommandBar";
+import { AddPalette } from "@/components/workspace/AddPalette";
 import { WorkflowCanvas } from "@/components/WorkflowCanvas";
-import { FloatingActionBar } from "@/components/FloatingActionBar";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { FTUXModal } from "@/components/onboarding/FTUXModal";
 import { getFTUXCompleted, setFTUXCompleted } from "@/store/utils/localStorage";
@@ -17,6 +17,7 @@ export default function Home() {
   const cleanupAutoSave = useWorkflowStore((state) => state.cleanupAutoSave);
   const setShowQuickstart = useWorkflowStore((state) => state.setShowQuickstart);
   const [showFTUX, setShowFTUX] = useState(false);
+  const [addPaletteOpen, setAddPaletteOpen] = useState(false);
 
   useEffect(() => {
     initializeAutoSave();
@@ -31,6 +32,16 @@ export default function Home() {
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  useEffect(() => {
+    const openAddPalette = (event: KeyboardEvent) => {
+      if (event.key.toLocaleLowerCase() !== "k" || (!event.metaKey && !event.ctrlKey)) return;
+      event.preventDefault();
+      setAddPaletteOpen(true);
+    };
+    window.addEventListener("keydown", openAddPalette);
+    return () => window.removeEventListener("keydown", openAddPalette);
   }, []);
 
   // Client-side only FTUX check (SSR-safe)
@@ -55,9 +66,9 @@ export default function Home() {
   return (
     <ReactFlowProvider>
       <div className="h-screen flex flex-col">
-        <CurrentCommandBar />
+        <CurrentCommandBar onAddNode={() => setAddPaletteOpen(true)} />
         <WorkflowCanvas />
-        <FloatingActionBar />
+        <AddPalette open={addPaletteOpen} onClose={() => setAddPaletteOpen(false)} />
         {showFTUX && (
           <FTUXModal
             onComplete={handleFTUXComplete}

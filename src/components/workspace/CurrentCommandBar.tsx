@@ -22,10 +22,6 @@ const VIEW_OPTIONS = [
   { value: "outputs", label: "Outputs" },
 ] as const;
 
-function dispatchAddNodeRequest() {
-  window.dispatchEvent(new CustomEvent("current:add-node"));
-}
-
 interface CurrentCommandBarProps {
   onAddNode?: () => void;
 }
@@ -68,7 +64,7 @@ function CommentsNavigation() {
   );
 }
 
-export function CurrentCommandBar({ onAddNode = dispatchAddNodeRequest }: CurrentCommandBarProps) {
+export function CurrentCommandBar({ onAddNode }: CurrentCommandBarProps) {
   const {
     workspaceView,
     setWorkspaceView,
@@ -120,7 +116,7 @@ export function CurrentCommandBar({ onAddNode = dispatchAddNodeRequest }: Curren
       <div className="current-command-bar__actions">
         <CurrentIconButton label="Undo" disabled={!canUndo} onClick={undo}><UndoIcon /></CurrentIconButton>
         <CurrentIconButton label="Redo" disabled={!canRedo} onClick={redo}><RedoIcon /></CurrentIconButton>
-        <CurrentIconButton label="Add node" onClick={onAddNode} data-tutorial="add-node-button"><AddIcon /></CurrentIconButton>
+        <CurrentIconButton label="Add node" onClick={onAddNode} disabled={!onAddNode} data-tutorial="add-node-button"><AddIcon /></CurrentIconButton>
         <span className="current-command-bar__divider" aria-hidden="true" />
         <CurrentIconButton label="Open library" aria-pressed={activeLeftPanel === "library"} onClick={() => toggleLeftPanel("library")}><LibraryIcon /></CurrentIconButton>
         <CurrentIconButton label="Open activity" aria-pressed={activeRightPanel === "activity"} onClick={() => toggleRightPanel("activity")}><ActivityIcon /></CurrentIconButton>
