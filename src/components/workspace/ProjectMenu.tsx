@@ -170,27 +170,25 @@ export function ProjectMenu() {
         >
           <SaveIcon />
         </CurrentIconButton>
-        {menuOpen && (
-          <div className="current-popover current-project__menu">
-            <div role="menu" aria-label="Project menu">
-              <button type="button" role="menuitem" onClick={() => closeAnd(() => setShowQuickstart(true))}>Open welcome</button>
-              <button type="button" role="menuitem" onClick={() => openProjectModal("new")}>New project</button>
-              <button type="button" role="menuitem" onClick={() => openProjectModal("settings")}>Project settings</button>
-              <button type="button" role="menuitem" disabled={isSaving} onClick={() => closeAnd(handleSave)}>Save project</button>
-              <button type="button" role="menuitem" onClick={() => closeAnd(() => setShowWorkflowBrowser(true))}>Open project</button>
-              <button type="button" role="menuitem" disabled={!saveDirectoryPath} onClick={() => closeAnd(() => { void handleOpenDirectory(); })}>Open project folder</button>
-              <button type="button" role="menuitem" onClick={() => closeAnd(handleExportShareable)}>Export shareable workflow</button>
-              {previousWorkflowSnapshot && (
-                <button type="button" role="menuitem" onClick={() => closeAnd(handleRevert)}>Revert AI changes</button>
-              )}
-              <button type="button" role="menuitem" onClick={() => closeAnd(() => setShortcutsDialogOpen(true))}>Keyboard shortcuts</button>
-            </div>
-            <div className="current-project__utilities" aria-label="Project utilities">
-              <CostIndicator />
-              <WorkflowVersionHistory />
-            </div>
+        <div className="current-popover current-project__menu" hidden={!menuOpen}>
+          <div role="menu" aria-label="Project menu">
+            <button type="button" role="menuitem" onClick={() => closeAnd(() => setShowQuickstart(true))}>Open welcome</button>
+            <button type="button" role="menuitem" onClick={() => openProjectModal("new")}>New project</button>
+            <button type="button" role="menuitem" onClick={() => openProjectModal("settings")}>Project settings</button>
+            <button type="button" role="menuitem" disabled={isSaving} onClick={() => closeAnd(handleSave)}>Save project</button>
+            <button type="button" role="menuitem" onClick={() => closeAnd(() => setShowWorkflowBrowser(true))}>Open project</button>
+            <button type="button" role="menuitem" disabled={!saveDirectoryPath} onClick={() => closeAnd(() => { void handleOpenDirectory(); })}>Open project folder</button>
+            <button type="button" role="menuitem" onClick={() => closeAnd(handleExportShareable)}>Export shareable workflow</button>
+            {previousWorkflowSnapshot && (
+              <button type="button" role="menuitem" onClick={() => closeAnd(handleRevert)}>Revert AI changes</button>
+            )}
+            <button type="button" role="menuitem" onClick={() => closeAnd(() => setShortcutsDialogOpen(true))}>Keyboard shortcuts</button>
           </div>
-        )}
+          <div className="current-project__utilities" aria-label="Project utilities">
+            <CostIndicator />
+            <WorkflowVersionHistory />
+          </div>
+        </div>
       </div>
       <ProjectSetupModal
         isOpen={showProjectModal}
