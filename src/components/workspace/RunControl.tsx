@@ -10,6 +10,7 @@ import { useWorkflowStore } from "@/store/workflowStore";
 export function RunControl() {
   const {
     nodes,
+    edges,
     isRunning,
     currentNodeIds,
     executeWorkflow,
@@ -20,6 +21,7 @@ export function RunControl() {
     validateWorkflow,
   } = useWorkflowStore(useShallow((state) => ({
     nodes: state.nodes,
+    edges: state.edges,
     isRunning: state.isRunning,
     currentNodeIds: state.currentNodeIds,
     executeWorkflow: state.executeWorkflow,
@@ -37,6 +39,8 @@ export function RunControl() {
   }));
   const [runMenuOpen, setRunMenuOpen] = useState(false);
   const runMenuRef = useRef<HTMLDivElement>(null);
+  const runOptionsRef = useRef<HTMLButtonElement>(null);
+  const runOptionsMenuRef = useRef<HTMLDivElement>(null);
   const validationId = useId();
 
   useEffect(() => useFTUXStore.subscribe((state) => {
@@ -63,15 +67,34 @@ export function RunControl() {
     }
   }, [currentTutorialStep?.id, isRunOptionsTutorialStep, tutorialState.tutorialActive]);
 
+  const { valid, errors } = useMemo(
+    () => validateWorkflow(),
+    [edges, nodes, validateWorkflow]
+  );
+
+  useEffect(() => {
+    if (isRunning || !valid) setRunMenuOpen(false);
+  }, [isRunning, valid]);
+
+  useEffect(() => {
+    if (!runMenuOpen) return;
+    runOptionsMenuRef.current
+      ?.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')
+      ?.focus();
+  }, [runMenuOpen]);
+
   useEffect(() => {
     if (!runMenuOpen) return;
     const handleOutsideClick = (event: MouseEvent) => {
-      if (!runMenuRef.current?.contains(event.target as Node) && !isRunOptionsTutorialStep) {
+      if (!runMenuRef.current?.contains(event.target as Node)) {
         setRunMenuOpen(false);
       }
     };
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !isRunOptionsTutorialStep) setRunMenuOpen(false);
+      if (event.key === "Escape") {
+        setRunMenuOpen(false);
+        runOptionsRef.current?.focus();
+      }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     document.addEventListener("keydown", handleEscape);
@@ -79,9 +102,8 @@ export function RunControl() {
       document.removeEventListener("mousedown", handleOutsideClick);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isRunOptionsTutorialStep, runMenuOpen]);
+  }, [runMenuOpen]);
 
-  const { valid, errors } = validateWorkflow();
   const selectedNodes = useMemo(() => nodes.filter((node) => node.selected), [nodes]);
   const selectedNode = selectedNodes.length === 1 ? selectedNodes[0] : null;
   const validationReason = errors.join(" ");
@@ -114,6 +136,24 @@ export function RunControl() {
     setRunMenuOpen(false);
   };
 
+  const handleMenuKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    const items = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')
+    );
+    if (items.length === 0) return;
+    event.preventDefault();
+    const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? items.length - 1
+        : event.key === "ArrowDown"
+          ? (currentIndex + 1) % items.length
+          : (currentIndex - 1 + items.length) % items.length;
+    items[nextIndex]?.focus();
+  };
+
   return (
     <div className="current-run-control" ref={runMenuRef}>
       <CurrentButton
@@ -130,6 +170,7 @@ export function RunControl() {
       </CurrentButton>
       {!isRunning && valid && (
         <button
+          ref={runOptionsRef}
           type="button"
           className="current-run-control__options"
           aria-label="Run options"
@@ -148,10 +189,12 @@ export function RunControl() {
       )}
       {runMenuOpen && !isRunning && valid && (
         <div
+          ref={runOptionsMenuRef}
           className="current-popover current-run-control__menu"
           role="menu"
           aria-label="Run options"
           data-tutorial="floating-run-menu"
+          onKeyDown={handleMenuKeyDown}
         >
           <button type="button" role="menuitem" onClick={() => runOption(() => { void executeWorkflow(); })}>
             Run entire workflow

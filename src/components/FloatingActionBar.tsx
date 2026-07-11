@@ -1,12 +1,11 @@
 "use client";
 
-import { useRef, useState, useEffect, useMemo, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { useShallow } from "zustand/shallow";
 import { NodeType } from "@/types";
 import { useReactFlow } from "@xyflow/react";
 import { ModelSearchDialog } from "./modals/ModelSearchDialog";
-import { useFTUXStore, TutorialStep } from "@/store/ftuxStore";
 
 // All nodes menu categories
 const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; label: string }[] }[] = [
@@ -251,6 +250,12 @@ function AllNodesMenu() {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    const openFromCurrentCommandBar = () => setIsOpen(true);
+    window.addEventListener("current:add-node", openFromCurrentCommandBar);
+    return () => window.removeEventListener("current:add-node", openFromCurrentCommandBar);
+  }, []);
+
   const handleAddNode = useCallback((type: NodeType) => {
     const center = getPaneCenter();
     const position = screenToFlowPosition({
@@ -272,6 +277,8 @@ function AllNodesMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
         className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-black/5 rounded-lg transition-colors flex items-center gap-1"
       >
         All nodes
@@ -287,7 +294,11 @@ function AllNodesMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 iris-glass rounded-lg shadow-xl overflow-hidden min-w-[180px] max-h-[400px] overflow-y-auto">
+        <div
+          className="absolute bottom-full left-0 mb-2 iris-glass rounded-lg shadow-xl overflow-hidden min-w-[180px] max-h-[400px] overflow-y-auto"
+          role="menu"
+          aria-label="All nodes"
+        >
           {ALL_NODES_CATEGORIES.map((category, catIndex) => (
             <div key={category.label}>
               <div className={`px-3 py-1 text-[10px] text-neutral-500 uppercase tracking-wide${catIndex > 0 ? " border-t border-neutral-700" : ""}`}>
@@ -296,6 +307,7 @@ function AllNodesMenu() {
               {category.nodes.map((node) => (
                 <button
                   key={node.type}
+                  role="menuitem"
                   onClick={() => handleAddNode(node.type)}
                   draggable
                   onDragStart={(e) => handleDragStart(e, node.type)}
@@ -314,30 +326,12 @@ function AllNodesMenu() {
 
 export function FloatingActionBar() {
   const {
-    nodes,
-    isRunning,
-    currentNodeIds,
-    executeWorkflow,
-    regenerateNode,
-    executeSelectedNodes,
-    stopWorkflow,
-    mockTutorialExecution,
-    validateWorkflow,
     edgeStyle,
     setEdgeStyle,
     setModelSearchOpen,
     modelSearchOpen,
     modelSearchProvider,
   } = useWorkflowStore(useShallow((state) => ({
-    nodes: state.nodes,
-    isRunning: state.isRunning,
-    currentNodeIds: state.currentNodeIds,
-    executeWorkflow: state.executeWorkflow,
-    regenerateNode: state.regenerateNode,
-    executeSelectedNodes: state.executeSelectedNodes,
-    stopWorkflow: state.stopWorkflow,
-    mockTutorialExecution: state.mockTutorialExecution,
-    validateWorkflow: state.validateWorkflow,
     edgeStyle: state.edgeStyle,
     setEdgeStyle: state.setEdgeStyle,
     setModelSearchOpen: state.setModelSearchOpen,
@@ -345,141 +339,10 @@ export function FloatingActionBar() {
     modelSearchProvider: state.modelSearchProvider,
   })));
 
-  // FTUX tutorial state (client-side only to avoid SSR hydration issues)
-  const [tutorialActive, setTutorialActive] = useState(false);
-  const [lockedFeatures, setLockedFeatures] = useState(false);
-  const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
-  const [tutorialSteps, setTutorialSteps] = useState<TutorialStep[]>([]);
-
-  useEffect(() => {
-    // Subscribe to FTUX store on client-side only
-    const unsubscribe = useFTUXStore.subscribe((state) => {
-      setTutorialActive(state.tutorialActive);
-      setLockedFeatures(state.lockedFeatures);
-      setCurrentTutorialStep(state.currentTutorialStep);
-      setTutorialSteps(state.tutorialSteps);
-    });
-
-    // Initialize with current state
-    const currentState = useFTUXStore.getState();
-    setTutorialActive(currentState.tutorialActive);
-    setLockedFeatures(currentState.lockedFeatures);
-    setCurrentTutorialStep(currentState.currentTutorialStep);
-    setTutorialSteps(currentState.tutorialSteps);
-
-    return unsubscribe;
-  }, []);
-
-  // Get display text for running nodes
-  const runningNodeCount = currentNodeIds.length;
-  const getRunningLabel = () => {
-    if (runningNodeCount === 0) return "Running...";
-    if (runningNodeCount === 1) {
-      const node = nodes.find((n) => n.id === currentNodeIds[0]);
-      const nodeName = node?.data?.customTitle || node?.type || "node";
-      return `Running ${nodeName}...`;
-    }
-    return `Running ${runningNodeCount} nodes...`;
-  };
-  const [runMenuOpen, setRunMenuOpen] = useState(false);
-  const runMenuRef = useRef<HTMLDivElement>(null);
-  const { valid, errors } = validateWorkflow();
-
-  // Get the selected nodes
-  const selectedNodes = useMemo(() => {
-    return nodes.filter((n) => n.selected);
-  }, [nodes]);
-
-  // Get the selected node (if exactly one is selected)
-  const selectedNode = useMemo(() => {
-    return selectedNodes.length === 1 ? selectedNodes[0] : null;
-  }, [selectedNodes]);
-
-  // Check if we're on the run options tutorial step
-  const isRunOptionsTutorialStep = useMemo(() => {
-    if (!tutorialActive || tutorialSteps.length === 0) return false;
-    const currentStep = tutorialSteps[currentTutorialStep];
-    return currentStep?.id === "explain-run-options";
-  }, [tutorialActive, currentTutorialStep, tutorialSteps]);
-
-  // Close run menu when clicking outside (but not during tutorial step)
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (runMenuRef.current && !runMenuRef.current.contains(event.target as Node)) {
-        // Don't close menu during the run options tutorial step
-        if (!isRunOptionsTutorialStep) {
-          setRunMenuOpen(false);
-        }
-      }
-    };
-
-    if (runMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [runMenuOpen, isRunOptionsTutorialStep]);
-
-  // Open run menu when tutorial step is "explain-run-options"
-  useEffect(() => {
-    if (isRunOptionsTutorialStep) {
-      setRunMenuOpen(true);
-    }
-  }, [isRunOptionsTutorialStep]);
-
-  // Close run menu when tutorial advances past run options
-  useEffect(() => {
-    if (tutorialActive && tutorialSteps.length > 0) {
-      const currentStep = tutorialSteps[currentTutorialStep];
-      // Close menu when we're on run-workflow or later steps
-      if (currentStep?.id === "run-workflow" || currentStep?.id === "demonstrate-downstream" || currentStep?.id === "demonstrate-complete") {
-        setRunMenuOpen(false);
-      }
-    }
-  }, [tutorialActive, currentTutorialStep, tutorialSteps]);
-
   const toggleEdgeStyle = () => {
     setEdgeStyle(edgeStyle === "angular" ? "curved" : "angular");
   };
 
-  const handleRunClick = useCallback(() => {
-    // Check if we're in tutorial mode
-    const ftuxState = useFTUXStore.getState();
-    const currentStep = ftuxState.tutorialSteps[ftuxState.currentTutorialStep];
-
-    if (isRunning) {
-      stopWorkflow();
-    } else if (ftuxState.tutorialActive && currentStep?.id === "run-workflow") {
-      // Use mock execution for tutorial
-      mockTutorialExecution();
-    } else {
-      // Normal execution
-      executeWorkflow();
-    }
-  }, [isRunning, stopWorkflow, executeWorkflow, mockTutorialExecution]);
-
-  const handleRunFromSelected = () => {
-    if (selectedNode) {
-      executeWorkflow(selectedNode.id);
-      setRunMenuOpen(false);
-    }
-  };
-
-  const handleRunSelectedOnly = () => {
-    if (selectedNode) {
-      regenerateNode(selectedNode.id);
-      setRunMenuOpen(false);
-    }
-  };
-
-  const handleRunSelectedNodes = () => {
-    if (selectedNodes.length > 0) {
-      executeSelectedNodes(selectedNodes.map((n) => n.id));
-      setRunMenuOpen(false);
-    }
-  };
 
   return (
     <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
@@ -519,150 +382,6 @@ export function FloatingActionBar() {
           )}
         </button>
 
-        <div className="w-px h-5 bg-black/10 mx-1.5" />
-
-        <div className="relative flex items-center" ref={runMenuRef}>
-          <button
-            onClick={handleRunClick}
-            disabled={!valid && !isRunning}
-            title={!valid ? errors.join("\n") : isRunning ? "Stop" : "Run"}
-            data-tutorial="floating-run-button"
-            className={`flex items-center gap-1.5 py-1.5 text-[11px] font-medium transition-colors ${
-              isRunning
-                ? "bg-neutral-100 text-white hover:bg-neutral-300 rounded-full px-3.5"
-                : valid
-                ? "iris-run rounded-l-full pl-3.5 pr-2.5"
-                : "bg-neutral-700 text-neutral-500 cursor-not-allowed rounded-full px-3.5"
-            }`}
-          >
-            {isRunning ? (
-              <>
-                <svg
-                  className="w-3 h-3 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                <span className="max-w-[150px] truncate" title={getRunningLabel()}>
-                  {runningNodeCount > 1 ? `${runningNodeCount} nodes` : "Stop"}
-                </span>
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-3 h-3"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                <span>Run</span>
-              </>
-            )}
-          </button>
-
-          {/* Dropdown chevron button */}
-          {!isRunning && valid && (
-            <button
-              onClick={() => setRunMenuOpen(!runMenuOpen)}
-              data-tutorial="floating-run-dropdown"
-              className="iris-run flex items-center self-stretch pl-1.5 pr-2.5 rounded-r-full border-l border-black/10 transition-colors"
-              title="Run options"
-            >
-              <svg
-                className={`w-2.5 h-2.5 transition-transform ${runMenuOpen ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          )}
-
-          {/* Dropdown menu */}
-          {runMenuOpen && !isRunning && (
-            <div
-              data-tutorial="floating-run-menu"
-              className="absolute bottom-full right-0 mb-2 iris-glass rounded-lg shadow-xl overflow-hidden min-w-[180px]"
-            >
-              <button
-                onClick={() => {
-                  executeWorkflow();
-                  setRunMenuOpen(false);
-                }}
-                className="w-full px-3 py-2 text-left text-[11px] font-medium text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100 transition-colors flex items-center gap-2"
-              >
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Run entire workflow
-              </button>
-              <button
-                onClick={handleRunFromSelected}
-                disabled={!selectedNode}
-                className={`w-full px-3 py-2 text-left text-[11px] font-medium transition-colors flex items-center gap-2 ${
-                  selectedNode
-                    ? "text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100"
-                    : "text-neutral-500 cursor-not-allowed"
-                }`}
-                title={!selectedNode ? "Select a single node first" : undefined}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                </svg>
-                Run from selected node
-              </button>
-              <button
-                onClick={handleRunSelectedOnly}
-                disabled={!selectedNode}
-                className={`w-full px-3 py-2 text-left text-[11px] font-medium transition-colors flex items-center gap-2 ${
-                  selectedNode
-                    ? "text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100"
-                    : "text-neutral-500 cursor-not-allowed"
-                }`}
-                title={!selectedNode ? "Select a single node first" : undefined}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
-                </svg>
-                Run selected node only
-              </button>
-              <button
-                onClick={handleRunSelectedNodes}
-                disabled={selectedNodes.length === 0}
-                className={`w-full px-3 py-2 text-left text-[11px] font-medium transition-colors flex items-center gap-2 ${
-                  selectedNodes.length > 0
-                    ? "text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100"
-                    : "text-neutral-500 cursor-not-allowed"
-                }`}
-                title={selectedNodes.length === 0 ? "Select one or more nodes first" : `Run ${selectedNodes.length} selected node${selectedNodes.length > 1 ? 's' : ''}`}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V9.653z" />
-                </svg>
-                {selectedNodes.length > 0
-                  ? `Run ${selectedNodes.length} selected node${selectedNodes.length !== 1 ? 's' : ''}`
-                  : 'Run selected nodes'}
-              </button>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Model search dialog */}

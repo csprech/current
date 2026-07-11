@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RunControl } from "@/components/workspace/RunControl";
 
@@ -31,6 +31,7 @@ vi.mock("@/store/ftuxStore", () => ({
 function createState(overrides: Record<string, unknown> = {}) {
   return {
     nodes: [],
+    edges: [],
     isRunning: false,
     currentNodeIds: [],
     executeWorkflow: mockExecuteWorkflow,
@@ -129,16 +130,64 @@ describe("RunControl", () => {
     expect(screen.getByRole("menuitem", { name: "Run selected nodes" })).toBeDisabled();
   });
 
-  it("closes run options with Escape and outside click", () => {
+  it("focuses and keyboard-navigates run options", async () => {
+    mockUseWorkflowStore.mockImplementation((selector) =>
+      selector(createState({ nodes: [{ id: "one", selected: true, data: {}, type: "prompt" }] }))
+    );
+    render(<RunControl />);
+    fireEvent.click(screen.getByRole("button", { name: "Run options" }));
+    const items = screen.getAllByRole("menuitem");
+
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    fireEvent.keyDown(items[0], { key: "ArrowDown" });
+    expect(items[1]).toHaveFocus();
+    fireEvent.keyDown(items[1], { key: "End" });
+    expect(items[items.length - 1]).toHaveFocus();
+    fireEvent.keyDown(items[items.length - 1], { key: "Home" });
+    expect(items[0]).toHaveFocus();
+    fireEvent.keyDown(items[0], { key: "ArrowUp" });
+    expect(items[items.length - 1]).toHaveFocus();
+  });
+
+  it("closes run options with Escape, restores focus, and closes outside", async () => {
     render(<RunControl />);
     const options = screen.getByRole("button", { name: "Run options" });
     fireEvent.click(options);
-    expect(screen.getByRole("menu", { name: "Run options" })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByRole("menuitem")[0]).toHaveFocus());
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("menu", { name: "Run options" })).not.toBeInTheDocument();
+    expect(options).toHaveFocus();
 
     fireEvent.click(options);
     fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("menu", { name: "Run options" })).not.toBeInTheDocument();
+  });
+
+  it("does not reopen options after external execution returns idle", () => {
+    let state = createState();
+    mockUseWorkflowStore.mockImplementation((selector) => selector(state));
+    const { rerender } = render(<RunControl />);
+    fireEvent.click(screen.getByRole("button", { name: "Run options" }));
+    expect(screen.getByRole("menu", { name: "Run options" })).toBeInTheDocument();
+
+    state = createState({ isRunning: true });
+    rerender(<RunControl />);
+    state = createState({ isRunning: false });
+    rerender(<RunControl />);
+
+    expect(screen.queryByRole("menu", { name: "Run options" })).not.toBeInTheDocument();
+  });
+
+  it("does not reopen options after validation becomes invalid then valid", () => {
+    const { rerender } = render(<RunControl />);
+    fireEvent.click(screen.getByRole("button", { name: "Run options" }));
+    expect(screen.getByRole("menu", { name: "Run options" })).toBeInTheDocument();
+
+    mockValidateWorkflow.mockReturnValue({ valid: false, errors: ["Invalid"] });
+    rerender(<RunControl />);
+    mockValidateWorkflow.mockReturnValue({ valid: true, errors: [] });
+    rerender(<RunControl />);
+
     expect(screen.queryByRole("menu", { name: "Run options" })).not.toBeInTheDocument();
   });
 

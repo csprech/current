@@ -2,14 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { FloatingActionBar } from "@/components/FloatingActionBar";
 import { ReactFlowProvider } from "@xyflow/react";
-import { ProviderSettings } from "@/types";
 
 // Mock the workflow store
 const mockAddNode = vi.fn();
-const mockExecuteWorkflow = vi.fn();
-const mockRegenerateNode = vi.fn();
-const mockStopWorkflow = vi.fn();
-const mockValidateWorkflow = vi.fn();
 const mockSetEdgeStyle = vi.fn();
 const mockSetModelSearchOpen = vi.fn();
 const mockUseWorkflowStore = vi.fn();
@@ -50,36 +45,13 @@ vi.mock("@/components/modals/ModelSearchDialog", () => ({
   ),
 }));
 
-// Mock fetch for env-status
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
 // Wrapper component for React Flow context
 function TestWrapper({ children }: { children: React.ReactNode }) {
   return <ReactFlowProvider>{children}</ReactFlowProvider>;
 }
 
-// Default provider settings
-const defaultProviderSettings: ProviderSettings = {
-  providers: {
-    gemini: { id: "gemini", name: "Gemini", enabled: true, apiKey: null, apiKeyEnvVar: "GEMINI_API_KEY" },
-    openai: { id: "openai", name: "OpenAI", enabled: false, apiKey: null },
-    replicate: { id: "replicate", name: "Replicate", enabled: false, apiKey: null },
-    fal: { id: "fal", name: "fal.ai", enabled: true, apiKey: null },
-    kie: { id: "kie", name: "Kie.ai", enabled: false, apiKey: null },
-    wavespeed: { id: "wavespeed", name: "WaveSpeed", enabled: false, apiKey: null },
-  },
-};
-
 // Default store state factory
 const createDefaultState = (overrides = {}) => ({
-  nodes: [],
-  isRunning: false,
-  currentNodeIds: [],
-  executeWorkflow: mockExecuteWorkflow,
-  regenerateNode: mockRegenerateNode,
-  stopWorkflow: mockStopWorkflow,
-  validateWorkflow: mockValidateWorkflow,
   edgeStyle: "angular" as const,
   setEdgeStyle: mockSetEdgeStyle,
   setModelSearchOpen: mockSetModelSearchOpen,
@@ -92,11 +64,6 @@ const createDefaultState = (overrides = {}) => ({
 describe("FloatingActionBar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockValidateWorkflow.mockReturnValue({ valid: true, errors: [] });
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ gemini: true, openai: false, replicate: false }),
-    });
 
     // Default mock implementation
     mockUseWorkflowStore.mockImplementation((selector) => {
@@ -136,7 +103,7 @@ describe("FloatingActionBar", () => {
       });
     });
 
-    it("should render Run button", async () => {
+    it("should leave workflow execution to the Current command bar", async () => {
       render(
         <TestWrapper>
           <FloatingActionBar />
@@ -144,8 +111,10 @@ describe("FloatingActionBar", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("Run")).toBeInTheDocument();
+        expect(screen.getByText("All nodes")).toBeInTheDocument();
       });
+      expect(screen.queryByRole("button", { name: "Run" })).not.toBeInTheDocument();
+      expect(document.querySelector('[data-tutorial="floating-run-button"]')).not.toBeInTheDocument();
     });
 
     it("should render edge style toggle button", async () => {
@@ -516,262 +485,4 @@ describe("FloatingActionBar", () => {
     });
   });
 
-  describe("Run Button", () => {
-    it("should call executeWorkflow when Run button is clicked", async () => {
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText("Run")).toBeInTheDocument();
-      });
-
-      const runButton = screen.getByText("Run");
-      fireEvent.click(runButton);
-
-      expect(mockExecuteWorkflow).toHaveBeenCalled();
-    });
-
-    it("should show Stop button when isRunning is true", async () => {
-      mockUseWorkflowStore.mockImplementation((selector) => {
-        return selector(createDefaultState({
-          isRunning: true,
-        }));
-      });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText("Stop")).toBeInTheDocument();
-      });
-    });
-
-    it("should call stopWorkflow when Stop button is clicked", async () => {
-      mockUseWorkflowStore.mockImplementation((selector) => {
-        return selector(createDefaultState({
-          isRunning: true,
-        }));
-      });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText("Stop")).toBeInTheDocument();
-      });
-
-      const stopButton = screen.getByText("Stop");
-      fireEvent.click(stopButton);
-
-      expect(mockStopWorkflow).toHaveBeenCalled();
-    });
-
-    it("should disable Run button when workflow is invalid", async () => {
-      mockValidateWorkflow.mockReturnValue({ valid: false, errors: ["No nodes"] });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText("Run")).toBeInTheDocument();
-      });
-
-      const runButton = screen.getByText("Run").closest("button");
-      expect(runButton).toBeDisabled();
-    });
-
-    it("should show error message in title when workflow is invalid", async () => {
-      mockValidateWorkflow.mockReturnValue({ valid: false, errors: ["Missing required nodes"] });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        const runButton = screen.getByText("Run").closest("button");
-        expect(runButton).toHaveAttribute("title", "Missing required nodes");
-      });
-    });
-  });
-
-  describe("Run Menu Dropdown", () => {
-    it("should show dropdown chevron when workflow is valid and not running", async () => {
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTitle("Run options")).toBeInTheDocument();
-      });
-    });
-
-    it("should not show dropdown chevron when workflow is invalid", async () => {
-      mockValidateWorkflow.mockReturnValue({ valid: false, errors: ["No nodes"] });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByTitle("Run options")).not.toBeInTheDocument();
-      });
-    });
-
-    it("should not show dropdown chevron when running", async () => {
-      mockUseWorkflowStore.mockImplementation((selector) => {
-        return selector(createDefaultState({
-          isRunning: true,
-        }));
-      });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByTitle("Run options")).not.toBeInTheDocument();
-      });
-    });
-
-    it("should open run menu when dropdown chevron is clicked", async () => {
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTitle("Run options")).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByTitle("Run options"));
-
-      expect(screen.getByText("Run entire workflow")).toBeInTheDocument();
-      expect(screen.getByText("Run from selected node")).toBeInTheDocument();
-      expect(screen.getByText("Run selected node only")).toBeInTheDocument();
-    });
-
-    it("should call executeWorkflow when 'Run entire workflow' is clicked", async () => {
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTitle("Run options")).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByTitle("Run options"));
-      fireEvent.click(screen.getByText("Run entire workflow"));
-
-      expect(mockExecuteWorkflow).toHaveBeenCalled();
-    });
-
-    it("should disable 'Run from selected node' when no node is selected", async () => {
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTitle("Run options")).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByTitle("Run options"));
-
-      const runFromSelectedButton = screen.getByText("Run from selected node").closest("button");
-      expect(runFromSelectedButton).toHaveClass("cursor-not-allowed");
-    });
-
-    it("should enable 'Run from selected node' when a single node is selected", async () => {
-      mockUseWorkflowStore.mockImplementation((selector) => {
-        return selector(createDefaultState({
-          nodes: [{ id: "node-1", selected: true, type: "prompt" }],
-        }));
-      });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTitle("Run options")).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByTitle("Run options"));
-
-      const runFromSelectedButton = screen.getByText("Run from selected node").closest("button");
-      expect(runFromSelectedButton).not.toHaveClass("cursor-not-allowed");
-    });
-
-    it("should call executeWorkflow with node id when 'Run from selected node' is clicked", async () => {
-      mockUseWorkflowStore.mockImplementation((selector) => {
-        return selector(createDefaultState({
-          nodes: [{ id: "node-1", selected: true, type: "prompt" }],
-        }));
-      });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTitle("Run options")).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByTitle("Run options"));
-      fireEvent.click(screen.getByText("Run from selected node"));
-
-      expect(mockExecuteWorkflow).toHaveBeenCalledWith("node-1");
-    });
-
-    it("should call regenerateNode when 'Run selected node only' is clicked", async () => {
-      mockUseWorkflowStore.mockImplementation((selector) => {
-        return selector(createDefaultState({
-          nodes: [{ id: "node-1", selected: true, type: "prompt" }],
-        }));
-      });
-
-      render(
-        <TestWrapper>
-          <FloatingActionBar />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTitle("Run options")).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByTitle("Run options"));
-      fireEvent.click(screen.getByText("Run selected node only"));
-
-      expect(mockRegenerateNode).toHaveBeenCalledWith("node-1");
-    });
-  });
 });

@@ -59,6 +59,8 @@ export function ProjectMenu() {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showWorkflowBrowser, setShowWorkflowBrowser] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuItemsRef = useRef<HTMLDivElement>(null);
   const projectName = workflowName || "Untitled";
   const canSave = Boolean(workflowId && workflowName && saveDirectoryPath);
 
@@ -68,7 +70,10 @@ export function ProjectMenu() {
       if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
     };
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        triggerRef.current?.focus();
+      }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     document.addEventListener("keydown", handleEscape);
@@ -77,6 +82,31 @@ export function ProjectMenu() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    menuItemsRef.current
+      ?.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')
+      ?.focus();
+  }, [menuOpen]);
+
+  const handleMenuKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    const items = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')
+    );
+    if (items.length === 0) return;
+    event.preventDefault();
+    const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? items.length - 1
+        : event.key === "ArrowDown"
+          ? (currentIndex + 1) % items.length
+          : (currentIndex - 1 + items.length) % items.length;
+    items[nextIndex]?.focus();
+  };
 
   const saveStatus = useMemo(() => {
     if (isSaving) return "Saving…";
@@ -151,6 +181,7 @@ export function ProjectMenu() {
     <>
       <div className="current-project" ref={menuRef}>
         <button
+          ref={triggerRef}
           type="button"
           className="current-project__trigger"
           aria-label={`Project menu for ${projectName}`}
@@ -171,7 +202,7 @@ export function ProjectMenu() {
           <SaveIcon />
         </CurrentIconButton>
         <div className="current-popover current-project__menu" hidden={!menuOpen}>
-          <div role="menu" aria-label="Project menu">
+          <div ref={menuItemsRef} role="menu" aria-label="Project menu" onKeyDown={handleMenuKeyDown}>
             <button type="button" role="menuitem" onClick={() => closeAnd(() => setShowQuickstart(true))}>Open welcome</button>
             <button type="button" role="menuitem" onClick={() => openProjectModal("new")}>New project</button>
             <button type="button" role="menuitem" onClick={() => openProjectModal("settings")}>Project settings</button>

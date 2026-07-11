@@ -30,13 +30,46 @@ interface CurrentCommandBarProps {
   onAddNode?: () => void;
 }
 
-export function CurrentCommandBar({ onAddNode = dispatchAddNodeRequest }: CurrentCommandBarProps) {
+function CommentsNavigation() {
   const {
     nodes,
     getNodesWithComments,
     viewedCommentNodeIds,
     markCommentViewed,
     setNavigationTarget,
+  } = useWorkflowStore(useShallow((state) => ({
+    nodes: state.nodes,
+    getNodesWithComments: state.getNodesWithComments,
+    viewedCommentNodeIds: state.viewedCommentNodeIds,
+    markCommentViewed: state.markCommentViewed,
+    setNavigationTarget: state.setNavigationTarget,
+  })));
+  const nodesWithComments = useMemo(() => getNodesWithComments(), [getNodesWithComments, nodes]);
+  const unviewedComments = useMemo(
+    () => nodesWithComments.filter((node) => !viewedCommentNodeIds.has(node.id)),
+    [nodesWithComments, viewedCommentNodeIds]
+  );
+  const openNextComment = useCallback(() => {
+    const target = unviewedComments[0] || nodesWithComments[0];
+    if (!target) return;
+    markCommentViewed(target.id);
+    setNavigationTarget(target.id);
+  }, [markCommentViewed, nodesWithComments, setNavigationTarget, unviewedComments]);
+  if (nodesWithComments.length === 0) return null;
+  const commentLabel = `${unviewedComments.length} unviewed comment${unviewedComments.length === 1 ? "" : "s"} (${nodesWithComments.length} total)`;
+
+  return (
+    <CurrentIconButton label={commentLabel} onClick={openNextComment} className="current-command-bar__comments">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <path d="M5 5h14v11H9l-4 3z" />
+      </svg>
+      {unviewedComments.length > 0 && <span aria-hidden="true">{unviewedComments.length > 9 ? "9+" : unviewedComments.length}</span>}
+    </CurrentIconButton>
+  );
+}
+
+export function CurrentCommandBar({ onAddNode = dispatchAddNodeRequest }: CurrentCommandBarProps) {
+  const {
     workspaceView,
     setWorkspaceView,
     canUndo,
@@ -49,11 +82,6 @@ export function CurrentCommandBar({ onAddNode = dispatchAddNodeRequest }: Curren
     toggleRightPanel,
     setShowQuickstart,
   } = useWorkflowStore(useShallow((state) => ({
-    nodes: state.nodes,
-    getNodesWithComments: state.getNodesWithComments,
-    viewedCommentNodeIds: state.viewedCommentNodeIds,
-    markCommentViewed: state.markCommentViewed,
-    setNavigationTarget: state.setNavigationTarget,
     workspaceView: state.workspaceView,
     setWorkspaceView: state.setWorkspaceView,
     canUndo: state.canUndo,
@@ -66,19 +94,6 @@ export function CurrentCommandBar({ onAddNode = dispatchAddNodeRequest }: Curren
     toggleRightPanel: state.toggleRightPanel,
     setShowQuickstart: state.setShowQuickstart,
   })));
-
-  const nodesWithComments = useMemo(() => getNodesWithComments(), [getNodesWithComments, nodes]);
-  const unviewedComments = useMemo(
-    () => nodesWithComments.filter((node) => !viewedCommentNodeIds.has(node.id)),
-    [nodesWithComments, viewedCommentNodeIds]
-  );
-  const openNextComment = useCallback(() => {
-    const target = unviewedComments[0] || nodesWithComments[0];
-    if (!target) return;
-    markCommentViewed(target.id);
-    setNavigationTarget(target.id);
-  }, [markCommentViewed, nodesWithComments, setNavigationTarget, unviewedComments]);
-  const commentLabel = `${unviewedComments.length} unviewed comment${unviewedComments.length === 1 ? "" : "s"} (${nodesWithComments.length} total)`;
 
   return (
     <header className="current-command-bar">
@@ -110,14 +125,7 @@ export function CurrentCommandBar({ onAddNode = dispatchAddNodeRequest }: Curren
         <CurrentIconButton label="Open library" aria-pressed={activeLeftPanel === "library"} onClick={() => toggleLeftPanel("library")}><LibraryIcon /></CurrentIconButton>
         <CurrentIconButton label="Open activity" aria-pressed={activeRightPanel === "activity"} onClick={() => toggleRightPanel("activity")}><ActivityIcon /></CurrentIconButton>
         <CurrentIconButton label="Open assistant" aria-pressed={activeRightPanel === "assistant"} onClick={() => toggleRightPanel("assistant")}><AssistantIcon /></CurrentIconButton>
-        {nodesWithComments.length > 0 && (
-          <CurrentIconButton label={commentLabel} onClick={openNextComment} className="current-command-bar__comments">
-            <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75">
-              <path d="M5 5h14v11H9l-4 3z" />
-            </svg>
-            {unviewedComments.length > 0 && <span aria-hidden="true">{unviewedComments.length > 9 ? "9+" : unviewedComments.length}</span>}
-          </CurrentIconButton>
-        )}
+        <CommentsNavigation />
         <RunControl />
       </div>
     </header>

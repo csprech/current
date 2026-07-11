@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CurrentCommandBar } from "@/components/workspace/CurrentCommandBar";
 
@@ -203,13 +203,30 @@ describe("CurrentCommandBar", () => {
     expect(setNavigationTarget).toHaveBeenCalledWith("commented");
   });
 
-  it("opens and closes the project menu with click, Escape, and outside click", () => {
+  it("focuses and keyboard-navigates the project menu", async () => {
+    render(<CurrentCommandBar />);
+    fireEvent.click(screen.getByRole("button", { name: "Project menu for Campaign Study" }));
+    const items = screen.getAllByRole("menuitem");
+
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    fireEvent.keyDown(items[0], { key: "ArrowDown" });
+    expect(items[1]).toHaveFocus();
+    fireEvent.keyDown(items[1], { key: "End" });
+    expect(items[items.length - 1]).toHaveFocus();
+    fireEvent.keyDown(items[items.length - 1], { key: "Home" });
+    expect(items[0]).toHaveFocus();
+    fireEvent.keyDown(items[0], { key: "ArrowUp" });
+    expect(items[items.length - 1]).toHaveFocus();
+  });
+
+  it("opens and closes the project menu with Escape and outside click", async () => {
     render(<CurrentCommandBar />);
     const trigger = screen.getByRole("button", { name: "Project menu for Campaign Study" });
     fireEvent.click(trigger);
-    expect(screen.getByRole("menu", { name: "Project menu" })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByRole("menuitem")[0]).toHaveFocus());
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("menu", { name: "Project menu" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
 
     fireEvent.click(trigger);
     fireEvent.mouseDown(document.body);
