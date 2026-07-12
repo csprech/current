@@ -21,7 +21,11 @@ vi.mock("@/components/workspace/CurrentCommandBar", () => ({
   CurrentCommandBar: ({ onAddNode }: { onAddNode: () => void }) => <button onClick={onAddNode}>Add node</button>,
 }));
 vi.mock("@/components/workspace/AddPalette", () => ({
-  AddPalette: ({ open }: { open: boolean }) => open ? <div role="dialog" aria-label="Add node">Palette</div> : null,
+  AddPalette: ({ open }: { open: boolean }) => open ? (
+    <div role="dialog" aria-label="Add node">
+      <input role="searchbox" aria-label="Search nodes" />
+    </div>
+  ) : null,
 }));
 vi.mock("@/components/workspace/WorkspaceModelSearchDialog", () => ({
   WorkspaceModelSearchDialog: () => <div data-testid="global-model-search-host" />,
@@ -56,8 +60,15 @@ describe("Current workspace page", () => {
     act(() => { window.dispatchEvent(first); });
     expect(first.defaultPrevented).toBe(true);
     expect(screen.getAllByRole("dialog", { name: "Add node" })).toHaveLength(1);
-    fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+    const outside = document.createElement("button");
+    document.body.appendChild(outside);
+    outside.focus();
+    const second = new KeyboardEvent("keydown", { key: "k", ctrlKey: true, cancelable: true });
+    act(() => { window.dispatchEvent(second); });
+    expect(second.defaultPrevented).toBe(true);
     expect(screen.getAllByRole("dialog", { name: "Add node" })).toHaveLength(1);
+    expect(screen.getByRole("searchbox", { name: "Search nodes" })).toHaveFocus();
+    outside.remove();
   });
 
   it.each([

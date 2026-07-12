@@ -42,8 +42,13 @@ export default function Home() {
   useEffect(() => {
     const openAddPalette = (event: KeyboardEvent) => {
       if (event.key.toLocaleLowerCase() !== "k" || (!event.metaKey && !event.ctrlKey)) return;
+      if (addPaletteOpen) {
+        event.preventDefault();
+        document.querySelector<HTMLElement>('[role="searchbox"][aria-label="Search nodes"]')?.focus();
+        return;
+      }
       const renderedModal = document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"]');
-      if (addPaletteOpen || showFTUX || showQuickstart || isModalOpen || modelSearchOpen || shortcutsDialogOpen || renderedModal) return;
+      if (showFTUX || showQuickstart || isModalOpen || modelSearchOpen || shortcutsDialogOpen || renderedModal) return;
       event.preventDefault();
       setAddPaletteOpen(true);
     };
