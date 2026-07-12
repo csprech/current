@@ -1,8 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { buildQuickstartPrompt, buildSimplePrompt } from "../prompts";
+import { buildProposalPrompt } from "../proposalPrompt";
 import { ContentLevel } from "../templates";
 
 describe("prompts", () => {
+  describe("buildProposalPrompt", () => {
+    it("documents the model-aware Nano Banana setting matrix", () => {
+      const prompt = buildProposalPrompt("Create an image workflow");
+      expect(prompt).toContain('nano-banana: base aspect ratios only; no resolution or search settings');
+      expect(prompt).toContain('nano-banana-pro: base aspect ratios; resolution "1K", "2K", or "4K"; useGoogleSearch supported');
+      expect(prompt).toContain('nano-banana-2: extended aspect ratios including "1:4", "1:8", "4:1", and "8:1"; resolution "512", "1K", "2K", or "4K"; both search settings supported');
+    });
+  });
+
   describe("buildQuickstartPrompt", () => {
     it("should include the user description", () => {
       const description = "Create a portrait editing workflow";

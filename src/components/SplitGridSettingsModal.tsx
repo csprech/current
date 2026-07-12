@@ -4,6 +4,14 @@ import { useState, useCallback } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { SplitGridNodeData, AspectRatio, Resolution, ModelType } from "@/types";
 import { CurrentButton, CurrentSheet } from "@/components/current";
+import {
+  BASE_ASPECT_RATIOS,
+  EXTENDED_ASPECT_RATIOS,
+  GEMINI_IMAGE_MODELS,
+  RESOLUTIONS_NB2,
+  RESOLUTIONS_PRO,
+} from "@/lib/nanoBananaOptions";
+import { SPLIT_GRID_LAYOUT_OPTIONS } from "@/lib/splitGridLayouts";
 
 interface SplitGridSettingsModalProps {
   nodeId: string;
@@ -11,28 +19,8 @@ interface SplitGridSettingsModalProps {
   onClose: () => void;
 }
 
-const LAYOUT_OPTIONS = [
-  { rows: 2, cols: 2 },
-  { rows: 1, cols: 5 },
-  { rows: 2, cols: 3 },
-  { rows: 3, cols: 2 },
-  { rows: 2, cols: 4 },
-  { rows: 3, cols: 3 },
-  { rows: 2, cols: 5 },
-] as const;
-
-const BASE_ASPECT_RATIOS: AspectRatio[] = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"];
-const EXTENDED_ASPECT_RATIOS: AspectRatio[] = ["1:1", "1:4", "1:8", "2:3", "3:2", "3:4", "4:1", "4:3", "4:5", "5:4", "8:1", "9:16", "16:9", "21:9"];
-const RESOLUTIONS_PRO: Resolution[] = ["1K", "2K", "4K"];
-const RESOLUTIONS_NB2: Resolution[] = ["512", "1K", "2K", "4K"];
-const MODELS: { value: ModelType; label: string }[] = [
-  { value: "nano-banana", label: "Nano Banana" },
-  { value: "nano-banana-2", label: "Nano Banana 2" },
-  { value: "nano-banana-pro", label: "Nano Banana Pro" },
-];
-
 const findLayoutIndex = (rows: number, cols: number): number => {
-  const idx = LAYOUT_OPTIONS.findIndex(l => l.rows === rows && l.cols === cols);
+  const idx = SPLIT_GRID_LAYOUT_OPTIONS.findIndex(l => l.rows === rows && l.cols === cols);
   return idx >= 0 ? idx : 2; // default to 2x3
 };
 
@@ -53,7 +41,7 @@ export function SplitGridSettingsModal({
   const [useGoogleSearch, setUseGoogleSearch] = useState(nodeData.generateSettings.useGoogleSearch);
   const [useImageSearch, setUseImageSearch] = useState(nodeData.generateSettings.useImageSearch);
 
-  const { rows, cols } = LAYOUT_OPTIONS[selectedLayoutIndex];
+  const { rows, cols } = SPLIT_GRID_LAYOUT_OPTIONS[selectedLayoutIndex];
   const targetCount = rows * cols;
   const isNanoBananaPro = model === "nano-banana-pro" || model === "nano-banana-2";
   const aspectRatios = model === "nano-banana-2" ? EXTENDED_ASPECT_RATIOS : BASE_ASPECT_RATIOS;
@@ -188,7 +176,7 @@ export function SplitGridSettingsModal({
               Grid Layout
             </label>
             <div className="flex gap-2">
-              {LAYOUT_OPTIONS.map((layout, index) => {
+              {SPLIT_GRID_LAYOUT_OPTIONS.map((layout, index) => {
                 const count = layout.rows * layout.cols;
                 const isSelected = selectedLayoutIndex === index;
                 return (
@@ -273,7 +261,7 @@ export function SplitGridSettingsModal({
                   }}
                   className="w-full px-3 py-2 bg-neutral-900 border border-neutral-600 rounded text-neutral-100 text-sm focus:outline-none focus:border-neutral-500"
                 >
-                  {MODELS.map((m) => (
+                    {GEMINI_IMAGE_MODELS.map((m) => (
                     <option key={m.value} value={m.value}>{m.label}</option>
                   ))}
                 </select>

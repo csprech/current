@@ -98,6 +98,20 @@ describe("PromptWorkflowView", () => {
     expect(screen.getByText("The reviewed brief drives image generation")).toBeInTheDocument();
   });
 
+  it("shows a split-grid count as its executable layout", async () => {
+    const splitProposal = {
+      ...proposal,
+      nodes: [{ id: "split", type: "splitGrid", purpose: "Split the contact sheet", suggestedTitle: "Split grid", suggestedSettings: { targetCount: 8 } }],
+      connections: [],
+    };
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, proposal: splitProposal }) });
+    renderView();
+    await requestProposal();
+
+    expect(screen.getByText("Layout: 2 × 4 (8 images)")).toBeInTheDocument();
+    expect(screen.queryByText("Target count: 8")).not.toBeInTheDocument();
+  });
+
   it("builds the exact reviewed proposal locally after explicit confirmation without a second generation", async () => {
     const onWorkflowGenerated = vi.fn();
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, proposal }) });

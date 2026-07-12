@@ -17,25 +17,15 @@ import { getModelPageUrl, getProviderDisplayName } from "@/utils/providerUrls";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { CurrentPanel } from "@/components/current/CurrentPanel";
 import { INSPECTOR_CONFIGURABLE_NODE_TYPES, INSPECTOR_GENERATION_NODE_TYPES } from "./inspectorConfig";
+import {
+  BASE_ASPECT_RATIOS,
+  EXTENDED_ASPECT_RATIOS,
+  GEMINI_IMAGE_MODELS,
+  RESOLUTIONS_NB2,
+  RESOLUTIONS_PRO,
+} from "@/lib/nanoBananaOptions";
 
 // List of node types that have configurable parameters
-// Base 10 aspect ratios (all Gemini image models)
-const BASE_ASPECT_RATIOS: AspectRatio[] = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"];
-
-// Extended 14 aspect ratios (Nano Banana 2 adds extreme ratios)
-const EXTENDED_ASPECT_RATIOS: AspectRatio[] = ["1:1", "1:4", "1:8", "2:3", "3:2", "3:4", "4:1", "4:3", "4:5", "5:4", "8:1", "9:16", "16:9", "21:9"];
-
-// Resolutions per model
-const RESOLUTIONS_PRO: Resolution[] = ["1K", "2K", "4K"];
-const RESOLUTIONS_NB2: Resolution[] = ["512", "1K", "2K", "4K"];
-
-// Hardcoded Gemini image models
-const GEMINI_IMAGE_MODELS: { value: ModelType; label: string }[] = [
-  { value: "nano-banana", label: "Nano Banana" },
-  { value: "nano-banana-2", label: "Nano Banana 2" },
-  { value: "nano-banana-pro", label: "Nano Banana Pro" },
-];
-
 // LLM providers and models
 const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
   { value: "google", label: "Google" },

@@ -34,7 +34,7 @@ Purpose: AI image generation (REQUIRES both image AND text inputs)
 - Inputs: "image" handle (one or more), "text" handle (required)
 - Outputs: "image" handle
 - Use when: Generating or transforming images with AI
-- Models: "nano-banana" (fast), "nano-banana-pro" (high quality)
+- Models: "nano-banana" (fast), "nano-banana-pro" (high quality), "nano-banana-2" (extended ratios and search)
 
 ### 5. llmGenerate
 Purpose: AI text generation for prompt expansion or analysis
@@ -72,7 +72,7 @@ Output a JSON object matching this structure:
       "purpose": "Human-readable description of this node's role",
       "suggestedTitle": "Node title shown in UI",
       "suggestedPrompt": "For prompt nodes only: the suggested prompt text",
-      "suggestedModel": "For nanoBanana: 'nano-banana' or 'nano-banana-pro'",
+      "suggestedModel": "For nanoBanana: 'nano-banana', 'nano-banana-pro', or 'nano-banana-2'",
       "suggestedSettings": { "aspectRatio": "1:1" }
     }
   ],
@@ -113,9 +113,14 @@ Output a JSON object matching this structure:
 **nodes[].suggestedModel**: For nanoBanana nodes
 - Use "nano-banana-pro" for high-quality final outputs
 - Use "nano-banana" for intermediate processing or speed
+- Use "nano-banana-2" when extreme aspect ratios or image search are required
 
 **nodes[].suggestedSettings**: Optional settings for generation nodes
-- aspectRatio: "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"
+- nano-banana: base aspect ratios only; no resolution or search settings
+- nano-banana-pro: base aspect ratios; resolution "1K", "2K", or "4K"; useGoogleSearch supported
+- nano-banana-2: extended aspect ratios including "1:4", "1:8", "4:1", and "8:1"; resolution "512", "1K", "2K", or "4K"; both search settings supported
+- Base aspect ratios: "1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"
+- splitGrid targetCount: 4, 6, 8, 9, or 10; layout is derived automatically
 
 **connections[].description**: Explain the data flow
 - Good: "Character photo provides the subject to maintain across generations"

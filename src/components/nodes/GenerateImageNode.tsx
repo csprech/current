@@ -21,6 +21,13 @@ import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import {
+  BASE_ASPECT_RATIOS,
+  EXTENDED_ASPECT_RATIOS,
+  GEMINI_IMAGE_MODELS,
+  RESOLUTIONS_NB2,
+  RESOLUTIONS_PRO,
+} from "@/lib/nanoBananaOptions";
 
 /** Reorder items so they read column-first in a row-based CSS grid.
  *  e.g. [1,2,3,4,5,6,7,8] with 2 cols → [1,5,2,6,3,7,4,8] */
@@ -35,23 +42,6 @@ function reorderColumnFirst<T>(items: T[], cols: number): T[] {
   }
   return result;
 }
-
-// Base 10 aspect ratios (all Gemini image models)
-const BASE_ASPECT_RATIOS: AspectRatio[] = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"];
-
-// Extended 14 aspect ratios (Nano Banana 2 adds extreme ratios)
-const EXTENDED_ASPECT_RATIOS: AspectRatio[] = ["1:1", "1:4", "1:8", "2:3", "3:2", "3:4", "4:1", "4:3", "4:5", "5:4", "8:1", "9:16", "16:9", "21:9"];
-
-// Resolutions per model (nano-banana-pro: 1K-4K, nano-banana-2: 512-4K)
-const RESOLUTIONS_PRO: Resolution[] = ["1K", "2K", "4K"];
-const RESOLUTIONS_NB2: Resolution[] = ["512", "1K", "2K", "4K"];
-
-// Hardcoded Gemini image models (always available)
-const GEMINI_IMAGE_MODELS: { value: ModelType; label: string }[] = [
-  { value: "nano-banana", label: "Nano Banana" },
-  { value: "nano-banana-2", label: "Nano Banana 2" },
-  { value: "nano-banana-pro", label: "Nano Banana Pro" },
-];
 
 // Image generation capabilities
 const IMAGE_CAPABILITIES: ModelCapability[] = ["text-to-image", "image-to-image"];
