@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
+import { CurrentHandle as Handle } from "./CurrentHandle";
+import { Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { getImageDimensions, calculateNodeSizeForFullBleed } from "@/utils/nodeDimensions";
 import { useCommentNavigation } from "@/hooks/useCommentNavigation";

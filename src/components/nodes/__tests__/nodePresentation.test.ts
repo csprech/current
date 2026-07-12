@@ -32,6 +32,8 @@ describe("nodePresentation", () => {
     expect(getNodeRole("nanoBanana")).toBe("generator");
     expect(getNodeRole("outputGallery")).toBe("output");
     expect(getMinimapColor("generateAudio")).toBe("#6A70E8");
+    expect(getMinimapColor("group")).toBe("#8A8D96");
+    expect(getMinimapColor(undefined)).toBe("#8A8D96");
 
     const nodeTypes: NodeType[] = [
       "imageInput", "audioInput", "videoInput", "annotation", "prompt", "array",

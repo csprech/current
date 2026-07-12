@@ -1,7 +1,8 @@
 "use client";
 
 import { memo, useMemo, useEffect, useState, useCallback } from "react";
-import { Handle, Position, useUpdateNodeInternals, useReactFlow, NodeProps } from "@xyflow/react";
+import { CurrentHandle as Handle } from "./CurrentHandle";
+import { Position, useUpdateNodeInternals, useReactFlow, NodeProps } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNode, SwitchNodeData, HandleType } from "@/types";

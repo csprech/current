@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState, useEffect, Suspense } from "react";
-import { Handle, Position, NodeProps, Node } from "@xyflow/react";
+import { CurrentHandle as Handle } from "./CurrentHandle";
+import { Position, NodeProps, Node } from "@xyflow/react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { BaseNode } from "./BaseNode";

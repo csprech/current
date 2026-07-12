@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
+import { CurrentHandle as Handle } from "./CurrentHandle";
+import { Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { OutputGalleryNodeData } from "@/types";

@@ -2198,7 +2198,7 @@ export function WorkflowCanvas() {
           maskColor="rgba(240, 240, 244, 0.65)"
           pannable
           zoomable
-          nodeColor={(node) => getMinimapColor(node.type as NodeType)}
+          nodeColor={(node) => getMinimapColor(node.type)}
         />
         <ViewportPortal>
           {allNodes.map((node) => {

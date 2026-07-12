@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Handle, Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
+import { CurrentHandle as Handle } from "./CurrentHandle";
+import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { ArrayNodeData } from "@/types";

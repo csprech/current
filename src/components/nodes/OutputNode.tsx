@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState, useMemo, useEffect, useRef } from "react";
-import { Handle, Position, NodeProps, Node } from "@xyflow/react";
+import { CurrentHandle as Handle } from "./CurrentHandle";
+import { Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { useCommentNavigation } from "@/hooks/useCommentNavigation";
 import { useWorkflowStore } from "@/store/workflowStore";

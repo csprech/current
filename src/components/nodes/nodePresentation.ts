@@ -100,6 +100,8 @@ const MINIMAP_COLORS: Record<NodeType, string> = {
   outputGallery: "#3DB9C4",
 };
 
+export const CURRENT_MINIMAP_FALLBACK = "#8A8D96";
+
 export function getHandlePresentation(type: PresentedHandleType): HandlePresentation {
   return HANDLE_PRESENTATIONS[type];
 }
@@ -108,8 +110,11 @@ export function getNodeRole(type: NodeType): NodeRole {
   return NODE_ROLES[type];
 }
 
-export function getMinimapColor(type: NodeType): string {
-  return MINIMAP_COLORS[type];
+export function getMinimapColor(type: NodeType): string;
+export function getMinimapColor(type: unknown): string;
+export function getMinimapColor(type: unknown): string {
+  if (typeof type !== "string" || !(type in MINIMAP_COLORS)) return CURRENT_MINIMAP_FALLBACK;
+  return MINIMAP_COLORS[type as NodeType];
 }
 
 export function deriveNodeStatus(
