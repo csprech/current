@@ -8,7 +8,7 @@
  * If the primary and fallback resolve to the same provider + modelId, the
  * fallback is skipped to avoid double-billing.
  *
- * JSON-compatible with Node Banana Pro: the fallbackModel field and the three
+ * JSON-compatible with legacy workflow format: the fallbackModel field and the three
  * __-prefixed metadata fields match NBP's shape exactly so config round-trips
  * cleanly between the two apps.
  */

@@ -219,7 +219,9 @@ export function MultiSelectToolbar() {
 
   return (
     <div
-      className="fixed z-[100] flex items-center gap-1 iris-glass rounded-lg shadow-xl p-1"
+      role="toolbar"
+      aria-label="Selection actions"
+      className="fixed z-[100] flex items-center gap-1 current-transient-surface current-floating-toolbar rounded-lg shadow-xl p-1"
       style={{
         left: toolbarPosition.x,
         top: toolbarPosition.y,
@@ -228,7 +230,8 @@ export function MultiSelectToolbar() {
     >
       <button
         onClick={handleStackHorizontally}
-        className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-100 transition-colors"
+        className="current-toolbar-action"
+        aria-label="Stack horizontally"
         title="Stack horizontally (H)"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -237,7 +240,8 @@ export function MultiSelectToolbar() {
       </button>
       <button
         onClick={handleStackVertically}
-        className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-100 transition-colors"
+        className="current-toolbar-action"
+        aria-label="Stack vertically"
         title="Stack vertically (V)"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -246,7 +250,8 @@ export function MultiSelectToolbar() {
       </button>
       <button
         onClick={handleArrangeAsGrid}
-        className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-100 transition-colors"
+        className="current-toolbar-action"
+        aria-label="Arrange as grid"
         title="Arrange as grid (G)"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -261,7 +266,8 @@ export function MultiSelectToolbar() {
       {someInGroup ? (
         <button
           onClick={handleUngroup}
-          className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-100 transition-colors"
+          className="current-toolbar-action"
+          aria-label="Remove selected nodes from group"
           title="Remove from group"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -271,7 +277,8 @@ export function MultiSelectToolbar() {
       ) : (
         <button
           onClick={handleCreateGroup}
-          className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-100 transition-colors"
+          className="current-toolbar-action"
+          aria-label="Create group from selection"
           title="Create group"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -286,7 +293,8 @@ export function MultiSelectToolbar() {
       {/* Download images button */}
       <button
         onClick={handleDownloadImages}
-        className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-100 transition-colors"
+        className="current-toolbar-action"
+        aria-label="Download selected images as ZIP"
         title="Download images as ZIP"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

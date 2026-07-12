@@ -216,6 +216,7 @@ export function EditableEdge({
         <>
           {/* Outer glow — replaces blur(6px) filter for better perf on Windows */}
           <path
+            className="current-connector-pulse"
             d={edgePath}
             fill="none"
             stroke={`url(#${gradientId})`}
@@ -243,9 +244,6 @@ export function EditableEdge({
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeDasharray="20 30"
-            style={{
-              animation: "flowPulse 1s linear infinite",
-            }}
           />
         </>
       )}

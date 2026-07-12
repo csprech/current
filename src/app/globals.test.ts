@@ -17,4 +17,11 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-focus-workspace__back:hover:not\(:disabled\)\s*\{[\s\S]*?var\(--current-blue\)/);
     expect(css).toMatch(/\.current-focus-workspace__back:focus-visible\s*\{[\s\S]*?var\(--current-focus\)/);
   });
+
+  it("distinguishes keyboard focus from node selection and disables continuous motion", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/\.react-flow__node:focus-visible \.current-node\s*\{[\s\S]*?outline:[\s\S]*?var\(--current-aqua\)/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.current-connector-pulse[\s\S]*?animation:\s*none/);
+  });
 });

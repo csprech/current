@@ -40,8 +40,17 @@ describe("Toast", () => {
       render(<Toast />);
 
       // Close button should be present (the X button)
-      const closeButton = screen.getAllByRole("button")[0];
-      expect(closeButton).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Close notification" })).toBeInTheDocument();
+    });
+
+    it("announces notifications with urgency appropriate to their type", () => {
+      act(() => {
+        useToast.getState().show("Could not save", "error");
+      });
+
+      render(<Toast />);
+
+      expect(screen.getByRole("alert")).toHaveAttribute("aria-live", "assertive");
     });
   });
 
@@ -53,7 +62,7 @@ describe("Toast", () => {
 
       const { container } = render(<Toast />);
 
-      const toastContainer = container.querySelector(".iris-glass");
+      const toastContainer = container.querySelector(".current-transient-surface");
       expect(toastContainer).toBeInTheDocument();
     });
 
@@ -64,7 +73,7 @@ describe("Toast", () => {
 
       const { container } = render(<Toast />);
 
-      const toastContainer = container.querySelector(".bg-green-900");
+      const toastContainer = container.querySelector(".current-toast--success");
       expect(toastContainer).toBeInTheDocument();
     });
 
@@ -75,7 +84,7 @@ describe("Toast", () => {
 
       const { container } = render(<Toast />);
 
-      const toastContainer = container.querySelector(".bg-orange-900");
+      const toastContainer = container.querySelector(".current-toast--warning");
       expect(toastContainer).toBeInTheDocument();
     });
 
@@ -86,7 +95,7 @@ describe("Toast", () => {
 
       const { container } = render(<Toast />);
 
-      const toastContainer = container.querySelector(".bg-red-900");
+      const toastContainer = container.querySelector(".current-toast--error");
       expect(toastContainer).toBeInTheDocument();
     });
   });

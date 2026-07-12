@@ -99,7 +99,9 @@ export function EdgeToolbar() {
 
   return (
     <div
-      className="fixed z-[100] flex items-center gap-1 iris-glass rounded-lg shadow-xl p-1"
+      role="toolbar"
+      aria-label="Connection actions"
+      className="fixed z-[100] flex items-center gap-1 current-transient-surface current-floating-toolbar rounded-lg shadow-xl p-1"
       style={{
         left: toolbarPosition.x,
         top: toolbarPosition.y,
@@ -113,22 +115,24 @@ export function EdgeToolbar() {
       )}
       {isLoop && (
         <>
-          <span className="text-[10px] font-medium text-fuchsia-300 px-1.5">Loop</span>
+          <span className="text-[10px] font-medium text-[var(--current-blue)] px-1.5">Loop</span>
           <button
             onClick={() => handleLoopCountChange(-1)}
             disabled={loopCount <= 1}
-            className="p-1 rounded hover:bg-neutral-700 text-fuchsia-300 hover:text-fuchsia-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="current-toolbar-action disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Decrease loop count"
             title="Decrease loop count"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" d="M5 12h14" />
             </svg>
           </button>
-          <span className="text-[11px] font-mono text-fuchsia-100 min-w-[20px] text-center">{loopCount}</span>
+          <span className="text-[11px] font-mono text-[var(--current-inspector)] min-w-[20px] text-center">{loopCount}</span>
           <button
             onClick={() => handleLoopCountChange(1)}
             disabled={loopCount >= 100}
-            className="p-1 rounded hover:bg-neutral-700 text-fuchsia-300 hover:text-fuchsia-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="current-toolbar-action disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Increase loop count"
             title="Increase loop count"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -141,7 +145,8 @@ export function EdgeToolbar() {
       {!isLoop && (
         <button
           onClick={handleTogglePause}
-        className={`p-1.5 rounded hover:bg-neutral-700 transition-colors ${
+        aria-label={hasPause ? "Remove pause" : "Add pause"}
+        className={`current-toolbar-action ${
           hasPause
             ? "text-amber-400 hover:text-amber-300"
             : "text-neutral-400 hover:text-neutral-100"
@@ -163,7 +168,8 @@ export function EdgeToolbar() {
       )}
       <button
         onClick={handleDelete}
-        className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition-colors"
+        className="current-toolbar-action current-toolbar-action--danger"
+        aria-label="Delete connection"
         title="Delete"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

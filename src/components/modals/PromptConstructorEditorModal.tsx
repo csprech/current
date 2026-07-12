@@ -212,7 +212,9 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
             {/* Autocomplete dropdown */}
             {showAutocomplete && filteredAutocompleteVars.length > 0 && (
               <div
-                className="absolute z-10 iris-glass rounded shadow-xl max-h-40 overflow-y-auto"
+                role="listbox"
+                aria-label="Prompt variables"
+                className="absolute z-10 current-transient-surface rounded shadow-xl max-h-40 overflow-y-auto"
                 style={{
                   top: autocompletePosition.top + 16,
                   left: autocompletePosition.left + 24,
@@ -221,6 +223,8 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
                 {filteredAutocompleteVars.map((variable, index) => (
                   <button
                     key={variable.nodeId}
+                    role="option"
+                    aria-selected={index === selectedAutocompleteIndex}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       handleAutocompleteSelect(variable.name);

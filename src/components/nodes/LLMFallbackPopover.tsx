@@ -98,10 +98,13 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
       onClick={onClose}
     >
       <div
-        className="w-80 iris-glass rounded-lg shadow-xl p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="fallback-llm-title"
+        className="w-80 current-transient-surface rounded-lg shadow-xl p-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-sm font-semibold text-neutral-200 mb-3">
+        <h2 id="fallback-llm-title" className="text-sm font-semibold text-neutral-200 mb-3">
           Select fallback LLM
         </h2>
 

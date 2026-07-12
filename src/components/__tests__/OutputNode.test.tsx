@@ -87,7 +87,7 @@ describe("OutputNode", () => {
   describe("Empty State Rendering", () => {
     it("uses the Current chassis and exposes semantic state", () => {
       const { container } = render(<TestWrapper><OutputNode {...createNodeProps()} /></TestWrapper>);
-      expect(container.querySelector(".iris-card")).not.toBeInTheDocument();
+      expect(container.querySelector(".current-node")).toBeInTheDocument();
       expect(screen.getByTestId("current-node")).toBeInTheDocument();
       expect(screen.getByRole("status")).toHaveTextContent("Ready");
     });

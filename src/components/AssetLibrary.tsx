@@ -254,6 +254,7 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
       {/* Trigger button — sits left of the session history button */}
       <button
         onClick={() => setIsOpen((v) => !v)}
+        aria-label="Open asset library"
         className="absolute bottom-4 right-80 z-10 w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-neutral-400 hover:text-neutral-100 shadow-lg transition-colors"
         title="Asset library"
       >
@@ -264,7 +265,7 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
 
       {isOpen &&
         createPortal(
-          <div className="fixed top-0 right-0 h-full w-96 iris-glass shadow-2xl z-[200] flex flex-col">
+          <div role="dialog" aria-label="Asset library" className="fixed top-0 right-0 h-full w-96 current-transient-surface shadow-2xl z-[200] flex flex-col">
             {/* Header */}
             <div className="px-4 py-3 border-b border-neutral-700 flex items-center justify-between shrink-0">
               <span className="text-sm font-medium text-neutral-200">Asset Library</span>
@@ -278,6 +279,7 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
+                  aria-label="Close asset library"
                   className="w-5 h-5 rounded hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
                   title="Close"
                 >

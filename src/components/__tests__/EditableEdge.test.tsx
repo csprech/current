@@ -328,6 +328,7 @@ describe("EditableEdge", () => {
       const paths = container.querySelectorAll("path");
       // More paths than just the base edge (loading animation paths)
       expect(paths.length).toBeGreaterThan(2);
+      expect(container.querySelector(".current-connector-pulse")).toBeInTheDocument();
     });
 
     it("should not show pulse animation when target node is not loading", () => {

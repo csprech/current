@@ -132,7 +132,9 @@ function HistorySidebar({
   return createPortal(
     <div
       ref={sidebarRef}
-      className="w-80 max-h-[420px] iris-glass rounded-lg shadow-xl flex flex-col"
+      role="dialog"
+      aria-label="Image history"
+      className="w-80 max-h-[420px] current-transient-surface rounded-lg shadow-xl flex flex-col"
       style={sidebarStyle}
     >
       {/* Header */}
@@ -150,6 +152,7 @@ function HistorySidebar({
           </button>
           <button
             onClick={onClose}
+            aria-label="Close image history"
             className="w-5 h-5 rounded hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
             title="Close"
           >

@@ -22,10 +22,10 @@ export const useToast = create<ToastState>((set) => ({
 }));
 
 const typeStyles = {
-  info: "iris-glass text-neutral-100",
-  success: "bg-green-900 border-green-700 text-green-100",
-  warning: "bg-orange-900 border-orange-600 text-orange-100",
-  error: "bg-red-900 border-red-700 text-red-100",
+  info: "current-toast--info",
+  success: "current-toast--success",
+  warning: "current-toast--warning",
+  error: "current-toast--error",
 };
 
 const typeIcons = {
@@ -85,14 +85,18 @@ export function Toast() {
   return (
     <div className="fixed top-6 right-6 z-[200] animate-in fade-in slide-in-from-top-4 duration-300 max-w-md">
       <div
-        className={`flex flex-col rounded-lg border shadow-xl ${typeStyles[type]}`}
+        role={type === "error" ? "alert" : "status"}
+        aria-live={type === "error" ? "assertive" : "polite"}
+        aria-atomic="true"
+        className={`current-transient-surface current-toast flex flex-col rounded-lg border shadow-xl ${typeStyles[type]}`}
       >
         <div className="flex items-center gap-3 px-4 py-3">
-          {typeIcons[type]}
+          <span aria-hidden="true">{typeIcons[type]}</span>
           <span className="text-sm font-medium flex-1">{message}</span>
           <button
             onClick={handleCopy}
-            className="p-1 rounded hover:bg-white/10 transition-colors"
+            className="current-toolbar-action"
+            aria-label="Copy notification"
             title="Copy message"
           >
             {copied ? (
@@ -107,7 +111,8 @@ export function Toast() {
           </button>
           <button
             onClick={hide}
-            className="p-1 rounded hover:bg-white/10 transition-colors"
+            className="current-toolbar-action"
+            aria-label="Close notification"
             title="Dismiss"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

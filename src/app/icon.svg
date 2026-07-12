@@ -1,12 +1,10 @@
 <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="irisMark" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#7b6cf6" />
-      <stop offset="0.35" stop-color="#35c9e6" />
-      <stop offset="0.7" stop-color="#35d39a" />
-      <stop offset="1" stop-color="#f77a8e" />
+    <linearGradient id="currentFlow" x1="6" y1="5" x2="34" y2="35" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5578f6" />
+      <stop offset="1" stop-color="#47cbb3" />
     </linearGradient>
   </defs>
-  <circle cx="20" cy="20" r="18" fill="url(#irisMark)" />
-  <circle cx="20" cy="20" r="7" fill="#171717" />
+  <rect x="2" y="2" width="36" height="36" rx="11" fill="url(#currentFlow)" />
+  <path d="M8 15c5-4 9 4 14 0s8-3 10-1M8 25c5 4 9-4 14 0s8 3 10 1" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" />
 </svg>

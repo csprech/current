@@ -40,6 +40,16 @@ describe("ConnectionDropMenu", () => {
       expect(screen.getByText("select")).toBeInTheDocument();
     });
 
+    it("exposes a named menu with keyboard-selected menu items", () => {
+      render(<ConnectionDropMenu {...defaultProps} />);
+
+      const menu = screen.getByRole("menu", { name: "Compatible nodes" });
+      const firstItem = screen.getByRole("menuitem", { name: "Annotate" });
+
+      expect(menu).toHaveAttribute("aria-activedescendant", firstItem.id);
+      expect(firstItem).toHaveAttribute("data-active", "true");
+    });
+
     it("should not render when handleType is null", () => {
       render(<ConnectionDropMenu {...defaultProps} handleType={null} />);
 

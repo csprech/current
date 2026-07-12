@@ -161,6 +161,17 @@ describe("MultiSelectToolbar", () => {
       expect(screen.getByTitle("Stack horizontally (H)")).toBeInTheDocument();
     });
 
+    it("exposes the selected-node controls as a named toolbar", () => {
+      render(
+        <TestWrapper>
+          <MultiSelectToolbar />
+        </TestWrapper>
+      );
+
+      expect(screen.getByRole("toolbar", { name: "Selection actions" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Stack horizontally" })).toBeInTheDocument();
+    });
+
     it("should render stack vertically button", () => {
       render(
         <TestWrapper>

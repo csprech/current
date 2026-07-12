@@ -764,9 +764,12 @@ export function ConnectionDropMenu({
   return (
     <div
       ref={menuRef}
-      tabIndex={-1}
+      role="menu"
+      aria-label="Compatible nodes"
+      aria-activedescendant={`compatible-node-${options[selectedIndex]?.type}`}
+      tabIndex={0}
       data-tutorial="connection-drop-menu"
-      className="fixed z-100 iris-glass rounded-lg shadow-xl overflow-hidden min-w-[160px] outline-none"
+      className="fixed z-100 current-transient-surface current-compatible-menu rounded-lg shadow-xl overflow-hidden min-w-[160px] outline-none"
       style={{
         left: position.x,
         top: position.y,
@@ -782,6 +785,10 @@ export function ConnectionDropMenu({
         {options.map((option, index) => (
           <button
             key={option.type}
+            id={`compatible-node-${option.type}`}
+            role="menuitem"
+            tabIndex={-1}
+            data-active={index === selectedIndex ? "true" : "false"}
             onClick={() => onSelect({ type: option.type, isAction: option.isAction || false })}
             onMouseEnter={() => setSelectedIndex(index)}
             data-tutorial={option.type === "nanoBanana" ? "generate-image-option" : undefined}

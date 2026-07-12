@@ -90,7 +90,7 @@ describe("BaseNode", () => {
       const nodeDiv = screen.getByTestId("current-node");
       expect(nodeDiv).toHaveAttribute("data-selected", "true");
       expect(nodeDiv).toHaveAttribute("data-state", "selected");
-      expect(container.querySelector(".iris-card")).not.toBeInTheDocument();
+      expect(container.querySelector(".current-node")).toBeInTheDocument();
     });
 
     it("should apply executing styling when isExecuting is true", () => {

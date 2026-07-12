@@ -990,7 +990,9 @@ function EaseCurveControls({ node }: { node: Node }) {
       {showPresets && typeof document !== 'undefined' && createPortal(
         <div
           ref={presetsPopupRef}
-          className="fixed z-[100] iris-glass rounded-lg shadow-xl p-2 max-h-[60vh] overflow-y-auto nowheel"
+          role="menu"
+          aria-label="Easing presets"
+          className="fixed z-[100] current-transient-surface rounded-lg shadow-xl p-2 max-h-[60vh] overflow-y-auto nowheel"
           style={{
             top: presetsButtonRef.current?.getBoundingClientRect().bottom || 0,
             right: window.innerWidth - (presetsButtonRef.current?.getBoundingClientRect().left || 0),
@@ -1001,6 +1003,7 @@ function EaseCurveControls({ node }: { node: Node }) {
             {presetThumbnails.map(({ name, polyline }) => (
               <button
                 key={name}
+                role="menuitem"
                 onClick={() => handleSelectEasing(name)}
                 className="nodrag nopan p-1 bg-neutral-900 hover:bg-neutral-700 rounded flex flex-col items-center gap-1 transition-colors"
                 title={name}

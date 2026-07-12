@@ -204,7 +204,7 @@ export interface NanoBananaNodeData extends BaseNodeData {
   error: string | null;
   imageHistory: CarouselImageItem[]; // Carousel history (IDs only)
   selectedHistoryIndex: number; // Currently selected image in carousel
-  fallbackModel?: SelectedModel; // JSON-compatible with Node Banana Pro
+  fallbackModel?: SelectedModel; // JSON-compatible with legacy workflow format
   __usedFallback?: boolean; // Set by runWithFallback on successful fallback
   __fallbackModelUsed?: string; // Display name of fallback model that succeeded
   __primaryError?: string; // Error message from the primary attempt
@@ -229,7 +229,7 @@ export interface GenerateVideoNodeData extends BaseNodeData {
   error: string | null;
   videoHistory: CarouselVideoItem[]; // Carousel history (IDs only)
   selectedVideoHistoryIndex: number; // Currently selected video in carousel
-  fallbackModel?: SelectedModel; // JSON-compatible with Node Banana Pro
+  fallbackModel?: SelectedModel; // JSON-compatible with legacy workflow format
   __usedFallback?: boolean; // Set by runWithFallback on successful fallback
   __fallbackModelUsed?: string; // Display name of fallback model that succeeded
   __primaryError?: string; // Error message from the primary attempt
@@ -253,7 +253,7 @@ export interface Generate3DNodeData extends BaseNodeData {
   _settingsPanelHeight?: number; // Measured settings panel height for reload correction
   status: NodeStatus;
   error: string | null;
-  fallbackModel?: SelectedModel; // JSON-compatible with Node Banana Pro
+  fallbackModel?: SelectedModel; // JSON-compatible with legacy workflow format
   __usedFallback?: boolean; // Set by runWithFallback on successful fallback
   __fallbackModelUsed?: string; // Display name of fallback model that succeeded
   __primaryError?: string; // Error message from the primary attempt
@@ -288,7 +288,7 @@ export interface GenerateAudioNodeData extends BaseNodeData {
   selectedAudioHistoryIndex: number; // Currently selected audio in carousel
   duration: number | null; // Duration in seconds
   format: string | null; // MIME type (audio/mp3, audio/wav, etc.)
-  fallbackModel?: SelectedModel; // JSON-compatible with Node Banana Pro
+  fallbackModel?: SelectedModel; // JSON-compatible with legacy workflow format
   __usedFallback?: boolean; // Set by runWithFallback on successful fallback
   __fallbackModelUsed?: string; // Display name of fallback model that succeeded
   __primaryError?: string; // Error message from the primary attempt
@@ -311,7 +311,7 @@ export interface LLMGenerateNodeData extends BaseNodeData {
   _settingsPanelHeight?: number; // Measured settings panel height for reload correction
   status: NodeStatus;
   error: string | null;
-  fallbackModel?: SelectedModel; // JSON-compatible with Node Banana Pro
+  fallbackModel?: SelectedModel; // JSON-compatible with legacy workflow format
   __usedFallback?: boolean; // Set by runWithFallback on successful fallback
   __fallbackModelUsed?: string; // Display name of fallback model that succeeded
   __primaryError?: string; // Error message from the primary attempt

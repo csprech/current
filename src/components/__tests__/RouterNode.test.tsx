@@ -35,7 +35,7 @@ describe("RouterNode", () => {
         />
       </ReactFlowProvider>
     );
-    expect(container.querySelector(".iris-card")).not.toBeInTheDocument();
+    expect(container.querySelector(".current-node")).toBeInTheDocument();
     expect(screen.getByTestId("current-node")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("Ready");
     expect(screen.getByText("No active routes")).toBeInTheDocument();
