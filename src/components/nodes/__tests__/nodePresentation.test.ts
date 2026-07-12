@@ -7,6 +7,7 @@ import {
   getMinimapColor,
   getNodeRole,
 } from "../nodePresentation";
+import { createDefaultNodeData } from "@/store/utils/nodeDefaults";
 
 describe("nodePresentation", () => {
   it("maps every connection type to a labeled Current-family presentation", () => {
@@ -85,6 +86,12 @@ describe("nodePresentation", () => {
     expect(deriveNodeStatusFromData("promptConstructor", { template: "Hello @name", outputText: null }).state).toBe("idle");
     expect(deriveNodeStatusFromData("nanoBanana", { status: "complete", outputImage: null }).state).toBe("idle");
     expect(deriveNodeStatusFromData("prompt", { prompt: "A true input value" }).state).toBe("complete");
+  });
+
+  it("keeps the default Array ready and completes only for meaningful array output", () => {
+    expect(deriveNodeStatusFromData("array", createDefaultNodeData("array")).state).toBe("idle");
+    expect(deriveNodeStatusFromData("array", { outputItems: ["first"], outputText: '["first"]' }).state).toBe("complete");
+    expect(deriveNodeStatusFromData("array", { outputItems: [], outputText: '["first"]' }).state).toBe("complete");
   });
 
   it("maps explicit metadata for each node family", () => {

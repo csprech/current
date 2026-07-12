@@ -154,13 +154,23 @@ function hasValue(value: unknown): boolean {
   return Array.isArray(value) ? value.length > 0 : Boolean(value);
 }
 
+function hasMeaningfulSerializedArray(value: unknown): boolean {
+  if (typeof value !== "string" || !value.trim()) return false;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) && parsed.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 function hasCompletionEvidence(nodeType: NodeType | undefined, record: Record<string, unknown>): boolean {
   switch (nodeType) {
     case "imageInput": return hasValue(record.image) || hasValue(record.imageRef);
     case "audioInput": return hasValue(record.audioFile) || hasValue(record.audioFileRef);
     case "videoInput": return hasValue(record.video) || hasValue(record.videoRef);
     case "prompt": return hasValue(record.prompt);
-    case "array": return hasValue(record.outputText) || hasValue(record.outputItems);
+    case "array": return hasValue(record.outputItems) || hasMeaningfulSerializedArray(record.outputText);
     case "promptConstructor": return hasValue(record.outputText);
     case "glbViewer": return hasValue(record.glbUrl) || hasValue(record.capturedImage);
     case "nanoBanana":
