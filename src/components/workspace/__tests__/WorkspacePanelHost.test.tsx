@@ -46,6 +46,25 @@ describe("WorkspacePanelHost", () => {
     expect(useWorkflowStore.getState().nodes[0]?.selected).toBe(true);
   });
 
+  it("reopens a dismissed inspector when a different configurable node is selected", () => {
+    useWorkflowStore.setState({ nodes: [
+      { id: "image", type: "nanoBanana", position: { x: 0, y: 0 }, selected: true, data: {} } as never,
+      { id: "video", type: "generateVideo", position: { x: 0, y: 0 }, selected: false, data: {} } as never,
+    ] });
+    render(<WorkspacePanelHost assistantProps={{ isOpen: true, onClose: vi.fn() }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Close Inspector" }));
+    expect(screen.queryByRole("complementary", { name: "Inspector" })).not.toBeInTheDocument();
+
+    act(() => useWorkflowStore.setState({ nodes: useWorkflowStore.getState().nodes.map((node) => node.id === "image" ? { ...node, data: { ...node.data, progress: 12 } } : node) }));
+    expect(screen.queryByRole("complementary", { name: "Inspector" })).not.toBeInTheDocument();
+
+    act(() => useWorkflowStore.setState({ nodes: useWorkflowStore.getState().nodes.map((node) => ({ ...node, selected: node.id === "video" })) }));
+
+    expect(screen.getByRole("complementary", { name: "Inspector" })).toBeInTheDocument();
+    expect(useWorkflowStore.getState().nodes.find((node) => node.id === "video")?.selected).toBe(true);
+    expect(useWorkflowStore.getState().nodes.find((node) => node.id === "image")?.selected).toBe(false);
+  });
+
   it("keeps inspector-local state mounted while Activity replaces it", () => {
     render(<WorkspacePanelHost assistantProps={{ isOpen: true, onClose: vi.fn() }} />);
     fireEvent.change(screen.getByRole("textbox", { name: "Inspector draft" }), { target: { value: "preserved" } });

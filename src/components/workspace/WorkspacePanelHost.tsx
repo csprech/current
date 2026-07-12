@@ -6,15 +6,27 @@ import { LibraryPanel } from "./LibraryPanel";
 import { ActivityPanel } from "./ActivityPanel";
 import { ChatPanel, type ChatPanelProps } from "@/components/ChatPanel";
 import { ControlPanel } from "@/components/nodes/ControlPanel";
+import { isInspectorConfigurableNodeType } from "@/components/nodes/inspectorConfig";
 
 export function WorkspacePanelHost({ assistantProps }: { assistantProps: ChatPanelProps }) {
   const activeLeftPanel = useWorkflowStore((state) => state.activeLeftPanel);
   const activeRightPanel = useWorkflowStore((state) => state.activeRightPanel);
   const setActiveLeftPanel = useWorkflowStore((state) => state.setActiveLeftPanel);
   const setActiveRightPanel = useWorkflowStore((state) => state.setActiveRightPanel);
+  const selectedInspectorNodeId = useWorkflowStore((state) => {
+    const selected = state.nodes.filter((node) => node.selected && isInspectorConfigurableNodeType(node.type));
+    return selected.length === 1 ? selected[0].id : null;
+  });
   const [inspectorDismissed, setInspectorDismissed] = useState(false);
   const inspectorHostRef = useRef<HTMLDivElement>(null);
   const rightOpenerRef = useRef<HTMLElement | null>(null);
+  const previousSelectedInspectorNodeId = useRef(selectedInspectorNodeId);
+
+  useEffect(() => {
+    if (previousSelectedInspectorNodeId.current === selectedInspectorNodeId) return;
+    previousSelectedInspectorNodeId.current = selectedInspectorNodeId;
+    if (selectedInspectorNodeId) setInspectorDismissed(false);
+  }, [selectedInspectorNodeId]);
 
   useEffect(() => {
     if (!activeRightPanel) return;

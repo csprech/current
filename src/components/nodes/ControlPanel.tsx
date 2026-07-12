@@ -16,27 +16,9 @@ import { getAllEasingNames, getEasingFunction } from "@/lib/easing-functions";
 import { getModelPageUrl, getProviderDisplayName } from "@/utils/providerUrls";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { CurrentPanel } from "@/components/current/CurrentPanel";
+import { INSPECTOR_CONFIGURABLE_NODE_TYPES, INSPECTOR_GENERATION_NODE_TYPES } from "./inspectorConfig";
 
 // List of node types that have configurable parameters
-const CONFIGURABLE_NODE_TYPES: NodeType[] = [
-  "nanoBanana",
-  "generateVideo",
-  "generate3d",
-  "generateAudio",
-  "llmGenerate",
-  "easeCurve",
-  "conditionalSwitch",
-];
-
-// Generation node types that can use inline parameters
-const GENERATION_NODE_TYPES: NodeType[] = [
-  "nanoBanana",
-  "generateVideo",
-  "generate3d",
-  "generateAudio",
-  "llmGenerate",
-];
-
 // Base 10 aspect ratios (all Gemini image models)
 const BASE_ASPECT_RATIOS: AspectRatio[] = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"];
 
@@ -116,7 +98,7 @@ export function ControlPanel({ onClose }: { onClose: () => void }) {
   const { inlineParametersEnabled } = useInlineParameters();
 
   // Check if the selected node is configurable
-  const isConfigurable = selectedNode && CONFIGURABLE_NODE_TYPES.includes(selectedNode.type as NodeType);
+  const isConfigurable = selectedNode && INSPECTOR_CONFIGURABLE_NODE_TYPES.includes(selectedNode.type as NodeType);
 
   // If no single node selected or not configurable, hide panel
   if (!selectedNode || !isConfigurable) {
@@ -125,7 +107,7 @@ export function ControlPanel({ onClose }: { onClose: () => void }) {
 
   // Check if this is a generation node
   const isGenerationNode = selectedNode &&
-    GENERATION_NODE_TYPES.includes(selectedNode.type as NodeType);
+    INSPECTOR_GENERATION_NODE_TYPES.includes(selectedNode.type as NodeType);
 
   // Hide for generation nodes when inline parameters enabled
   if (isGenerationNode && inlineParametersEnabled) {
