@@ -6,16 +6,17 @@ import { Position, useUpdateNodeInternals, useReactFlow, NodeProps } from "@xyfl
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNode, RouterNodeData } from "@/types";
+import { getHandlePresentation } from "./nodePresentation";
 
 const ALL_HANDLE_TYPES = ["image", "text", "video", "audio", "3d", "easeCurve"] as const;
 
 const HANDLE_COLORS: Record<(typeof ALL_HANDLE_TYPES)[number], string> = {
-  image: "#10b981",             // emerald — matches globals.css
-  text: "#3b82f6",              // blue — matches globals.css
-  video: "#ec4899",             // pink — video handle style
-  audio: "rgb(167, 139, 250)", // violet — matches GenerateAudioNode/OutputNode
-  "3d": "#f97316",              // orange — matches globals.css
-  easeCurve: "#ffffff",         // white — default handle style
+  image: getHandlePresentation("image").color,
+  text: getHandlePresentation("text").color,
+  video: getHandlePresentation("video").color,
+  audio: getHandlePresentation("audio").color,
+  "3d": getHandlePresentation("3d").color,
+  easeCurve: getHandlePresentation("easeCurve").color,
 };
 
 export const RouterNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {
@@ -105,7 +106,7 @@ export const RouterNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
           id="generic-input"
           style={{
             top: baseOffset + activeInputTypes.length * handleSpacing,
-            backgroundColor: "#6b7280",
+            backgroundColor: getHandlePresentation("generic").color,
             width: 12,
             height: 12,
             border: "2px solid #1e1e1e",

@@ -8,6 +8,9 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { evaluateRule } from "@/store/utils/ruleEvaluation";
 import { getConnectedInputsPure } from "@/store/utils/connectedInputs";
 import type { WorkflowNode, ConditionalSwitchNodeData, ConditionalSwitchRule, MatchMode } from "@/types";
+import { getHandlePresentation } from "./nodePresentation";
+
+const TEXT_HANDLE_COLOR = getHandlePresentation("text").color;
 
 export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {
   const nodeData = data as ConditionalSwitchNodeData;
@@ -239,7 +242,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         data-handletype="text"
         style={{
           top: 38,
-          backgroundColor: "#3b82f6", // blue for text
+          backgroundColor: TEXT_HANDLE_COLOR,
           width: 12,
           height: 12,
           border: "2px solid #1e1e1e",
@@ -403,7 +406,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           data-handletype="text"
           style={{
             top: handleTops[rule.id] ?? (fallbackBase + index * handleSpacing),
-            backgroundColor: "#3b82f6", // blue for text
+            backgroundColor: TEXT_HANDLE_COLOR,
             width: 12,
             height: 12,
             border: "2px solid #1e1e1e",
@@ -419,7 +422,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         data-handletype="text"
         style={{
           top: handleTops['default'] ?? (fallbackBase + ruleCount * handleSpacing),
-          backgroundColor: "#3b82f6", // blue for text
+          backgroundColor: TEXT_HANDLE_COLOR,
           width: 12,
           height: 12,
           border: "2px solid #1e1e1e",
