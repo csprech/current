@@ -198,7 +198,7 @@ describe("GenerateAudioNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText("Audio generation failed")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Audio generation failed");
     });
   });
 

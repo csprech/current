@@ -192,7 +192,7 @@ describe("Generate3DNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText("Model not found")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Model not found");
     });
   });
 });

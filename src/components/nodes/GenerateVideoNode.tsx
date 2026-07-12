@@ -399,6 +399,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="generateVideo"
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       fullBleed
@@ -759,7 +760,6 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-white/70 text-[10px]">See toast for details</span>
               </div>
             )}
             {/* Loading overlay for carousel navigation */}
@@ -860,7 +860,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
                 />
               </svg>
             ) : nodeData.status === "error" ? (
-              nodeData.error ? null : <span className="text-[10px] text-red-400">Failed</span>
+              null
             ) : (
               <span className="text-neutral-500 text-[10px]">
                 Run to generate

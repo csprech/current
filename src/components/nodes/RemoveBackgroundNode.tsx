@@ -52,6 +52,7 @@ export function RemoveBackgroundNode({ id, data, selected }: NodeProps<RemoveBac
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="removeBackground"
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       minWidth={320}
@@ -136,11 +137,6 @@ export function RemoveBackgroundNode({ id, data, selected }: NodeProps<RemoveBac
           </div>
         )}
 
-        {nodeData.status === "error" && nodeData.error && (
-          <div className="shrink-0 px-2 py-1.5 bg-red-900/30 border border-red-700/50 rounded">
-            <p className="text-[10px] text-red-400 break-words">{nodeData.error}</p>
-          </div>
-        )}
       </div>
     </BaseNode>
   );

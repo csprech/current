@@ -71,11 +71,14 @@ vi.mock("@/hooks/useCommentNavigation", () => ({
 vi.mock("@/components/nodes/BaseNode", () => {
   const React = require("react");
   return {
-    BaseNode: ({ children, ...props }: Record<string, unknown>) =>
+    BaseNode: ({ children, nodeData, ...props }: Record<string, unknown>) =>
       React.createElement(
         "div",
         { "data-testid": "base-node", "data-title": props.title },
-        children as React.ReactNode
+        children as React.ReactNode,
+        (nodeData as EaseCurveNodeData)?.status === "error"
+          ? React.createElement("div", { role: "status" }, (nodeData as EaseCurveNodeData).error)
+          : null
       ),
   };
 });
@@ -275,7 +278,7 @@ describe("EaseCurveNode", () => {
           })}
         />
       );
-      expect(screen.getByText("Encoder failed")).toBeInTheDocument();
+      expect(screen.getAllByText("Encoder failed")).toHaveLength(1);
     });
 
     it("should not show error when status is not error", () => {

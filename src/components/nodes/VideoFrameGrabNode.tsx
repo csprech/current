@@ -46,6 +46,7 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="videoFrameGrab"
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       minWidth={320}
@@ -150,12 +151,6 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
           </div>
         )}
 
-        {/* Error display */}
-        {nodeData.status === "error" && nodeData.error && (
-          <div className="shrink-0 px-2 py-1.5 bg-red-900/30 border border-red-700/50 rounded">
-            <p className="text-[10px] text-red-400 break-words">{nodeData.error}</p>
-          </div>
-        )}
       </div>
     </BaseNode>
   );

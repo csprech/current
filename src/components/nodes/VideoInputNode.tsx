@@ -119,6 +119,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="videoInput"
       contentClassName="flex-1 min-h-0"
       aspectFitMedia={nodeData.video}
       fullBleed

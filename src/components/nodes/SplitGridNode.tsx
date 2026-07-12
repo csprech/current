@@ -68,6 +68,7 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="splitGrid"
         hasError={nodeData.status === "error"}
         fullBleed
         aspectFitMedia={nodeData.sourceImage}

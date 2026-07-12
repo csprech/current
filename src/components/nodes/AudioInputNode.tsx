@@ -136,6 +136,7 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="audioInput"
       minWidth={250}
       minHeight={150}
     >

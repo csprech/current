@@ -139,36 +139,120 @@ export function deriveNodeStatus(
   return { state: "idle", label: "Ready" };
 }
 
-const COMPLETION_FIELDS = [
-  "outputImage", "outputVideo", "outputAudio", "outputText", "outputGlb", "output3dUrl",
-  "image", "video", "audio", "audioFile", "glbUrl", "capturedImage", "sourceImage",
-  "prompt", "template", "items", "images", "videos", "frames", "gridImages", "results",
-] as const;
+const PROCESSOR_METADATA: Partial<Record<NodeType, [operation: string, format: string]>> = {
+  annotation: ["Annotate image", "PNG"],
+  splitGrid: ["Split grid", "Reference output"],
+  imageCompare: ["Compare images", "Image"],
+  videoStitch: ["Stitch video", "MP4"],
+  easeCurve: ["Ease curve", "MP4"],
+  videoTrim: ["Trim video", "MP4"],
+  videoFrameGrab: ["Extract frame", "PNG"],
+  removeBackground: ["Remove background", "PNG"],
+};
 
-function deriveNodeDetail(record: Record<string, unknown>, state: CurrentNodeState): string | undefined {
-  if (state === "running" && typeof record.progress === "number") return `${Math.round(record.progress)}%`;
-  if (record.outputImage || record.image) return "Image available";
-  if (record.outputVideo || record.video) return "Video available";
-  if (record.outputAudio || record.audioFile) return "Audio available";
-  if (record.outputText) return "Text available";
-  if (Array.isArray(record.rules)) return `${record.rules.length} rule${record.rules.length === 1 ? "" : "s"}`;
-  if (Array.isArray(record.switches)) return `${record.switches.length} branch${record.switches.length === 1 ? "" : "es"}`;
-  if (typeof record.activeBranch === "string") return `Branch ${record.activeBranch}`;
-  if (record.dimensions && typeof record.dimensions === "object") {
-    const dimensions = record.dimensions as Record<string, unknown>;
-    if (typeof dimensions.width === "number" && typeof dimensions.height === "number") {
-      return `${dimensions.width} × ${dimensions.height}`;
-    }
+function hasValue(value: unknown): boolean {
+  return Array.isArray(value) ? value.length > 0 : Boolean(value);
+}
+
+function hasCompletionEvidence(nodeType: NodeType | undefined, record: Record<string, unknown>): boolean {
+  switch (nodeType) {
+    case "imageInput": return hasValue(record.image) || hasValue(record.imageRef);
+    case "audioInput": return hasValue(record.audioFile) || hasValue(record.audioFileRef);
+    case "videoInput": return hasValue(record.video) || hasValue(record.videoRef);
+    case "prompt": return hasValue(record.prompt);
+    case "array": return hasValue(record.outputText) || hasValue(record.outputItems);
+    case "promptConstructor": return hasValue(record.outputText);
+    case "glbViewer": return hasValue(record.glbUrl) || hasValue(record.capturedImage);
+    case "nanoBanana":
+    case "annotation":
+    case "videoFrameGrab":
+    case "removeBackground": return hasValue(record.outputImage) || hasValue(record.outputImageRef);
+    case "generateVideo":
+    case "videoStitch":
+    case "easeCurve":
+    case "videoTrim": return hasValue(record.outputVideo) || hasValue(record.outputVideoRef);
+    case "generateAudio": return hasValue(record.outputAudio) || hasValue(record.outputAudioRef);
+    case "llmGenerate": return hasValue(record.outputText);
+    case "generate3d": return hasValue(record.output3dUrl);
+    case "splitGrid": return hasValue(record.childNodeIds);
+    case "imageCompare": return hasValue(record.imageA) && hasValue(record.imageB);
+    case "output": return hasValue(record.image) || hasValue(record.imageRef) || hasValue(record.video) || hasValue(record.audio);
+    case "outputGallery": return hasValue(record.images) || hasValue(record.imageRefs) || hasValue(record.videos) || hasValue(record.videoRefs);
+    default: return false;
   }
-  if (typeof record.duration === "number") return `${record.duration.toFixed(1)} s`;
-  if (typeof record.model === "string") {
-    return typeof record.provider === "string" ? `${record.provider} · ${record.model}` : record.model;
+}
+
+function formatName(value: unknown, filename?: unknown): string | undefined {
+  if (typeof value === "string" && value) {
+    const subtype = value.includes("/") ? value.split("/").pop() : value;
+    return subtype?.replace("mpeg", "mp3").toUpperCase();
   }
+  if (typeof filename === "string" && filename.includes(".")) return filename.split(".").pop()?.toUpperCase();
   return undefined;
+}
+
+function deriveNodeDetail(nodeType: NodeType | undefined, record: Record<string, unknown>, state: CurrentNodeState): string | undefined {
+  const parts: string[] = [];
+  const dimensions = record.dimensions && typeof record.dimensions === "object"
+    ? record.dimensions as Record<string, unknown>
+    : null;
+
+  if (nodeType === "imageInput" || nodeType === "audioInput" || nodeType === "videoInput") {
+    if (dimensions && typeof dimensions.width === "number" && typeof dimensions.height === "number") {
+      parts.push(`${dimensions.width} × ${dimensions.height}`);
+    }
+    if (typeof record.duration === "number") parts.push(`${record.duration.toFixed(1)} s`);
+    const format = formatName(record.format, record.filename);
+    if (format) parts.push(format);
+    if (record.isOptional) parts.push("Optional");
+  } else if (nodeType === "prompt") {
+    if (record.isOptional) parts.push("Optional");
+    if (typeof record.prompt === "string" && record.prompt) parts.push(`${record.prompt.length} characters`);
+  } else if (getNodeRole(nodeType as NodeType) === "generator") {
+    const selected = record.selectedModel && typeof record.selectedModel === "object"
+      ? record.selectedModel as Record<string, unknown>
+      : null;
+    const provider = selected?.provider ?? record.provider;
+    const model = selected?.displayName ?? selected?.modelId ?? record.model;
+    if (typeof provider === "string" && typeof model === "string") parts.push(`${provider} · ${model}`);
+    else if (typeof model === "string") parts.push(model);
+    const parameters = record.parameters && typeof record.parameters === "object"
+      ? record.parameters as Record<string, unknown>
+      : {};
+    const resolution = record.resolution ?? parameters.resolution;
+    const duration = record.duration ?? parameters.duration;
+    if (typeof resolution === "string") parts.push(resolution);
+    if (typeof duration === "number") parts.push(`${duration.toFixed(1)} s`);
+    if (state === "running" && typeof record.progress === "number") parts.push(`${Math.round(record.progress)}%`);
+  } else if (nodeType && PROCESSOR_METADATA[nodeType]) {
+    parts.push(...PROCESSOR_METADATA[nodeType]!);
+    if (typeof record.duration === "number") parts.push(`${record.duration.toFixed(1)} s`);
+    if (state === "running" && typeof record.progress === "number") parts.push(`${Math.round(record.progress)}%`);
+  } else if (nodeType === "switch") {
+    const switches = Array.isArray(record.switches) ? record.switches as Array<Record<string, unknown>> : [];
+    const active = switches.filter((item) => item.enabled).map((item) => item.name).filter((name): name is string => typeof name === "string");
+    parts.push(active.length ? `${active.join(", ")} active` : "No active branch");
+    parts.push(`${switches.length} branch${switches.length === 1 ? "" : "es"}`);
+  } else if (nodeType === "conditionalSwitch") {
+    const rules = Array.isArray(record.rules) ? record.rules as Array<Record<string, unknown>> : [];
+    const active = rules.find((rule) => rule.isMatched);
+    parts.push(active && typeof active.label === "string" ? `${active.label} active` : "Default active");
+    parts.push(`${rules.length} rule${rules.length === 1 ? "" : "s"}`);
+  } else if (nodeType === "router") {
+    if (typeof record.activeBranch === "string") parts.push(`${record.activeBranch} active`);
+  } else if (nodeType === "output" || nodeType === "outputGallery") {
+    if (record.audio || record.contentType === "audio") parts.push("Audio available");
+    else if (record.video || (Array.isArray(record.videos) && record.videos.length) || record.contentType === "video") parts.push("Video available");
+    else if (record.image || (Array.isArray(record.images) && record.images.length) || record.contentType === "image") parts.push("Image available");
+    else parts.push("No result");
+  }
+
+  return parts.length ? parts.join(" · ") : undefined;
 }
 
 /** Normalize the heterogeneous legacy node payloads without changing store types. */
 export function deriveNodeStatusFromData(
+  nodeType: NodeType | undefined,
   data: unknown,
   modifiers: NodeStatusModifiers = {}
 ): { state: CurrentNodeState; label: string; detail?: string } {
@@ -179,21 +263,20 @@ export function deriveNodeStatusFromData(
     record.isLoading || record.isProcessing || status === "loading" || status === "running" || status === "processing"
   );
   const complete = modifiers.complete ?? Boolean(
-    status === "complete" || status === "completed" || status === "success" ||
-    COMPLETION_FIELDS.some((field) => {
-      const value = record[field];
-      return Array.isArray(value) ? value.length > 0 : Boolean(value);
-    })
+    hasCompletionEvidence(nodeType, record)
   );
   const result = deriveNodeStatus({
-    error: modifiers.error ?? (status === "error" ? dataError || "Operation failed" : dataError),
+    error: modifiers.error ?? (status === "error" ? dataError || "Operation failed" : null),
     running,
     locked: modifiers.locked ?? Boolean(record.locked || record.isLocked || record.isInLockedGroup),
     disabled: modifiers.disabled ?? Boolean(record.disabled || record.isDisabled),
     skipped: modifiers.skipped ?? Boolean(record.skipped || status === "skipped"),
     complete,
   });
-  const detail = modifiers.detail ?? result.detail ?? deriveNodeDetail(record, result.state);
+  const recoveryDetail = result.state === "error" && nodeType && getNodeRole(nodeType) === "generator"
+    ? `${result.detail ?? "Operation failed"} · Run again to retry`
+    : result.detail;
+  const detail = modifiers.detail ?? recoveryDetail ?? deriveNodeDetail(nodeType, record, result.state);
   return detail ? { ...result, detail } : result;
 }
 

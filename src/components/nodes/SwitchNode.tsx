@@ -118,6 +118,7 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="switch"
       minWidth={220}
       minHeight={minHeight}
     >

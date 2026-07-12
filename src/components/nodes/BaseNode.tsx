@@ -7,6 +7,7 @@ import { isPanningRef, isDraggingNodeRef } from "@/components/WorkflowCanvas";
 import { getMediaDimensions, calculateAspectFitSize } from "@/utils/nodeDimensions";
 import { NodeStatusFooter } from "./NodeStatusFooter";
 import { deriveNodeStatusFromData } from "./nodePresentation";
+import type { NodeType } from "@/types";
 
 const DEFAULT_NODE_DIMENSION = 300;
 
@@ -38,6 +39,7 @@ interface BaseNodeProps {
   statusFooter?: ReactNode;
   /** Legacy node payload, normalized into Current's explicit semantic states. */
   nodeData?: unknown;
+  nodeType?: NodeType;
   isLocked?: boolean;
   isDisabled?: boolean;
   isSkipped?: boolean;
@@ -89,6 +91,7 @@ export function BaseNode({
   stateDetail,
   statusFooter,
   nodeData,
+  nodeType,
   isLocked = false,
   isDisabled = false,
   isSkipped = false,
@@ -307,7 +310,7 @@ export function BaseNode({
 
   const hasExpandedSettings = settingsExpanded && settingsPanel;
   const isRunning = isCurrentlyExecuting || isExecuting;
-  const semanticStatus = deriveNodeStatusFromData(nodeData, {
+  const semanticStatus = deriveNodeStatusFromData(nodeType, nodeData, {
     running: isRunning ? true : undefined,
     error: hasError ? (nodeData && typeof nodeData === "object" && typeof (nodeData as Record<string, unknown>).error === "string"
       ? (nodeData as Record<string, unknown>).error as string

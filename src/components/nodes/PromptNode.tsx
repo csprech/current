@@ -98,6 +98,7 @@ export function PromptNode({ id, data, selected }: NodeProps<PromptNodeType>) {
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="prompt"
         fullBleed
       >
         {/* Text input handle - for receiving text from LLM nodes */}

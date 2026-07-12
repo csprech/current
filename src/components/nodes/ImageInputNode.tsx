@@ -131,6 +131,7 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="imageInput"
       contentClassName="flex-1 min-h-0"
       aspectFitMedia={nodeData.image}
       fullBleed

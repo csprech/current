@@ -181,6 +181,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="outputGallery"
         className="min-w-[200px]"
       >
         <Handle

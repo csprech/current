@@ -143,7 +143,8 @@ describe("LLMGenerateNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText("API rate limit exceeded")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("API rate limit exceeded");
+      expect(screen.getAllByText(/API rate limit exceeded/)).toHaveLength(1);
     });
 
     it("should show 'Generation failed' when error message is null", () => {
@@ -153,7 +154,7 @@ describe("LLMGenerateNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText("Generation failed")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Error");
     });
   });
 

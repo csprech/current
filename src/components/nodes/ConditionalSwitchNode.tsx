@@ -209,6 +209,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="conditionalSwitch"
       minWidth={260}
       minHeight={minHeight}
     >

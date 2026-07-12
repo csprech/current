@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CurrentHandle as Handle } from "./CurrentHandle";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
+import { InlineNotice } from "@/components/current/InlineNotice";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { ArrayNodeData } from "@/types";
 import { getConnectedInputsPure } from "@/store/utils/connectedInputs";
@@ -219,7 +220,9 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="array"
       hasError={!!nodeData.error}
+      stateDetail={nodeData.error ? "Fix split settings" : undefined}
       minWidth={300}
       minHeight={220}
     >
@@ -337,7 +340,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
         </div>
         <div className="relative min-h-[50px] border border-neutral-700/40 rounded-md bg-neutral-800">
           {nodeData.error ? (
-            <div className="p-2 text-[11px] text-red-400">{nodeData.error}</div>
+            <InlineNotice tone="error" className="m-2">{nodeData.error}</InlineNotice>
           ) : previewItems.length === 0 ? (
             <div className="p-2 text-[11px] text-neutral-500">No items parsed</div>
           ) : (

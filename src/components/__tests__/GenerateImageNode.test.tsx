@@ -254,7 +254,8 @@ describe("GenerateImageNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText("API error occurred")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("API error occurred");
+      expect(screen.getAllByText(/API error occurred/)).toHaveLength(1);
     });
 
     it("should show error overlay when status is error with existing output", () => {
@@ -268,8 +269,7 @@ describe("GenerateImageNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText("Generation failed")).toBeInTheDocument();
-      expect(screen.getByText("See toast for details")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Generation failed");
     });
 
     it("should show 'Failed' when error message is null", () => {
@@ -283,7 +283,7 @@ describe("GenerateImageNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText("Failed")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Error");
     });
   });
 

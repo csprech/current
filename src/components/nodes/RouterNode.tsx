@@ -74,6 +74,10 @@ export const RouterNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="router"
+      stateDetail={activeInputTypes.length > 0
+        ? `${activeInputTypes.length} active route${activeInputTypes.length === 1 ? "" : "s"}`
+        : "No active routes"}
       minWidth={200}
       minHeight={minHeight}
     >
@@ -127,12 +131,6 @@ export const RouterNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
         />
       ))}
 
-      {/* Body content */}
-      <div className="text-[10px] text-neutral-500 text-center py-1">
-        {activeInputTypes.length > 0
-          ? `${activeInputTypes.length} type${activeInputTypes.length !== 1 ? "s" : ""} routed`
-          : "Drop connections here"}
-      </div>
     </BaseNode>
   );
 });

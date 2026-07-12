@@ -132,6 +132,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="llmGenerate"
       hasError={nodeData.status === "error"}
       isExecuting={isRunning}
       fullBleed
@@ -331,7 +332,6 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-white text-xs font-medium">Generation failed</span>
           </div>
         ) : nodeData.outputText ? (
           <div className="group/text relative w-full h-full bg-neutral-900/40 p-2 overflow-auto nowheel">

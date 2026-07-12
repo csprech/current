@@ -255,6 +255,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="generateAudio"
         settingsExpanded={inlineParametersEnabled && isParamsExpanded}
         isExecuting={isRunning}
         hasError={nodeData.status === "error"}

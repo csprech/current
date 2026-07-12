@@ -102,6 +102,7 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="easeCurve"
         fullBleed
         minWidth={340}
       >
@@ -125,6 +126,7 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="easeCurve"
         fullBleed
         minWidth={340}
       >
@@ -147,6 +149,7 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="easeCurve"
       fullBleed
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
@@ -194,12 +197,6 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
         </div>
       )}
 
-      {/* Error display */}
-      {nodeData.status === "error" && nodeData.error && (
-        <div className="absolute bottom-2 left-2 right-2 px-2 py-1.5 bg-red-900/30 border border-red-700/50 rounded">
-          <p className="text-[10px] text-red-400 break-words">{nodeData.error}</p>
-        </div>
-      )}
     </BaseNode>
   );
 }

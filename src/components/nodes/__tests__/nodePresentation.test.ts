@@ -69,13 +69,41 @@ describe("nodePresentation", () => {
   });
 
   it("normalizes legacy node data into explicit Current states", () => {
-    expect(deriveNodeStatusFromData({ status: "loading" })).toMatchObject({ state: "running" });
-    expect(deriveNodeStatusFromData({ status: "error", error: "Provider unavailable" })).toEqual({
-      state: "error", label: "Error", detail: "Provider unavailable",
+    expect(deriveNodeStatusFromData("nanoBanana", { status: "loading" })).toMatchObject({ state: "running" });
+    expect(deriveNodeStatusFromData("nanoBanana", { status: "error", error: "Provider unavailable" })).toEqual({
+      state: "error", label: "Error", detail: "Provider unavailable · Run again to retry",
     });
-    expect(deriveNodeStatusFromData({ outputImage: "data:image/png;base64,x" })).toMatchObject({ state: "complete" });
-    expect(deriveNodeStatusFromData({}, { locked: true })).toMatchObject({ state: "locked" });
-    expect(deriveNodeStatusFromData({}, { disabled: true })).toMatchObject({ state: "disabled" });
-    expect(deriveNodeStatusFromData({}, { skipped: true })).toMatchObject({ state: "skipped" });
+    expect(deriveNodeStatusFromData("nanoBanana", { outputImage: "data:image/png;base64,x" })).toMatchObject({ state: "complete" });
+    expect(deriveNodeStatusFromData("prompt", {}, { locked: true })).toMatchObject({ state: "locked" });
+    expect(deriveNodeStatusFromData("prompt", {}, { disabled: true })).toMatchObject({ state: "disabled" });
+    expect(deriveNodeStatusFromData("prompt", {}, { skipped: true })).toMatchObject({ state: "skipped" });
+  });
+
+  it("does not infer processor or generator completion from input and configuration fields", () => {
+    expect(deriveNodeStatusFromData("splitGrid", { sourceImage: "image", defaultPrompt: "configured" }).state).toBe("idle");
+    expect(deriveNodeStatusFromData("nanoBanana", { inputPrompt: "configured", resolution: "2K" }).state).toBe("idle");
+    expect(deriveNodeStatusFromData("promptConstructor", { template: "Hello @name", outputText: null }).state).toBe("idle");
+    expect(deriveNodeStatusFromData("nanoBanana", { status: "complete", outputImage: null }).state).toBe("idle");
+    expect(deriveNodeStatusFromData("prompt", { prompt: "A true input value" }).state).toBe("complete");
+  });
+
+  it("maps explicit metadata for each node family", () => {
+    expect(deriveNodeStatusFromData("videoInput", {
+      video: "video", dimensions: { width: 1920, height: 1080 }, duration: 4.25, format: "video/mp4", isOptional: true,
+    }).detail).toBe("1920 × 1080 · 4.3 s · MP4 · Optional");
+
+    expect(deriveNodeStatusFromData("nanoBanana", {
+      selectedModel: { provider: "fal", displayName: "Flux Pro", modelId: "flux-pro" }, resolution: "2K", status: "loading", progress: 42,
+    }).detail).toBe("fal · Flux Pro · 2K · 42%");
+
+    expect(deriveNodeStatusFromData("videoTrim", { duration: 8, outputVideo: null }).detail)
+      .toBe("Trim video · MP4 · 8.0 s");
+
+    expect(deriveNodeStatusFromData("conditionalSwitch", {
+      rules: [{ label: "Portrait", isMatched: true }, { label: "Landscape", isMatched: false }],
+    }).detail).toBe("Portrait active · 2 rules");
+
+    expect(deriveNodeStatusFromData("output", { contentType: "audio", audio: "audio" }).detail)
+      .toBe("Audio available");
   });
 });

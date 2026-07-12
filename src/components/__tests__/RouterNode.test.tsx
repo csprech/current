@@ -35,5 +35,6 @@ describe("RouterNode", () => {
     expect(container.querySelector(".iris-card")).not.toBeInTheDocument();
     expect(screen.getByTestId("current-node")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("Ready");
+    expect(screen.getByRole("status")).toHaveTextContent("No active routes");
   });
 });

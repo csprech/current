@@ -191,6 +191,7 @@ export function PromptConstructorNode({ id, data, selected }: NodeProps<PromptCo
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="promptConstructor"
         fullBleed
       >
         {/* Text input handle */}

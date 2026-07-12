@@ -199,6 +199,7 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="videoTrim"
         contentClassName="flex-1 min-h-0"
         minWidth={360}
         minHeight={360}
@@ -223,6 +224,7 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
         id={id}
         selected={selected}
         nodeData={nodeData}
+        nodeType="videoTrim"
         minWidth={360}
         minHeight={360}
       >
@@ -245,6 +247,7 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
       id={id}
       selected={selected}
       nodeData={nodeData}
+      nodeType="videoTrim"
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       minWidth={360}
@@ -420,12 +423,6 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
           </div>
         )}
 
-        {/* Error display */}
-        {nodeData.status === "error" && nodeData.error && (
-          <div className="shrink-0 px-2 py-1.5 bg-red-900/30 border border-red-700/50 rounded">
-            <p className="text-[10px] text-red-400 break-words">{nodeData.error}</p>
-          </div>
-        )}
       </div>
     </BaseNode>
   );
