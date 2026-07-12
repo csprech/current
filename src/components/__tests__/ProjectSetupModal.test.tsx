@@ -10,6 +10,9 @@ const mockToggleProvider = vi.fn();
 const mockUseWorkflowStore = vi.fn();
 const mockIncrementModalCount = vi.fn();
 const mockDecrementModalCount = vi.fn();
+const { mockGenerateWorkflowId } = vi.hoisted(() => ({
+  mockGenerateWorkflowId: vi.fn(() => "mock-workflow-id"),
+}));
 
 vi.mock("@xyflow/react", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@xyflow/react")>();
@@ -27,7 +30,7 @@ vi.mock("@/store/workflowStore", () => ({
     return mockUseWorkflowStore((s: unknown) => s);
   },
   useProviderApiKeys: () => ({ replicateApiKey: null, falApiKey: null, kieApiKey: null, wavespeedApiKey: null }),
-  generateWorkflowId: () => "mock-workflow-id",
+  generateWorkflowId: mockGenerateWorkflowId,
 }));
 
 // Mock fetch
@@ -86,6 +89,8 @@ const createDefaultState = (overrides = {}) => ({
 describe("ProjectSetupModal", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGenerateWorkflowId.mockReset();
+    mockGenerateWorkflowId.mockReturnValue("mock-workflow-id");
     // Default mock for env-status API (called on modal open)
     mockFetch.mockImplementation((url: string) => {
       if (url === "/api/env-status") {
@@ -597,6 +602,10 @@ describe("ProjectSetupModal", () => {
     });
 
     it("preserves entered project context after a failed save and reuses it for retry", async () => {
+      mockGenerateWorkflowId.mockReset();
+      mockGenerateWorkflowId
+        .mockReturnValueOnce("session-project-1")
+        .mockReturnValueOnce("session-project-2");
       let storeOverrides: Record<string, unknown> = {};
       mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState(storeOverrides)));
       const onSave = vi.fn()
@@ -617,7 +626,7 @@ describe("ProjectSetupModal", () => {
       expect(await screen.findByRole("alert")).toHaveTextContent("Failed to save project. Please try again.");
       storeOverrides = {
         workflowName: "Launch Film",
-        workflowId: "mock-workflow-id",
+        workflowId: "session-project-1",
         saveDirectoryPath: "/tmp/current/Launch Film",
       };
       rerender(<ProjectSetupModal isOpen onClose={vi.fn()} onSave={onSave} mode="new" />);
@@ -627,10 +636,38 @@ describe("ProjectSetupModal", () => {
       fireEvent.click(screen.getByText("Create"));
       await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
       expect(onSave).toHaveBeenLastCalledWith(
-        "mock-workflow-id",
+        "session-project-1",
         "Launch Film",
         "/tmp/current/Launch Film"
       );
+      expect(onSave.mock.calls[0][0]).toBe("session-project-1");
+      expect(mockGenerateWorkflowId).toHaveBeenCalledOnce();
+    });
+
+    it("generates a fresh project id after the new-project sheet closes and reopens", async () => {
+      mockGenerateWorkflowId.mockReset();
+      mockGenerateWorkflowId
+        .mockReturnValueOnce("session-project-1")
+        .mockReturnValueOnce("session-project-2");
+      const onSave = vi.fn().mockResolvedValue(true);
+      const props = { onClose: vi.fn(), onSave, mode: "new" as const };
+      const { rerender } = render(<ProjectSetupModal isOpen {...props} />);
+      expect(mockGenerateWorkflowId).toHaveBeenCalledOnce();
+
+      fireEvent.change(screen.getByPlaceholderText("my-project"), { target: { value: "First" } });
+      fireEvent.change(screen.getByPlaceholderText("/Users/username/projects/my-project"), { target: { value: "/tmp" } });
+      fireEvent.click(screen.getByText("Create"));
+      await waitFor(() => expect(onSave).toHaveBeenCalledWith("session-project-1", "First", "/tmp/First"));
+
+      rerender(<ProjectSetupModal isOpen={false} {...props} />);
+      rerender(<ProjectSetupModal isOpen {...props} />);
+      expect(mockGenerateWorkflowId).toHaveBeenCalledTimes(2);
+      fireEvent.change(screen.getByPlaceholderText("my-project"), { target: { value: "Second" } });
+      fireEvent.change(screen.getByPlaceholderText("/Users/username/projects/my-project"), { target: { value: "/tmp" } });
+      fireEvent.click(screen.getByText("Create"));
+
+      await waitFor(() => expect(onSave).toHaveBeenCalledWith("session-project-2", "Second", "/tmp/Second"));
+      expect(mockGenerateWorkflowId).toHaveBeenCalledTimes(2);
     });
 
     it("should show 'Validating...' while validating directory", async () => {

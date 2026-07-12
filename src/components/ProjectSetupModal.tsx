@@ -186,11 +186,13 @@ export function ProjectSetupModal({
   // Canvas tab state
   const [localCanvasSettings, setLocalCanvasSettings] = useState<CanvasNavigationSettings>(canvasNavigationSettings);
   const initializedModeRef = useRef<"new" | "settings" | null>(null);
+  const newProjectIdRef = useRef<string | null>(null);
 
   // Pre-fill when opening in settings mode
   useEffect(() => {
     if (!isOpen) {
       initializedModeRef.current = null;
+      newProjectIdRef.current = null;
       return;
     }
     if (initializedModeRef.current === mode) return;
@@ -198,6 +200,9 @@ export function ProjectSetupModal({
       // Reset to project tab when opening
       if (mode === "new") {
         setActiveTab("project");
+        newProjectIdRef.current = generateWorkflowId();
+      } else {
+        newProjectIdRef.current = null;
       }
 
       if (mode === "settings") {
@@ -303,7 +308,9 @@ export function ProjectSetupModal({
         return;
       }
 
-      const id = mode === "new" ? generateWorkflowId() : useWorkflowStore.getState().workflowId || generateWorkflowId();
+      const id = mode === "new"
+        ? newProjectIdRef.current ?? (newProjectIdRef.current = generateWorkflowId())
+        : useWorkflowStore.getState().workflowId || generateWorkflowId();
       // Update external storage setting
       setUseExternalImageStorage(externalStorage);
       // Remember the base directory for next time
