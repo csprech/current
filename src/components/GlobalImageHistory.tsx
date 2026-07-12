@@ -201,7 +201,7 @@ function HistorySidebar({
   );
 }
 
-export function GlobalImageHistory() {
+export function GlobalImageHistory({ embedded = false }: { embedded?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -286,7 +286,19 @@ export function GlobalImageHistory() {
     setShowSidebar(false);
   }, [clearGlobalHistory]);
 
-  if (history.length === 0) return null;
+  if (history.length === 0) return embedded ? <p className="current-empty-state">Generated images will appear here.</p> : null;
+
+  if (embedded) return (
+    <div className="current-history-list">
+      <button type="button" className="current-history-clear" onClick={handleClear}>Clear history</button>
+      {history.map((item, index) => (
+        <button type="button" key={item.id} draggable onDragStart={(event) => handleDragStart(event, item)} className="current-history-item">
+          <img src={item.image} alt={`History ${index + 1}`} draggable={false} />
+          <span><strong>{item.prompt || "No prompt"}</strong><small>{formatRelativeTime(item.timestamp)}</small></span>
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <div ref={drawerRef} className="absolute bottom-4 right-64 z-10">

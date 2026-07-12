@@ -15,6 +15,7 @@ import { EASING_PRESETS, getPresetBezier, getEasingBezier } from "@/lib/easing-p
 import { getAllEasingNames, getEasingFunction } from "@/lib/easing-functions";
 import { getModelPageUrl, getProviderDisplayName } from "@/utils/providerUrls";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
+import { CurrentPanel } from "@/components/current/CurrentPanel";
 
 // List of node types that have configurable parameters
 const CONFIGURABLE_NODE_TYPES: NodeType[] = [
@@ -113,6 +114,7 @@ export function ControlPanel() {
     return selected.length === 1 ? selected[0] : null;
   });
   const { inlineParametersEnabled } = useInlineParameters();
+  const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
 
   // Check if the selected node is configurable
   const isConfigurable = selectedNode && CONFIGURABLE_NODE_TYPES.includes(selectedNode.type as NodeType);
@@ -132,26 +134,12 @@ export function ControlPanel() {
   }
 
   return (
-    <div className="fixed top-0 right-6 h-screen z-[90] flex items-center pointer-events-none">
-      <div
-        className="w-80 iris-glass rounded-xl max-h-[80vh] overflow-y-auto pointer-events-auto transition-opacity duration-200 nowheel"
-        style={{
-          boxShadow: [
-            '-1px 0 2px rgba(0,0,0,0.18)',
-            '-2px 0 4px rgba(0,0,0,0.15)',
-            '-4px 0 8px rgba(0,0,0,0.12)',
-            '-8px 0 16px rgba(0,0,0,0.10)',
-            '-16px 0 32px rgba(0,0,0,0.08)',
-            '-32px 0 64px rgba(0,0,0,0.06)',
-          ].join(', '),
-        }}
-      >
-        <div className="p-4">
-          {/* Header */}
-          <h3 className="text-sm font-medium text-neutral-200">
-            {getNodeTypeTitle(selectedNode.type as NodeType)}
-          </h3>
-
+    <CurrentPanel
+      side="right"
+      title="Inspector"
+      onClose={() => onNodesChange([{ id: selectedNode.id, type: "select", selected: false }])}
+    >
+        <div className="current-inspector__selection">{getNodeTypeTitle(selectedNode.type as NodeType)}</div>
           {/* Node-specific controls */}
           <div className="space-y-4 mt-4">
             {selectedNode.type === "nanoBanana" && (
@@ -176,9 +164,7 @@ export function ControlPanel() {
               <ConditionalSwitchControls node={selectedNode} />
             )}
           </div>
-        </div>
-      </div>
-    </div>
+    </CurrentPanel>
   );
 }
 

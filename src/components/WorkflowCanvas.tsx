@@ -55,19 +55,15 @@ import { EditableEdge, ReferenceEdge, SharedEdgeGradients } from "./edges";
 import { ConnectionDropMenu, MenuAction } from "./ConnectionDropMenu";
 import { MultiSelectToolbar } from "./MultiSelectToolbar";
 import { EdgeToolbar } from "./EdgeToolbar";
-import { GlobalImageHistory } from "./GlobalImageHistory";
-import { AssetLibrary } from "./AssetLibrary";
 import { GroupBackgroundsPortal, GroupControlsOverlay } from "./GroupsOverlay";
 import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable, WorkflowNode, NodeGroup } from "@/types";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { FloatingNodeHeader } from "./nodes/FloatingNodeHeader";
 import { getMinimapColor } from "./nodes/nodePresentation";
-import { ControlPanel } from "./nodes/ControlPanel";
 import { detectAndSplitGrid } from "@/utils/gridSplitter";
 import { logger } from "@/utils/logger";
 import { WelcomeModal } from "./quickstart";
 import { ProjectSetupModal } from "./ProjectSetupModal";
-import { ChatPanel } from "./ChatPanel";
 import { EditOperation } from "@/lib/chat/editOperations";
 import { stripBinaryData } from "@/lib/chat/contextBuilder";
 import { PromptEditorModal } from "./modals/PromptEditorModal";
@@ -87,6 +83,8 @@ import { useAnnotationStore } from "@/store/annotationStore";
 import { TutorialOverlay } from "./onboarding/TutorialOverlay";
 import { useFTUXStore } from "@/store/ftuxStore";
 import { recordRecentNode } from "@/components/workspace/nodeCatalog";
+import { WorkspacePanelHost } from "@/components/workspace/WorkspacePanelHost";
+import { OutputsWorkspace } from "@/components/workspace/OutputsWorkspace";
 
 const nodeTypes: NodeTypes = {
   imageInput: ImageInputNode,
@@ -326,7 +324,7 @@ export function decorateNodeSemanticState(
 }
 
 export function WorkflowCanvas() {
-  const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds } =
+  const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds, workspaceView } =
     useWorkflowStore(useShallow((state) => ({
       nodes: state.nodes,
       edges: state.edges,
@@ -337,6 +335,7 @@ export function WorkflowCanvas() {
       canvasNavigationSettings: state.canvasNavigationSettings,
       dimmedNodeIds: state.dimmedNodeIds,
       skippedNodeIds: state.skippedNodeIds,
+      workspaceView: state.workspaceView,
     })));
   const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
   const onEdgesChange = useWorkflowStore((state) => state.onEdgesChange);
@@ -357,6 +356,7 @@ export function WorkflowCanvas() {
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const clearWorkflow = useWorkflowStore((state) => state.clearWorkflow);
   const setHoveredNodeId = useWorkflowStore((state) => state.setHoveredNodeId);
+  const setActiveRightPanel = useWorkflowStore((state) => state.setActiveRightPanel);
   const openAnnotationModal = useAnnotationStore((state) => state.openModal);
   const isAnnotationModalOpen = useAnnotationStore((state) => state.isModalOpen);
   const { screenToFlowPosition, getViewport, zoomIn, zoomOut, setViewport, setCenter } = useReactFlow();
@@ -365,7 +365,6 @@ export function WorkflowCanvas() {
   const [dropType, setDropType] = useState<"image" | "audio" | "workflow" | "node" | null>(null);
   const [connectionDrop, setConnectionDrop] = useState<ConnectionDropState | null>(null);
   const [isSplitting, setIsSplitting] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isBuildingWorkflow, setIsBuildingWorkflow] = useState(false);
   const [showNewProjectSetup, setShowNewProjectSetup] = useState(false);
   const [expandingNode, setExpandingNode] = useState<{ id: string; type: string } | null>(null);
@@ -1162,7 +1161,7 @@ export function WorkflowCanvas() {
       if (data.success && data.workflow) {
         captureSnapshot(); // Capture BEFORE loading new workflow
         await loadWorkflow(data.workflow, undefined, { preserveSnapshot: true });
-        setIsChatOpen(false);
+        setActiveRightPanel(null);
         showToast("Workflow generated successfully", "success");
       } else {
         showToast(data.error || "Failed to generate workflow", "error");
@@ -1173,7 +1172,7 @@ export function WorkflowCanvas() {
     } finally {
       setIsBuildingWorkflow(false);
     }
-  }, [loadWorkflow, showToast, captureSnapshot]);
+  }, [loadWorkflow, showToast, captureSnapshot, setActiveRightPanel]);
 
   // Create lightweight workflow state for chat (strip base64 images)
   const chatWorkflowState = useMemo(() => {
@@ -2130,7 +2129,7 @@ export function WorkflowCanvas() {
         />
       )}
 
-      <ReactFlow
+      {workspaceView === "outputs" ? <OutputsWorkspace /> : <ReactFlow
         nodes={allNodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -2331,7 +2330,7 @@ export function WorkflowCanvas() {
             );
           })}
         </ViewportPortal>
-      </ReactFlow>
+      </ReactFlow>}
 
       {/* Connection drop menu */}
       {connectionDrop && connectionDrop.handleType && (
@@ -2350,27 +2349,15 @@ export function WorkflowCanvas() {
       {/* Edge toolbar */}
       <EdgeToolbar />
 
-      {/* Global image history */}
-      <GlobalImageHistory />
-
-      {/* Persistent asset library (on-disk generations + inputs) */}
-      <AssetLibrary />
-
-      {/* Chat toggle button - hidden for now */}
-
-      {/* Chat panel */}
-      <ChatPanel
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        onBuildWorkflow={handleBuildWorkflow}
-        isBuildingWorkflow={isBuildingWorkflow}
-        onApplyEdits={handleApplyEdits}
-        workflowState={chatWorkflowState}
-        selectedNodeIds={selectedNodeIds}
-      />
-
-      {/* Control panel - renders on right side when a configurable node is selected */}
-      <ControlPanel />
+      <WorkspacePanelHost assistantProps={{
+        isOpen: true,
+        onClose: () => setActiveRightPanel(null),
+        onBuildWorkflow: handleBuildWorkflow,
+        isBuildingWorkflow,
+        onApplyEdits: handleApplyEdits,
+        workflowState: chatWorkflowState,
+        selectedNodeIds,
+      }} />
 
       {/* Expansion modals - rendered via portal when expand button is clicked */}
       {expandingNode && expandingNode.type === 'prompt' && (() => {

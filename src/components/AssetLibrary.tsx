@@ -177,9 +177,9 @@ function AssetLightbox({
   );
 }
 
-export function AssetLibrary() {
+export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
   const workflowPath = useWorkflowStore((state) => state.saveDirectoryPath);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(embedded);
   const [assets, setAssets] = useState<AssetEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -208,8 +208,8 @@ export function AssetLibrary() {
 
   // Load whenever the panel opens
   useEffect(() => {
-    if (isOpen) refresh();
-  }, [isOpen, refresh]);
+    if (isOpen || embedded) refresh();
+  }, [embedded, isOpen, refresh]);
 
   const handleDragStart = useCallback(
     (e: React.DragEvent, asset: AssetEntry, dataUrl: string) => {
@@ -230,7 +230,24 @@ export function AssetLibrary() {
   });
 
   // No saved directory → nothing to browse. Hide entirely.
-  if (!workflowPath) return null;
+  if (!workflowPath) return embedded ? <p className="current-empty-state">Save this project to browse generated assets and inputs.</p> : null;
+
+  if (embedded) return (
+    <div className="current-library-assets">
+      <div className="current-library-controls">
+        <input aria-label="Search assets" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by filename…" />
+        <button type="button" onClick={refresh}>Refresh</button>
+      </div>
+      <div className="current-library-filters" aria-label="Asset type filters">
+        {TYPE_FILTERS.map((filter) => <button type="button" key={filter.key} aria-pressed={typeFilter === filter.key} onClick={() => setTypeFilter(filter.key)}>{filter.label}</button>)}
+      </div>
+      {loading && <p className="current-empty-state">Loading…</p>}
+      {error && <p className="current-empty-state" role="alert">{error}</p>}
+      {!loading && !error && filtered.length === 0 && <p className="current-empty-state">{assets.length === 0 ? "No saved assets yet. Run a workflow to generate some." : "No assets match your filter."}</p>}
+      <div className="current-library-grid">{filtered.map((asset) => <AssetCell key={`${asset.folder}/${asset.filename}`} asset={asset} workflowPath={workflowPath} onOpen={(a, dataUrl) => setLightbox({ asset: a, dataUrl })} onDragStart={handleDragStart} />)}</div>
+      {lightbox && <AssetLightbox asset={lightbox.asset} dataUrl={lightbox.dataUrl} onClose={() => setLightbox(null)} />}
+    </div>
+  );
 
   return (
     <>
