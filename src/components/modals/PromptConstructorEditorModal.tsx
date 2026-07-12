@@ -155,7 +155,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
       <div className="h-full flex flex-col py-5">
         <div className="px-6 pb-4 flex items-center gap-3">
           {unresolvedVars.length > 0 && (
-            <span className="px-2 py-0.5 bg-amber-900/30 border border-amber-700/50 rounded text-[11px] text-amber-400">
+            <span className="current-model-badge current-model-badge--capability px-2 py-0.5 rounded text-[11px]">
               Unresolved: {unresolvedVars.map((v) => `@${v}`).join(", ")}
             </span>
           )}

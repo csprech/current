@@ -64,6 +64,12 @@ describe("CubicBezierEditor", () => {
       expect(screen.getByLabelText("Adjust control point 2")).toBeInTheDocument();
     });
 
+    it("uses Current-sized, keyboard-visible control targets", () => {
+      renderEditor();
+      expect(screen.getByLabelText("Adjust control point 1")).toHaveClass("current-curve-handle");
+      expect(screen.getByLabelText("Adjust control point 2")).toHaveClass("current-curve-handle");
+    });
+
     it("should position control point 1 based on value", () => {
       renderEditor({ value: [0.25, 0.1, 0.75, 0.9] });
       const cp1 = screen.getByLabelText("Adjust control point 1");
@@ -192,7 +198,7 @@ describe("CubicBezierEditor", () => {
       const { container } = renderEditor();
       const rect = container.querySelector("svg rect");
       expect(rect).toBeInTheDocument();
-      expect(rect?.getAttribute("fill")).toBe("#0f1720");
+      expect(rect?.getAttribute("fill")).toBe("var(--current-inspector)");
     });
   });
 });

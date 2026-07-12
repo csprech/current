@@ -13,19 +13,9 @@ interface CostDialogProps {
 }
 
 /**
- * Provider icon component - colored dot with provider indicator
+ * Provider icon component. Letter identity carries the provider distinction.
  */
 function ProviderIcon({ provider }: { provider: ProviderType }) {
-  const colors: Record<ProviderType, { bg: string; text: string }> = {
-    gemini: { bg: "bg-green-500/20", text: "text-green-300" },
-    fal: { bg: "bg-purple-500/20", text: "text-purple-300" },
-    replicate: { bg: "bg-blue-500/20", text: "text-blue-300" },
-    openai: { bg: "bg-teal-500/20", text: "text-teal-300" },
-    anthropic: { bg: "bg-amber-500/20", text: "text-amber-300" },
-    kie: { bg: "bg-orange-500/20", text: "text-orange-300" },
-    wavespeed: { bg: "bg-purple-500/20", text: "text-purple-300" },
-  };
-
   const labels: Record<ProviderType, string> = {
     gemini: "G",
     fal: "f",
@@ -36,10 +26,8 @@ function ProviderIcon({ provider }: { provider: ProviderType }) {
     wavespeed: "W",
   };
 
-  const color = colors[provider] || colors.gemini;
-
   return (
-    <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full ${color.bg} ${color.text} text-xs font-medium`}>
+    <span className="current-provider-monogram inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-medium">
       {labels[provider]}
     </span>
   );
@@ -138,7 +126,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
               <div className="flex items-center gap-2 mb-2">
                 <ProviderIcon provider="gemini" />
                 <span className="text-sm text-neutral-300">Gemini Cost</span>
-                <span className="ml-auto text-lg font-semibold text-green-400">
+                <span className="ml-auto text-lg font-semibold text-[var(--current-blue)]">
                   {formatCost(geminiTotal)}
                 </span>
               </div>
@@ -221,7 +209,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
           <div className="bg-neutral-900 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-neutral-400">Incurred Cost</span>
-              <span className="text-lg font-semibold text-green-400">
+              <span className="text-lg font-semibold text-[var(--current-blue)]">
                 {formatCost(incurredCost)}
               </span>
             </div>

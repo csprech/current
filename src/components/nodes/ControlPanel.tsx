@@ -1135,7 +1135,7 @@ function ConditionalSwitchControls({ node }: { node: Node }) {
 
           {rule.isMatched !== undefined && (
             <div className="flex items-center gap-1">
-              <div className={`w-2 h-2 rounded-full ${rule.isMatched ? 'bg-green-500' : 'bg-neutral-600'}`} />
+              <div className={`w-2 h-2 rounded-full ${rule.isMatched ? 'bg-[var(--current-success)]' : 'bg-neutral-600'}`} />
               <span className="text-xs text-neutral-400">
                 {rule.isMatched ? 'Matched' : 'Not matched'}
               </span>

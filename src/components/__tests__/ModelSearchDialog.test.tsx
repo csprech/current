@@ -383,12 +383,9 @@ describe("ModelSearchDialog", () => {
         // Check provider badges in the model cards grid
         const modelGrid = container.querySelector(".grid");
         expect(modelGrid).toBeInTheDocument();
-        // fal.ai appears for 2 models (FLUX.1 Dev and Kling Video)
-        const falBadges = modelGrid!.querySelectorAll('span[class*="bg-yellow"]');
-        expect(falBadges.length).toBeGreaterThanOrEqual(2);
-        // Replicate appears for 1 model (SDXL)
-        const replicateBadges = modelGrid!.querySelectorAll('span[class*="bg-blue"]');
-        expect(replicateBadges.length).toBeGreaterThanOrEqual(1);
+        const providerBadges = Array.from(modelGrid!.querySelectorAll(".current-model-badge--provider"));
+        expect(providerBadges.filter((badge) => badge.textContent === "fal.ai").length).toBeGreaterThanOrEqual(2);
+        expect(providerBadges.filter((badge) => badge.textContent === "Replicate").length).toBeGreaterThanOrEqual(1);
       });
     });
 

@@ -150,7 +150,7 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
             </button>
             <button
               onClick={handleSave}
-              className="px-3 py-1 text-xs text-white bg-emerald-600 hover:bg-emerald-500 rounded transition-colors"
+              className="current-button current-button--primary px-3 py-1 text-xs rounded"
             >
               Save
             </button>

@@ -791,6 +791,66 @@
 .current-toast--error { color: #9b2529; border-color: color-mix(in srgb, var(--current-danger) 48%, var(--current-divider)); }
 .current-compatible-menu [role="menuitem"] { min-height: 2.25rem; }
 
+.current-media-action {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  flex: none;
+  place-items: center;
+  padding: 0.375rem;
+  border: 1px solid var(--current-divider);
+  border-radius: 0.5rem;
+  color: var(--current-graphite);
+  background: color-mix(in srgb, var(--current-canvas) 86%, var(--current-paper));
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease, opacity 140ms ease;
+}
+.current-media-action:hover:not(:disabled) { color: var(--current-inspector); background: var(--current-paper); }
+.current-media-action:focus-visible { outline: none; box-shadow: var(--current-focus); opacity: 1; }
+.current-media-action:disabled { cursor: not-allowed; opacity: 0.45; }
+.current-media-action--primary { color: var(--current-paper); border-color: transparent; background: var(--current-blue); }
+.current-media-action--primary:hover:not(:disabled) { color: var(--current-paper); background: var(--current-steel-blue); }
+.current-media-action--overlay { color: var(--current-paper); border-color: rgb(255 255 255 / 18%); background: rgb(37 38 43 / 78%); opacity: 0.76; }
+.group:hover .current-media-action--overlay,
+.current-media-action--overlay:hover:not(:disabled) { color: var(--current-paper); background: rgb(37 38 43 / 92%); opacity: 1; }
+
+.current-curve-handle {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid color-mix(in srgb, var(--current-inspector) 78%, transparent);
+  background: var(--current-aqua);
+  transition: box-shadow 140ms ease, transform 140ms ease;
+}
+.current-curve-handle.is-dragging { box-shadow: 0 0 0 3px color-mix(in srgb, var(--current-aqua) 32%, transparent); }
+.current-curve-handle:focus-visible { outline: none; box-shadow: var(--current-focus); }
+
+.current-semantic-success {
+  color: color-mix(in srgb, var(--current-success) 72%, var(--current-inspector));
+  background: color-mix(in srgb, var(--current-success) 13%, var(--current-paper));
+}
+
+.current-model-filter {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  padding: 0.4rem;
+  border: 0;
+  border-radius: 0.5rem;
+  color: var(--current-graphite);
+  background: transparent;
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+.current-model-filter:hover { color: var(--current-inspector); background: color-mix(in srgb, var(--current-blue) 7%, var(--current-paper)); }
+.current-model-filter[aria-pressed="true"] { color: var(--current-blue); background: color-mix(in srgb, var(--current-blue) 13%, var(--current-paper)); }
+.current-model-filter:focus-visible { outline: none; box-shadow: var(--current-focus); }
+.current-model-badge { border: 1px solid var(--current-divider); color: var(--current-graphite); background: color-mix(in srgb, var(--current-canvas) 82%, var(--current-paper)); }
+.current-model-badge--provider { color: var(--current-blue); border-color: color-mix(in srgb, var(--current-blue) 24%, var(--current-divider)); }
+.current-model-badge--capability { color: var(--current-graphite); }
+.current-provider-monogram { color: var(--current-blue); background: color-mix(in srgb, var(--current-blue) 12%, var(--current-paper)); }
+
 html {
   /* Required for overscroll-behavior to work in Chrome on macOS */
   overflow-x: hidden;
@@ -1077,7 +1137,10 @@ body {
   }
 
   .current-toolbar-action,
-  .current-handle-label {
+  .current-handle-label,
+  .current-media-action,
+  .current-curve-handle,
+  .current-model-filter {
     transition: none;
   }
 }

@@ -254,7 +254,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         {/* Text preview — fixed height, above the handle-aligned area */}
         <div className="text-[10px] text-neutral-400 truncate h-5 flex items-center">
           {nodeData.evaluationPaused ? (
-            <span className="text-yellow-400">Evaluation paused</span>
+            <span className="text-[var(--current-warning)]">Evaluation paused</span>
           ) : incomingText ? (
             <>Input: &quot;{incomingText.slice(0, 50)}{incomingText.length > 50 ? "..." : ""}&quot;</>
           ) : (
@@ -275,7 +275,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
             {/* Match status indicator */}
             <div className="w-3 h-3 flex items-center justify-center flex-shrink-0">
               {rule.isMatched ? (
-                <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-[var(--current-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               ) : (
@@ -373,7 +373,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         <div ref={defaultRowRef} className="flex items-center gap-1 h-8 border-t border-neutral-700">
           <div className="w-3 h-3 flex items-center justify-center flex-shrink-0">
             {defaultMatched ? (
-              <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 text-[var(--current-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             ) : (

@@ -28,7 +28,7 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
 
 const CATEGORY_COLORS: Record<TemplateCategory, string> = {
   simple: "bg-blue-500/20 text-blue-300",
-  advanced: "bg-cyan-500/20 text-cyan-700",
+  advanced: "bg-[color-mix(in_srgb,var(--current-blue)_12%,var(--current-paper))] text-[var(--current-blue)]",
   community: "bg-sky-500/20 text-sky-700",
 };
 

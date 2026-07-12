@@ -2274,7 +2274,7 @@ export function WorkflowCanvas() {
                 onClick={() => updateNodeData(node.id, { isOptional: !isOptional })}
                 className={`nodrag nopan text-[10px] py-0.5 px-1.5 rounded transition-colors ${
                   isOptional
-                    ? "bg-amber-600/80 hover:bg-amber-500/80 text-white border border-amber-500/50"
+                    ? "bg-[var(--current-warning)] text-white border border-[color-mix(in_srgb,var(--current-warning)_50%,transparent)]"
                     : "bg-neutral-700 hover:bg-neutral-600 border border-neutral-600 text-neutral-400"
                 }`}
                 title={isOptional ? "This input is optional — empty inputs will be skipped" : "Mark as optional — empty inputs will skip this branch"}

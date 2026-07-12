@@ -340,7 +340,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
           <div className="relative group mt-2">
             {nodeData.__usedFallback && (
               <div
-                className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium pointer-events-auto z-10"
+                className="current-semantic-success absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-medium pointer-events-auto z-10"
                 title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
               >
                 Fallback used
@@ -369,7 +369,8 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             <div className="flex items-center gap-2 mt-2">
               <button
                 onClick={handlePlayPause}
-                className="w-7 h-7 flex items-center justify-center bg-violet-600 hover:bg-violet-500 rounded transition-colors shrink-0"
+                aria-label={isPlaying ? "Pause audio" : "Play audio"}
+                className="current-media-action current-media-action--primary shrink-0"
                 title={isPlaying ? "Pause" : "Play"}
               >
                 {isPlaying ? (
@@ -387,7 +388,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
               <div className="flex-1 h-1 bg-neutral-700 rounded-full overflow-hidden relative">
                 {!!audioRef.current?.duration && isFinite(audioRef.current.duration) && (
                   <div
-                    className="h-full bg-violet-500 transition-all"
+                    className="h-full bg-[var(--current-aqua)] transition-all"
                     style={{ width: `${(currentTime / audioRef.current.duration) * 100}%` }}
                   />
                 )}
@@ -403,7 +404,8 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
                 <>
                   <button
                     onClick={handleCarouselPrevious}
-                    className="w-5 h-5 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded transition-colors shrink-0"
+                    aria-label="Previous audio"
+                    className="current-media-action shrink-0"
                     disabled={isLoadingCarouselAudio}
                     title="Previous"
                   >
@@ -416,7 +418,8 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
                   </span>
                   <button
                     onClick={handleCarouselNext}
-                    className="w-5 h-5 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded transition-colors shrink-0"
+                    aria-label="Next audio"
+                    className="current-media-action shrink-0"
                     disabled={isLoadingCarouselAudio}
                     title="Next"
                   >
@@ -431,7 +434,8 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             {/* Download button */}
             <button
               onClick={() => downloadMedia(nodeData.outputAudio!, "audio").catch(() => {})}
-              className="absolute top-1 right-7 w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+              aria-label="Download audio"
+              className="current-media-action current-media-action--overlay absolute top-1 right-9"
               title="Download audio"
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -441,7 +445,8 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             {/* Clear button */}
             <button
               onClick={handleClearAudio}
-              className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+              aria-label="Clear audio"
+              className="current-media-action current-media-action--overlay absolute top-1 right-1"
               title="Clear audio"
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -461,7 +466,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             position={Position.Left}
             id="text"
             data-handletype="text"
-            style={{ background: "rgb(251, 191, 36)" }}
+            style={{ background: "var(--handle-color-text)" }}
           />
         )}
 
@@ -471,7 +476,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
           position={Position.Right}
           id="audio"
           data-handletype="audio"
-          style={{ background: "rgb(167, 139, 250)" }}
+          style={{ background: "var(--handle-color-audio)" }}
         />
         <HandleLabel label="Audio" side="source" color="var(--handle-color-audio)" visible={showLabels} />
 

@@ -13,12 +13,12 @@ interface CubicBezierEditorProps {
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 
-// Hardcoded dark-theme palette matching easy-peasy-ease color scheme
+// Current cool-color palette. CSS variables keep this canvas in sync with the product theme.
 const palette = {
-  background: "#0f1720",      // dark navy (easy-peasy-ease bg tint)
-  border: "rgba(255,255,255,0.12)",
-  muted: "rgba(255,255,255,0.35)",
-  primary: "#bef264",         // lime-300 (easy-peasy-ease primary)
+  background: "var(--current-inspector)",
+  border: "var(--current-graphite)",
+  muted: "var(--current-steel-blue)",
+  primary: "var(--current-aqua)",
 };
 
 const now = () =>
@@ -230,8 +230,8 @@ export function CubicBezierEditor({
         <button
           type="button"
           aria-label="Adjust control point 1"
-          className={`nodrag nopan absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-neutral-900/80 bg-lime-300/80 shadow transition active:cursor-grabbing active:scale-95 disabled:cursor-not-allowed disabled:pointer-events-none touch-none ${
-            draggingHandle === "p1" ? "ring-2 ring-lime-300/80" : ""
+          className={`current-curve-handle nodrag nopan absolute -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full shadow active:cursor-grabbing active:scale-95 disabled:cursor-not-allowed disabled:pointer-events-none touch-none ${
+            draggingHandle === "p1" ? "is-dragging" : ""
           }`}
           style={controlStyles.p1}
           onPointerDown={(event) => startDragging("p1", event)}
@@ -241,8 +241,8 @@ export function CubicBezierEditor({
         <button
           type="button"
           aria-label="Adjust control point 2"
-          className={`nodrag nopan absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-neutral-900/80 bg-lime-300/80 shadow transition active:cursor-grabbing active:scale-95 disabled:cursor-not-allowed disabled:pointer-events-none touch-none ${
-            draggingHandle === "p2" ? "ring-2 ring-lime-300/80" : ""
+          className={`current-curve-handle nodrag nopan absolute -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full shadow active:cursor-grabbing active:scale-95 disabled:cursor-not-allowed disabled:pointer-events-none touch-none ${
+            draggingHandle === "p2" ? "is-dragging" : ""
           }`}
           style={controlStyles.p2}
           onPointerDown={(event) => startDragging("p2", event)}

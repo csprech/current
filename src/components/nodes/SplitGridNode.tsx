@@ -170,7 +170,7 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
                 {nodeData.childNodeIds?.length ?? 0} generate sets created
               </div>
             ) : (
-              <div className="text-[10px] text-amber-400">
+              <div className="text-[10px] text-[var(--current-warning)]">
                 Not configured - click Settings
               </div>
             )}

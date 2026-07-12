@@ -199,7 +199,8 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handlePlayPause}
-              className="w-7 h-7 flex items-center justify-center bg-violet-600 hover:bg-violet-500 rounded transition-colors"
+              aria-label={isPlaying ? "Pause audio" : "Play audio"}
+              className="current-media-action current-media-action--primary"
               title={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
@@ -217,7 +218,7 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
             <div className="flex-1 h-1 bg-neutral-700 rounded-full overflow-hidden relative">
               {audioRef.current?.duration && isFinite(audioRef.current.duration) && (
                 <div
-                  className="h-full bg-violet-500 transition-all"
+                  className="h-full bg-[var(--current-aqua)] transition-all"
                   style={{ width: `${(currentTime / audioRef.current.duration) * 100}%` }}
                 />
               )}
@@ -233,7 +234,7 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
           <button
             onClick={() => downloadMedia(nodeData.audioFile!, "audio")}
             aria-label="Download audio"
-            className="absolute top-1 right-7 w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white transition-opacity flex items-center justify-center"
+            className="current-media-action current-media-action--overlay absolute top-1 right-9"
             title="Download audio"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -243,7 +244,9 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
           {/* Remove button */}
           <button
             onClick={handleRemove}
-            className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+            aria-label="Remove audio"
+            className="current-media-action current-media-action--overlay absolute top-1 right-1"
+            title="Remove audio"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -275,7 +278,7 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
         position={Position.Left}
         id="audio"
         data-handletype="audio"
-        style={{ background: "rgb(167, 139, 250)" }}
+        style={{ background: "var(--handle-color-audio)" }}
       />
       <HandleLabel label="Audio" side="target" color="var(--handle-color-audio)" visible={showLabels} />
       <Handle
@@ -283,7 +286,7 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
         position={Position.Right}
         id="audio"
         data-handletype="audio"
-        style={{ background: "rgb(167, 139, 250)" }}
+        style={{ background: "var(--handle-color-audio)" }}
       />
       <HandleLabel label="Audio" side="source" color="var(--handle-color-audio)" visible={showLabels} />
     </BaseNode>

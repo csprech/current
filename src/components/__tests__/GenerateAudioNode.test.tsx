@@ -252,6 +252,25 @@ describe("GenerateAudioNode", () => {
         format: null,
       });
     });
+
+    it("exposes every output action by name with a full-size keyboard target", () => {
+      render(
+        <TestWrapper>
+          <GenerateAudioNode {...createNodeProps({
+            outputAudio: "data:audio/mp3;base64,abc123",
+            status: "complete",
+            audioHistory: [
+              { id: "audio1", timestamp: Date.now(), prompt: "one", model: "test" },
+              { id: "audio2", timestamp: Date.now(), prompt: "two", model: "test" },
+            ],
+          })} />
+        </TestWrapper>
+      );
+
+      for (const name of ["Play audio", "Previous audio", "Next audio", "Download audio", "Clear audio"]) {
+        expect(screen.getByRole("button", { name })).toHaveClass("current-media-action");
+      }
+    });
   });
 
   describe("Audio History Carousel", () => {

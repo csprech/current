@@ -539,7 +539,7 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">Google Gemini</span>
                 {envStatus?.gemini && !overrideActive.gemini ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-[var(--current-success)]">Configured via .env</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, gemini: true }))}
@@ -587,7 +587,7 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">OpenAI</span>
                 {envStatus?.openai && !overrideActive.openai ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-[var(--current-success)]">Configured via .env</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, openai: true }))}
@@ -635,7 +635,7 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">Anthropic</span>
                 {envStatus?.anthropic && !overrideActive.anthropic ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-[var(--current-success)]">Configured via .env</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, anthropic: true }))}
@@ -683,7 +683,7 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">Replicate</span>
                 {envStatus?.replicate && !overrideActive.replicate ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-[var(--current-success)]">Configured via .env</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, replicate: true }))}
@@ -731,7 +731,7 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">fal.ai</span>
                 {envStatus?.fal && !overrideActive.fal ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-[var(--current-success)]">Configured via .env</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, fal: true }))}
@@ -779,7 +779,7 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">Kie.ai</span>
                 {envStatus?.kie && !overrideActive.kie ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-[var(--current-success)]">Configured via .env</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, kie: true }))}
@@ -827,7 +827,7 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">WaveSpeed</span>
                 {envStatus?.wavespeed && !overrideActive.wavespeed ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-[var(--current-success)]">Configured via .env</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, wavespeed: true }))}

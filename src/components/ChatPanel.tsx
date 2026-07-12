@@ -145,7 +145,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
     <aside aria-label="Assistant" className="current-panel current-assistant" data-side="right">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-700">
-        <h3 className="text-sm font-medium text-neutral-200">Workflow Assistant <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded px-1.5 py-0.5">Beta</span></h3>
+        <h3 className="text-sm font-medium text-neutral-200">Workflow Assistant <span className="current-model-badge current-model-badge--capability ml-1.5 text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5">Beta</span></h3>
         <div className="flex items-center gap-1">
           {messages.length > 0 && (
             <button
@@ -243,7 +243,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
                         const explanation = (tool.input as { explanation?: string }).explanation;
                         if (explanation) {
                           return (
-                            <div key={idx} className="mb-2 text-green-300 text-xs italic">
+                            <div key={idx} className="mb-2 text-[var(--current-success)] text-xs italic">
                               {explanation}
                             </div>
                           );
@@ -355,7 +355,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
             <button
               onClick={handleBuildWorkflow}
               disabled={isBuildingWorkflow || isLoading}
-              className="w-full bg-green-600 hover:bg-green-500 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="current-button current-button--primary w-full rounded-lg px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isBuildingWorkflow ? (
                 <>

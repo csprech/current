@@ -148,7 +148,7 @@ export function EdgeToolbar() {
         aria-label={hasPause ? "Remove pause" : "Add pause"}
         className={`current-toolbar-action ${
           hasPause
-            ? "text-amber-400 hover:text-amber-300"
+            ? "text-[var(--current-warning)]"
             : "text-neutral-400 hover:text-neutral-100"
         }`}
         title={hasPause ? "Remove pause" : "Add pause"}

@@ -13,6 +13,10 @@ const LEGACY_TERMS = [
   ["node", "banana.png"].join("-"),
   ["banana", "icon"].join("_"),
 ];
+// Red remains available for destructive/error semantics. Success and warning must use
+// their named Current variables; user-authored color values are data, not source chrome.
+const RETIRED_CATEGORY_ACCENTS = /(?:lime|violet|purple|pink|fuchsia|orange|yellow|green|emerald|amber|cyan|teal|rose)-(?:[1-9]00|50)/i;
+const RETIRED_HARDCODED_ACCENTS = /#bef264|rgb\(167,\s*139,\s*250\)|rgb\(251,\s*191,\s*36\)/i;
 
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
@@ -37,6 +41,21 @@ describe("Current brand source audit", () => {
           : [];
       });
     });
+
+    expect(matches).toEqual([]);
+  });
+
+  it("keeps product category chrome within the Current cool-color system", () => {
+    const componentRoot = join(ROOT, "src/components");
+    const matches = sourceFiles(componentRoot)
+      .filter((path) => isTextSource(path) && !path.includes("/__tests__/"))
+      .flatMap((path) => {
+        const relativePath = relative(ROOT, path);
+        const source = readFileSync(path, "utf8");
+        return RETIRED_CATEGORY_ACCENTS.test(source) || RETIRED_HARDCODED_ACCENTS.test(source)
+          ? [relativePath]
+          : [];
+      });
 
     expect(matches).toEqual([]);
   });

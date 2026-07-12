@@ -361,16 +361,16 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
           <div className="relative w-full flex-1 min-h-[80px] flex flex-col items-center justify-center gap-2 bg-neutral-800 rounded border border-neutral-700 p-3">
             {nodeData.__usedFallback && (
               <div
-                className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium pointer-events-auto z-10"
+                className="current-semantic-success absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-medium pointer-events-auto z-10"
                 title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
               >
                 Fallback used
               </div>
             )}
-            <svg className="w-8 h-8 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-8 h-8 text-[var(--current-aqua)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25" />
             </svg>
-            <span className="text-[11px] text-orange-400 font-medium">3D Model Generated</span>
+            <span className="text-[11px] text-[var(--current-aqua)] font-medium">3D Model Generated</span>
             {nodeData.savedFilename ? (
               <button
                 onClick={async (e) => {
@@ -394,7 +394,7 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
                     useToast.getState().show("Failed to open file location", "error");
                   }
                 }}
-                className="nodrag nopan text-[10px] text-neutral-400 hover:text-orange-300 truncate max-w-full cursor-pointer transition-colors flex items-center gap-1"
+                className="nodrag nopan text-[10px] text-neutral-400 hover:text-[var(--current-blue)] truncate max-w-full cursor-pointer transition-colors flex items-center gap-1"
                 title={`Open in explorer: ${nodeData.savedFilePath}`}
               >
                 <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

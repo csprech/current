@@ -362,23 +362,8 @@ export function ModelSearchDialog({
     [screenToFlowPosition, addNode, onClose, onModelSelected, trackModelUsage]
   );
 
-  // Get provider badge color
-  const getProviderBadgeColor = (provider: ProviderType) => {
-    switch (provider) {
-      case "gemini":
-        return "bg-green-500/20 text-green-300";
-      case "replicate":
-        return "bg-blue-500/20 text-blue-300";
-      case "fal":
-        return "bg-yellow-500/20 text-yellow-300";
-      case "kie":
-        return "bg-orange-500/20 text-orange-300";
-      case "wavespeed":
-        return "bg-purple-500/20 text-purple-300";
-      default:
-        return "bg-neutral-500/20 text-neutral-300";
-    }
-  };
+  // Provider identity stays in the label and icon; color remains product-led.
+  const getProviderBadgeClass = (_provider: ProviderType) => "current-model-badge current-model-badge--provider";
 
   // Get provider display name
   const getProviderDisplayName = (provider: ProviderType) => {
@@ -489,40 +474,31 @@ export function ModelSearchDialog({
     const badges: React.ReactNode[] = [];
 
     capabilities.forEach((cap) => {
-      let color = "";
       let label = "";
 
       switch (cap) {
         case "text-to-image":
-          color = "bg-green-500/20 text-green-300";
           label = "txt→img";
           break;
         case "image-to-image":
-          color = "bg-cyan-500/20 text-cyan-300";
           label = "img→img";
           break;
         case "text-to-video":
-          color = "bg-purple-500/20 text-purple-300";
           label = "txt→vid";
           break;
         case "image-to-video":
-          color = "bg-pink-500/20 text-pink-300";
           label = "img→vid";
           break;
         case "text-to-3d":
-          color = "bg-orange-500/20 text-orange-300";
           label = "txt→3d";
           break;
         case "image-to-3d":
-          color = "bg-amber-500/20 text-amber-300";
           label = "img→3d";
           break;
         case "text-to-audio":
-          color = "bg-fuchsia-500/20 text-fuchsia-300";
           label = "txt→audio";
           break;
         case "audio-to-video":
-          color = "bg-violet-500/20 text-violet-300";
           label = "audio→vid";
           break;
       }
@@ -531,7 +507,7 @@ export function ModelSearchDialog({
         badges.push(
           <span
             key={cap}
-            className={`text-[10px] px-1.5 py-0.5 rounded ${color}`}
+            className="current-model-badge current-model-badge--capability text-[10px] px-1.5 py-0.5 rounded"
           >
             {label}
           </span>
@@ -579,6 +555,7 @@ export function ModelSearchDialog({
             <div className="flex items-center gap-0.5 bg-neutral-700/50 rounded p-0.5">
               <button
                 onClick={() => setProviderFilter("all")}
+                aria-pressed={providerFilter === "all"}
                 title="All Providers"
                 className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                   providerFilter === "all"
@@ -591,12 +568,10 @@ export function ModelSearchDialog({
               {availableProviders.has("gemini") && (
                 <button
                   onClick={() => setProviderFilter("gemini")}
+                  aria-label="Filter by Gemini"
+                  aria-pressed={providerFilter === "gemini"}
                   title="Gemini"
-                  className={`p-2 rounded transition-colors ${
-                    providerFilter === "gemini"
-                      ? "bg-green-500/20 text-green-300"
-                      : "text-neutral-400 hover:text-green-300 hover:bg-neutral-700"
-                  }`}
+                  className="current-model-filter"
                 >
                   <GeminiIcon />
                 </button>
@@ -604,12 +579,10 @@ export function ModelSearchDialog({
               {availableProviders.has("replicate") && (
                 <button
                   onClick={() => setProviderFilter("replicate")}
+                  aria-label="Filter by Replicate"
+                  aria-pressed={providerFilter === "replicate"}
                   title="Replicate"
-                  className={`p-2 rounded transition-colors ${
-                    providerFilter === "replicate"
-                      ? "bg-blue-500/20 text-blue-300"
-                      : "text-neutral-400 hover:text-blue-300 hover:bg-neutral-700"
-                  }`}
+                  className="current-model-filter"
                 >
                   <ReplicateIcon />
                 </button>
@@ -617,12 +590,10 @@ export function ModelSearchDialog({
               {availableProviders.has("fal") && (
                 <button
                   onClick={() => setProviderFilter("fal")}
+                  aria-label="Filter by fal.ai"
+                  aria-pressed={providerFilter === "fal"}
                   title="fal.ai"
-                  className={`p-2 rounded transition-colors ${
-                    providerFilter === "fal"
-                      ? "bg-yellow-500/20 text-yellow-300"
-                      : "text-neutral-400 hover:text-yellow-300 hover:bg-neutral-700"
-                  }`}
+                  className="current-model-filter"
                 >
                   <FalIcon />
                 </button>
@@ -630,12 +601,10 @@ export function ModelSearchDialog({
               {availableProviders.has("kie") && (
                 <button
                   onClick={() => setProviderFilter("kie")}
+                  aria-label="Filter by Kie.ai"
+                  aria-pressed={providerFilter === "kie"}
                   title="Kie.ai"
-                  className={`p-2 rounded transition-colors ${
-                    providerFilter === "kie"
-                      ? "bg-orange-500/20 text-orange-300"
-                      : "text-neutral-400 hover:text-orange-300 hover:bg-neutral-700"
-                  }`}
+                  className="current-model-filter"
                 >
                   <KieIcon />
                 </button>
@@ -643,12 +612,10 @@ export function ModelSearchDialog({
               {availableProviders.has("wavespeed") && (
                 <button
                   onClick={() => setProviderFilter("wavespeed")}
+                  aria-label="Filter by WaveSpeed"
+                  aria-pressed={providerFilter === "wavespeed"}
                   title="WaveSpeed"
-                  className={`p-2 rounded transition-colors ${
-                    providerFilter === "wavespeed"
-                      ? "bg-purple-500/20 text-purple-300"
-                      : "text-neutral-400 hover:text-purple-300 hover:bg-neutral-700"
-                  }`}
+                  className="current-model-filter"
                 >
                   <WaveSpeedIcon />
                 </button>
@@ -674,6 +641,7 @@ export function ModelSearchDialog({
             <button
               onClick={handleRefresh}
               disabled={isRefreshing || isLoading}
+              aria-label="Refresh models and schemas"
               title="Refresh models & schemas"
               className="p-2 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -856,7 +824,7 @@ export function ModelSearchDialog({
                               {recent.displayName}
                             </div>
                             <span
-                              className={`text-[10px] px-1.5 py-0.5 rounded ${getProviderBadgeColor(recent.provider)}`}
+                              className={`text-[10px] px-1.5 py-0.5 rounded ${getProviderBadgeClass(recent.provider)}`}
                             >
                               {getProviderDisplayName(recent.provider)}
                             </span>
@@ -948,7 +916,7 @@ export function ModelSearchDialog({
                     {/* Badges row */}
                     <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
                       <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded ${getProviderBadgeColor(model.provider)}`}
+                        className={`text-[10px] px-1.5 py-0.5 rounded ${getProviderBadgeClass(model.provider)}`}
                       >
                         {getProviderDisplayName(model.provider)}
                       </span>

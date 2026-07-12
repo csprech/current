@@ -256,7 +256,7 @@ export function QuickstartTemplatesView({
                     group flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all text-left
                     ${
                       loadingWorkflowId === workflow.id
-                        ? "bg-cyan-600/20 border-cyan-500/50"
+                        ? "bg-[color-mix(in_srgb,var(--current-blue)_12%,transparent)] border-[color-mix(in_srgb,var(--current-blue)_50%,transparent)]"
                         : "bg-neutral-800/50 border-neutral-700 hover:border-neutral-600 hover:bg-neutral-800"
                     }
                     ${isLoading && loadingWorkflowId !== workflow.id ? "opacity-50" : ""}
@@ -268,14 +268,14 @@ export function QuickstartTemplatesView({
                       w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0
                       ${
                         loadingWorkflowId === workflow.id
-                          ? "bg-cyan-500/20"
+                          ? "bg-[color-mix(in_srgb,var(--current-blue)_12%,transparent)]"
                           : "bg-neutral-700/50 group-hover:bg-neutral-700"
                       }
                     `}
                   >
                     {loadingWorkflowId === workflow.id ? (
                       <svg
-                        className="w-4 h-4 text-cyan-500 animate-spin"
+                        className="w-4 h-4 text-[var(--current-blue)] animate-spin"
                         fill="none"
                         viewBox="0 0 24 24"
                       >
@@ -313,7 +313,7 @@ export function QuickstartTemplatesView({
                     <div className="text-sm font-medium text-neutral-200 truncate">
                       {workflow.name}
                     </div>
-                    <div className="text-[10px] text-cyan-600/80">
+                    <div className="text-[10px] text-[var(--current-blue)]">
                       @{workflow.author}
                     </div>
                   </div>

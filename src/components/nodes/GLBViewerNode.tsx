@@ -436,7 +436,7 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
                   title={autoRotate ? "Stop auto-rotate" : "Auto-rotate"}
                   className={`p-0.5 rounded transition-colors ${
                     autoRotate
-                      ? "text-cyan-400 bg-cyan-400/10"
+                      ? "text-[var(--current-blue)] bg-[color-mix(in_srgb,var(--current-blue)_10%,transparent)]"
                       : "text-neutral-500 hover:text-neutral-300"
                   }`}
                 >
@@ -475,8 +475,8 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
           {nodeData.capturedImage && (
             <div className="px-3 py-1.5 shrink-0">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] text-green-400 flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span className="text-[10px] text-[var(--current-success)] flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--current-success)]" />
                   Captured
                 </span>
                 <div className="flex items-center gap-2">

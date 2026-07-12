@@ -144,7 +144,7 @@ export function FTUXApiKeysStep({}: FTUXStepProps) {
               key={provider.id}
               className={`p-3 rounded-lg border ${
                 provider.isRecommended
-                  ? "bg-green-500/10 border-green-600/30"
+                  ? "bg-[color-mix(in_srgb,var(--current-success)_10%,transparent)] border-[color-mix(in_srgb,var(--current-success)_30%,transparent)]"
                   : "bg-neutral-900 border-neutral-700"
               }`}
             >
@@ -173,17 +173,17 @@ export function FTUXApiKeysStep({}: FTUXStepProps) {
                     </div>
                   </div>
                   {provider.isRecommended && (
-                    <span className="text-xs text-green-400 shrink-0">Recommended</span>
+                    <span className="text-xs text-[var(--current-success)] shrink-0">Recommended</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {hasKey ? (
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-green-400">
+                      <span className="text-xs text-[var(--current-success)]">
                         Configured via .env
                       </span>
                       <svg
-                        className="w-4 h-4 text-green-400"
+                        className="w-4 h-4 text-[var(--current-success)]"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"

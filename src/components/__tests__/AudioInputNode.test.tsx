@@ -317,6 +317,22 @@ describe("AudioInputNode", () => {
       );
       expect(screen.getByTitle("Play")).toBeInTheDocument();
     });
+
+    it("exposes named, keyboard-visible media actions with full-size targets", () => {
+      render(
+        <AudioInputNode
+          {...createNodeProps({
+            audioFile: "data:audio/mp3;base64,abc",
+            filename: "test.mp3",
+            duration: 10,
+          })}
+        />
+      );
+
+      for (const name of ["Play audio", "Download audio", "Remove audio"]) {
+        expect(screen.getByRole("button", { name })).toHaveClass("current-media-action");
+      }
+    });
   });
 
   describe("Remove", () => {

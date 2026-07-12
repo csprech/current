@@ -337,7 +337,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
           <div className="group/text relative w-full h-full bg-neutral-900/40 p-2 overflow-auto nowheel">
             {nodeData.__usedFallback && (
               <div
-                className="mb-1 inline-block px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium"
+                className="current-semantic-success mb-1 inline-block px-1.5 py-0.5 rounded text-[9px] font-medium"
                 title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
               >
                 Fallback used
@@ -349,7 +349,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
             <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/text:opacity-100 transition-opacity">
               <button
                 onClick={handleCopyOutput}
-                className={`nodrag nopan w-5 h-5 ${copied ? "bg-green-600/80" : "bg-neutral-900/80 hover:bg-neutral-700/80"} rounded flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors`}
+                className={`nodrag nopan w-5 h-5 ${copied ? "bg-[var(--current-success)]" : "bg-neutral-900/80 hover:bg-neutral-700/80"} rounded flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors`}
                 title={copied ? "Copied!" : "Copy to clipboard"}
               >
                 {copied ? (
