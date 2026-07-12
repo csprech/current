@@ -53,12 +53,13 @@
   --iris-s4: #35d39a;
   --iris-s5: #f4c14e;
   --iris-s6: #f77a8e;
-  /* Handle colors mapped onto the spectrum (used by labels) */
-  --handle-color-image: #35d39a;
-  --handle-color-text: #4a86f7;
-  --handle-color-3d: #f6a445;
-  --handle-color-audio: #7b6cf6;
-  --handle-color-video: #f77a8e;
+  /* Typed connections derive exclusively from the Current cool-color family. */
+  --handle-color-image: var(--current-aqua);
+  --handle-color-text: var(--current-blue);
+  --handle-color-3d: var(--current-aqua-cyan);
+  --handle-color-audio: var(--current-blue-indigo);
+  --handle-color-video: var(--current-blue);
+  --handle-color-ease-curve: var(--current-steel-blue);
 }
 
 .current-identity {
@@ -657,7 +658,7 @@ body {
   right: -7px;
 }
 
-/* Handle colors — mapped onto the iris spectrum */
+/* Typed handle colors. Labels keep color from becoming the only signal. */
 .react-flow__handle[data-handletype="image"] {
   background: var(--handle-color-image);
 }
@@ -671,11 +672,26 @@ body {
 }
 
 .react-flow__handle[data-handletype="video"] {
-  background: var(--handle-color-video);
+  background: linear-gradient(135deg, var(--current-blue), var(--current-aqua));
 }
 
 .react-flow__handle[data-handletype="3d"] {
   background: var(--handle-color-3d);
+}
+
+.react-flow__handle[data-handletype="easeCurve"] {
+  background: var(--handle-color-ease-curve);
+}
+
+.current-handle-label {
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
+}
+
+.current-handle-label.is-visible,
+.react-flow__node:hover .current-handle-label,
+.react-flow__node:focus-within .current-handle-label {
+  opacity: var(--current-handle-label-opacity, 1);
 }
 
 .react-flow__edge-path {

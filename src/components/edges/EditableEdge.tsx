@@ -11,26 +11,12 @@ import {
 import { useWorkflowStore } from "@/store/workflowStore";
 import { NanoBananaNodeData, WorkflowEdgeData } from "@/types";
 import { getSharedGradientId } from "./SharedEdgeGradients";
+import { getHandlePresentation, normalizeHandleType } from "@/components/nodes/nodePresentation";
 
 interface EdgeData extends WorkflowEdgeData {
   offsetX?: number;
   offsetY?: number;
 }
-
-// Colors for different connection types (dimmed for softer appearance)
-const EDGE_COLORS: Record<string, string> = {
-  image: "#0d9668", // Green for image connections
-  prompt: "#2563eb", // Blue for prompt connections
-  default: "#64748b", // Gray for unknown
-  pause: "#ea580c", // Orange for paused edges
-  reference: "#52525b", // Gray for reference connections
-  video: "#ec4899", // Pink for video connections
-  audio: "#f97316", // Orange for audio connections
-  text: "#2563eb", // Blue for text connections
-  "3d": "#06b6d4", // Cyan for 3D connections
-  easeCurve: "#f59e0b", // Amber for ease curve connections
-  loop: "#d946ef", // Magenta for loop edges
-};
 
 export function EditableEdge({
   id,
@@ -72,16 +58,11 @@ export function EditableEdge({
     return (targetNode.data as NanoBananaNodeData).status === "loading";
   });
 
-  // Determine edge color based on handle type (magenta for loop edges, orange if paused)
+  // Status colors are reserved for semantic states; typed edges use the Current family.
   const edgeColor = useMemo(() => {
-    if (edgeData?.isLoop) return EDGE_COLORS.loop;
-    if (hasPause) return EDGE_COLORS.pause;
-    // Use source handle to determine color (or target if source is not available)
-    // Strip numeric suffixes (e.g., "image-0" -> "image") for lookup
-    const handleType = sourceHandleId || targetHandleId || "";
-    const normalizedType = handleType.replace(/-\d+$/, "");
-    return EDGE_COLORS[normalizedType] || EDGE_COLORS.default;
-  }, [edgeData?.isLoop, hasPause, sourceHandleId, targetHandleId]);
+    if (hasPause) return "var(--current-warning)";
+    return getHandlePresentation(normalizeHandleType(sourceHandleId || targetHandleId)).color;
+  }, [hasPause, sourceHandleId, targetHandleId]);
 
   // Reference shared gradient by color key + selection state
   const gradientId = useMemo(() => {
@@ -93,10 +74,7 @@ export function EditableEdge({
       const selectionKey = isConnectedToSelection ? "active" : "dimmed";
       return getSharedGradientId("pause", selectionKey);
     }
-    const handleType = sourceHandleId || targetHandleId || "default";
-    const normalizedType = handleType.replace(/-\d+$/, "");
-    // Use the normalized type if it exists in EDGE_COLORS, otherwise fall back to "default"
-    const colorKey = normalizedType in EDGE_COLORS ? normalizedType : "default";
+    const colorKey = normalizeHandleType(sourceHandleId || targetHandleId);
     const selectionKey = isConnectedToSelection ? "active" : "dimmed";
     return getSharedGradientId(colorKey, selectionKey);
   }, [edgeData?.isLoop, hasPause, sourceHandleId, targetHandleId, isConnectedToSelection]);
@@ -306,9 +284,12 @@ export function EditableEdge({
           height={24}
           className="pointer-events-none"
         >
-          <div className="flex items-center justify-center gap-1 px-2 py-0.5 bg-neutral-800/90 border border-fuchsia-500/60 rounded-full text-[10px] font-medium">
-            <span className="text-fuchsia-300">↻</span>
-            <span className="text-fuchsia-100">{edgeData.loopCount || 3}×</span>
+          <div
+            className="flex items-center justify-center gap-1 rounded-full border bg-neutral-800/90 px-2 py-0.5 text-[10px] font-medium"
+            style={{ borderColor: "var(--current-blue)", color: "var(--current-blue)" }}
+          >
+            <span>↻</span>
+            <span>{edgeData.loopCount || 3}×</span>
           </div>
         </foreignObject>
       )}
@@ -322,7 +303,7 @@ export function EditableEdge({
               cy={handle.y}
               r={6}
               fill="white"
-              stroke="#3b82f6"
+              stroke="var(--current-blue)"
               strokeWidth={2}
               style={{
                 cursor: handle.direction === "horizontal" ? "ew-resize" : "ns-resize",

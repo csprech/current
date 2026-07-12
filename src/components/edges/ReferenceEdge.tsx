@@ -45,7 +45,7 @@ export function ReferenceEdge({
   // Reference shared gradient by selection state
   const gradientId = useMemo(() => {
     const selectionKey = isConnectedToSelection ? "active" : "dimmed";
-    return getSharedGradientId("reference", selectionKey);
+    return getSharedGradientId("generic", selectionKey);
   }, [isConnectedToSelection]);
 
   return (

@@ -107,8 +107,8 @@ describe("ReferenceEdge", () => {
     });
   });
 
-  describe("Gray Color", () => {
-    it("should render with gray color gradient", () => {
+  describe("Current presentation", () => {
+    it("uses the shared generic Current gradient", () => {
       const { container } = render(
         <TestWrapper>
           <ReferenceEdge {...createDefaultProps()} />
@@ -118,7 +118,7 @@ describe("ReferenceEdge", () => {
       // Edges now reference shared gradient IDs instead of per-edge defs
       const basePath = container.querySelector(".react-flow__edge-path");
       const stroke = basePath?.getAttribute("style") ?? "";
-      expect(stroke).toContain("edge-grad-reference-");
+      expect(stroke).toContain("edge-grad-generic-");
     });
   });
 

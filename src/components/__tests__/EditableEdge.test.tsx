@@ -126,7 +126,7 @@ describe("EditableEdge", () => {
   });
 
   describe("Edge Colors", () => {
-    it("should use green color for image handle type", () => {
+    it("should use the Current image gradient for image handle type", () => {
       const { container } = render(
         <TestWrapper>
           <EditableEdge {...createDefaultProps({ sourceHandleId: "image" })} />
@@ -139,7 +139,7 @@ describe("EditableEdge", () => {
       expect(stroke).toContain("edge-grad-image-");
     });
 
-    it("should use blue color for prompt handle type", () => {
+    it("normalizes prompt handles to the Current text presentation", () => {
       const { container } = render(
         <TestWrapper>
           <EditableEdge {...createDefaultProps({ sourceHandleId: "prompt" })} />
@@ -148,10 +148,10 @@ describe("EditableEdge", () => {
 
       const basePath = container.querySelector(".react-flow__edge-path");
       const stroke = basePath?.getAttribute("style") ?? "";
-      expect(stroke).toContain("edge-grad-prompt-");
+      expect(stroke).toContain("edge-grad-text-");
     });
 
-    it("should use orange color when edge is paused", () => {
+    it("uses the semantic warning presentation when an edge is paused", () => {
       const { container } = render(
         <TestWrapper>
           <EditableEdge

@@ -61,6 +61,7 @@ import { GroupBackgroundsPortal, GroupControlsOverlay } from "./GroupsOverlay";
 import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable } from "@/types";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { FloatingNodeHeader } from "./nodes/FloatingNodeHeader";
+import { getMinimapColor } from "./nodes/nodePresentation";
 import { ControlPanel } from "./nodes/ControlPanel";
 import { detectAndSplitGrid } from "@/utils/gridSplitter";
 import { logger } from "@/utils/logger";
@@ -2197,62 +2198,7 @@ export function WorkflowCanvas() {
           maskColor="rgba(240, 240, 244, 0.65)"
           pannable
           zoomable
-          nodeColor={(node) => {
-            switch (node.type) {
-              case "imageInput":
-                return "#3b82f6";
-              case "audioInput":
-                return "#a78bfa";
-              case "videoInput":
-                return "#c084fc"; // purple-400 (video input, distinct from generateVideo's #9333ea)
-              case "annotation":
-                return "#8b5cf6";
-              case "prompt":
-                return "#f97316";
-              case "array":
-                return "#a3e635";
-              case "promptConstructor":
-                return "#f472b6";
-              case "nanoBanana":
-                return "#22c55e";
-              case "generateVideo":
-                return "#9333ea";
-              case "generate3d":
-                return "#fb923c";
-              case "generateAudio":
-                return "#d946ef"; // fuchsia-500 (audio/TTS)
-              case "llmGenerate":
-                return "#06b6d4";
-              case "splitGrid":
-                return "#f59e0b";
-              case "output":
-                return "#ef4444";
-              case "outputGallery":
-                return "#ec4899";
-              case "imageCompare":
-                return "#14b8a6";
-              case "videoStitch":
-                return "#f97316";
-              case "easeCurve":
-                return "#bef264"; // lime-300 (easy-peasy-ease)
-              case "videoTrim":
-                return "#60a5fa"; // blue-400 (trim/cut)
-              case "videoFrameGrab":
-                return "#38bdf8"; // sky-400 (image from video)
-              case "removeBackground":
-                return "#2dd4bf"; // teal-400 (background removal)
-              case "router":
-                return "#6b7280"; // neutral-500 (gray/slate utility theme)
-              case "switch":
-                return "#8b5cf6"; // violet-500 (distinct from Router)
-              case "conditionalSwitch":
-                return "#06b6d4"; // cyan-500 (distinct from Router gray and Switch violet)
-              case "glbViewer":
-                return "#0ea5e9"; // sky-500 (3D viewport)
-              default:
-                return "#94a3b8";
-            }
-          }}
+          nodeColor={(node) => getMinimapColor(node.type as NodeType)}
         />
         <ViewportPortal>
           {allNodes.map((node) => {
