@@ -13,6 +13,7 @@ import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { downloadMedia, MediaType } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { resolveOutputMedia } from "@/utils/outputMedia";
 
 type OutputNodeType = Node<OutputNodeData, "output">;
 
@@ -30,30 +31,10 @@ export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
   const previousEdgeCountRef = useRef<number | null>(null);
   const videoAutoplayRef = useVideoAutoplay(id, selected);
 
-  // Determine if content is audio
-  const isAudio = useMemo(() => {
-    if (nodeData.audio) return true;
-    if (nodeData.contentType === "audio") return true;
-    if (nodeData.image?.startsWith("data:audio/")) return true;
-    return false;
-  }, [nodeData.audio, nodeData.contentType, nodeData.image]);
-
-  // Determine if content is video
-  const isVideo = useMemo(() => {
-    if (isAudio) return false;
-    if (nodeData.video) return true;
-    if (nodeData.contentType === "video") return true;
-    if (nodeData.image?.startsWith("data:video/")) return true;
-    if (nodeData.image?.includes(".mp4") || nodeData.image?.includes(".webm")) return true;
-    return false;
-  }, [isAudio, nodeData.video, nodeData.contentType, nodeData.image]);
-
-  // Get the content source (audio, video, or image)
-  const contentSrc = useMemo(() => {
-    if (nodeData.audio) return nodeData.audio;
-    if (nodeData.video) return nodeData.video;
-    return nodeData.image;
-  }, [nodeData.audio, nodeData.video, nodeData.image]);
+  const outputMedia = useMemo(() => resolveOutputMedia(nodeData), [nodeData]);
+  const isAudio = outputMedia?.type === "audio";
+  const isVideo = outputMedia?.type === "video";
+  const contentSrc = outputMedia?.src ?? null;
 
   const imageSrc = !isAudio && !isVideo ? contentSrc : null;
   const adaptiveImage = useAdaptiveImageSrc(imageSrc, id);

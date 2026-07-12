@@ -29,4 +29,20 @@ describe("OutputsWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Back to Canvas" }));
     expect(useWorkflowStore.getState().workspaceView).toBe("canvas");
   });
+
+  it("is constrained to the workspace instead of growing the page", () => {
+    render(<OutputsWorkspace />);
+    expect(screen.getByRole("main", { name: "Workflow outputs" })).toHaveClass("absolute", "inset-0", "h-full", "min-h-0", "overflow-y-auto");
+  });
+
+  it("uses the Output node media contract for audio and video fallbacks", () => {
+    useWorkflowStore.setState({ nodes: [
+      { id: "audio", type: "output", position: { x: 0, y: 0 }, data: { customTitle: "Audio fallback", contentType: "audio", image: "data:audio/mpeg;base64,audio" } } as never,
+      { id: "video", type: "output", position: { x: 0, y: 0 }, data: { customTitle: "Video fallback", image: "https://example.com/result.mp4" } } as never,
+    ] });
+    const { container } = render(<OutputsWorkspace />);
+    expect(container.querySelector('audio[src="data:audio/mpeg;base64,audio"]')).toBeInTheDocument();
+    expect(container.querySelector('video[src="https://example.com/result.mp4"]')).toBeInTheDocument();
+    expect(container.querySelectorAll("img")).toHaveLength(1);
+  });
 });

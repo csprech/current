@@ -108,13 +108,12 @@ function generateEasingPolyline(
  * Fixed-position control panel on the right side of viewport
  * Displays controls for the currently selected node
  */
-export function ControlPanel() {
+export function ControlPanel({ onClose }: { onClose: () => void }) {
   const selectedNode = useWorkflowStore((state) => {
     const selected = state.nodes.filter((n) => n.selected);
     return selected.length === 1 ? selected[0] : null;
   });
   const { inlineParametersEnabled } = useInlineParameters();
-  const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
 
   // Check if the selected node is configurable
   const isConfigurable = selectedNode && CONFIGURABLE_NODE_TYPES.includes(selectedNode.type as NodeType);
@@ -137,7 +136,7 @@ export function ControlPanel() {
     <CurrentPanel
       side="right"
       title="Inspector"
-      onClose={() => onNodesChange([{ id: selectedNode.id, type: "select", selected: false }])}
+      onClose={onClose}
     >
         <div className="current-inspector__selection">{getNodeTypeTitle(selectedNode.type as NodeType)}</div>
           {/* Node-specific controls */}

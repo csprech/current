@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { LibraryPanel } from "./LibraryPanel";
 import { ActivityPanel } from "./ActivityPanel";
@@ -11,13 +12,39 @@ export function WorkspacePanelHost({ assistantProps }: { assistantProps: ChatPan
   const activeRightPanel = useWorkflowStore((state) => state.activeRightPanel);
   const setActiveLeftPanel = useWorkflowStore((state) => state.setActiveLeftPanel);
   const setActiveRightPanel = useWorkflowStore((state) => state.setActiveRightPanel);
+  const [inspectorDismissed, setInspectorDismissed] = useState(false);
+  const inspectorHostRef = useRef<HTMLDivElement>(null);
+  const rightOpenerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!activeRightPanel) return;
+    setInspectorDismissed(false);
+    const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (focused && !inspectorHostRef.current?.contains(focused)) rightOpenerRef.current = focused;
+    else focused?.blur();
+  }, [activeRightPanel]);
+
+  const inspectorHidden = Boolean(activeRightPanel) || inspectorDismissed;
+  const closeInspector = () => {
+    setInspectorDismissed(true);
+    setActiveRightPanel(null);
+  };
+  const closeRightPanel = () => {
+    const opener = rightOpenerRef.current;
+    setActiveRightPanel(null);
+    queueMicrotask(() => opener?.isConnected && opener.focus());
+  };
 
   return <>
     {activeLeftPanel === "library" && <LibraryPanel onClose={() => setActiveLeftPanel(null)} />}
-    {activeRightPanel === "assistant" ? (
-      <ChatPanel {...assistantProps} isOpen onClose={() => setActiveRightPanel(null)} />
-    ) : activeRightPanel === "activity" ? (
-      <ActivityPanel onClose={() => setActiveRightPanel(null)} />
-    ) : <ControlPanel />}
+    {activeRightPanel === "assistant" && (
+      <ChatPanel {...assistantProps} isOpen onClose={closeRightPanel} />
+    )}
+    {activeRightPanel === "activity" && (
+      <ActivityPanel onClose={closeRightPanel} />
+    )}
+    <div ref={inspectorHostRef} className={inspectorHidden ? "hidden" : "contents"} hidden={inspectorHidden} inert={inspectorHidden ? true : undefined} aria-hidden={inspectorHidden || undefined}>
+      <ControlPanel onClose={closeInspector} />
+    </div>
   </>;
 }

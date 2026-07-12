@@ -3,6 +3,7 @@
 import { useWorkflowStore } from "@/store/workflowStore";
 import { CurrentButton } from "@/components/current/CurrentButton";
 import type { OutputGalleryNodeData, OutputNodeData } from "@/types";
+import { resolveOutputMedia } from "@/utils/outputMedia";
 
 export function OutputsWorkspace({ onBack }: { onBack?: () => void } = {}) {
   const nodes = useWorkflowStore((state) => state.nodes);
@@ -16,7 +17,7 @@ export function OutputsWorkspace({ onBack }: { onBack?: () => void } = {}) {
   };
 
   return (
-    <main className="current-outputs" aria-label="Workflow outputs">
+    <main className="current-outputs absolute inset-0 h-full min-h-0 overflow-y-auto" aria-label="Workflow outputs">
       <header className="current-outputs__header">
         <div><span className="current-eyebrow">Review</span><h1>Workflow outputs</h1></div>
         <CurrentButton variant="secondary" onClick={back}>Back to Canvas</CurrentButton>
@@ -27,9 +28,10 @@ export function OutputsWorkspace({ onBack }: { onBack?: () => void } = {}) {
           {outputNodes.length === 0 && <p className="current-empty-state">Add an output node to collect final media.</p>}
           {outputNodes.map((node) => {
             const data = node.data as unknown as OutputNodeData & OutputGalleryNodeData;
+            const resolved = node.type === "output" ? resolveOutputMedia(data) : null;
             const media = node.type === "outputGallery"
               ? [...(data.images || []).map((src) => ({ type: "image", src })), ...(data.videos || []).map((src) => ({ type: "video", src }))]
-              : data.audio ? [{ type: "audio", src: data.audio }] : data.video ? [{ type: "video", src: data.video }] : data.image ? [{ type: "image", src: data.image }] : [];
+              : resolved ? [resolved] : [];
             return <article className="current-output-card" key={node.id}>
               <h3>{data.customTitle || (node.type === "outputGallery" ? "Output gallery" : "Output")}</h3>
               <div className="current-output-card__media">{media.length === 0 ? <span>Waiting for media</span> : media.map((item, index) => item.type === "image" ? <img key={index} src={item.src} alt="Workflow output" /> : item.type === "video" ? <video key={index} src={item.src} controls /> : <audio key={index} src={item.src} controls />)}</div>

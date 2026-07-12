@@ -1,6 +1,6 @@
 import { createRef, useRef, useState } from "react";
 import { renderToString } from "react-dom/server";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   ActivityIcon,
@@ -102,6 +102,19 @@ describe("Current surface primitives", () => {
     expect(screen.getByRole("button", { name: "Import" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Close Library" }));
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("restores focus to the control that opened a panel", async () => {
+    function PanelHarness() {
+      const [open, setOpen] = useState(false);
+      return <><button onClick={() => setOpen(true)}>Open library</button>{open && <CurrentPanel side="left" title="Library" onClose={() => setOpen(false)}>Assets</CurrentPanel>}</>;
+    }
+    render(<PanelHarness />);
+    const opener = screen.getByRole("button", { name: "Open library" });
+    opener.focus();
+    fireEvent.click(opener);
+    fireEvent.click(screen.getByRole("button", { name: "Close Library" }));
+    await waitFor(() => expect(opener).toHaveFocus());
   });
 
   it("returns null when a sheet is closed", () => {
