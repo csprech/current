@@ -130,7 +130,12 @@ export function FocusWorkspace({
     >
       <header className="current-focus-workspace__bar">
         <div className="current-focus-workspace__leading">
-          <CurrentButton variant="quiet" onClick={onBack} aria-label="Back to canvas">
+          <CurrentButton
+            variant="quiet"
+            className="current-focus-workspace__back"
+            onClick={onBack}
+            aria-label="Back to canvas"
+          >
             <span aria-hidden>‹</span>
             <span>Canvas</span>
           </CurrentButton>

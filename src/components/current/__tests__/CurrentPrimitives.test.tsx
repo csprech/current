@@ -245,6 +245,39 @@ describe("Current surface primitives", () => {
     expect(screen.getByRole("dialog", { name: "Outer" })).toBeInTheDocument();
   });
 
+  it("falls back inside the parent sheet when a nested opener unmounts", () => {
+    function Harness() {
+      const [outerOpen, setOuterOpen] = useState(false);
+      const [innerOpen, setInnerOpen] = useState(false);
+      const [showInnerOpener, setShowInnerOpener] = useState(true);
+      return (
+        <>
+          <button onClick={() => setOuterOpen(true)}>Open outer</button>
+          <CurrentSheet open={outerOpen} title="Outer" onClose={() => setOuterOpen(false)}>
+            {showInnerOpener && <button onClick={() => setInnerOpen(true)}>Open transient inner</button>}
+            <button>Stable parent action</button>
+            <CurrentSheet open={innerOpen} title="Inner" onClose={() => setInnerOpen(false)}>
+              <button onClick={() => setShowInnerOpener(false)}>Unmount opener</button>
+            </CurrentSheet>
+          </CurrentSheet>
+        </>
+      );
+    }
+
+    render(<Harness />);
+    fireEvent.click(screen.getByRole("button", { name: "Open outer" }));
+    const transientOpener = screen.getByRole("button", { name: "Open transient inner" });
+    transientOpener.focus();
+    fireEvent.click(transientOpener);
+    fireEvent.click(screen.getByRole("button", { name: "Unmount opener" }));
+    expect(transientOpener).not.toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    const parent = screen.getByRole("dialog", { name: "Outer" });
+    expect(parent).toContainElement(document.activeElement as HTMLElement);
+    expect(document.body).not.toHaveFocus();
+  });
+
   it("does not return focus while the sheet remains open", () => {
     const returnFocusRef = createRef<HTMLButtonElement>();
     render(

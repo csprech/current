@@ -1152,6 +1152,21 @@ body {
   background: color-mix(in srgb, var(--current-inspector) 92%, black);
 }
 
+.current-focus-workspace__back {
+  color: var(--current-paper);
+  background: transparent;
+}
+
+.current-focus-workspace__back:hover:not(:disabled) {
+  color: var(--current-paper);
+  background: color-mix(in srgb, var(--current-blue) 42%, transparent);
+}
+
+.current-focus-workspace__back:focus-visible {
+  outline: none;
+  box-shadow: var(--current-focus);
+}
+
 .current-focus-workspace__leading,
 .current-focus-workspace__toolbar,
 .current-focus-workspace__actions { display: flex; align-items: center; gap: 10px; }

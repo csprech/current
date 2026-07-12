@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, type MouseEvent, type ReactNode, ty
 import { createPortal } from "react-dom";
 import { CloseIcon } from "./CurrentIcons";
 import { CurrentIconButton } from "./CurrentIconButton";
-import { getSurfaceFocusableElements } from "./surfaceFocus";
+import { getSurfaceFocusableElements, isValidSurfaceFocusTarget } from "./surfaceFocus";
 
 export interface CurrentSheetProps {
   open: boolean;
@@ -36,10 +36,26 @@ const modalStack: ModalEntry[] = [];
 const inertSnapshots = new Map<HTMLElement, boolean>();
 
 function focusModal(entry: ModalEntry) {
-  if (!entry.dialog) return;
+  if (!entry.dialog?.isConnected) return false;
   const requestedControl = entry.initialFocus();
   const firstControl = getSurfaceFocusableElements(entry.dialog)[0];
-  (requestedControl ?? firstControl ?? entry.dialog).focus();
+  const target = isValidSurfaceFocusTarget(requestedControl, entry.dialog) ? requestedControl : firstControl;
+  (target ?? entry.dialog).focus();
+  return true;
+}
+
+function focusDocumentFallback() {
+  const firstControl = getSurfaceFocusableElements(document.body)[0];
+  if (firstControl) {
+    firstControl.focus();
+    return;
+  }
+
+  const previousTabIndex = document.body.getAttribute("tabindex");
+  document.body.tabIndex = -1;
+  document.body.focus();
+  if (previousTabIndex === null) document.body.removeAttribute("tabindex");
+  else document.body.setAttribute("tabindex", previousTabIndex);
 }
 
 function restoreInert(element: HTMLElement, wasInert: boolean) {
@@ -125,8 +141,9 @@ function registerModal(entry: ModalEntry) {
 
     if (wasTopmost) {
       const returnTarget = entry.returnFocus();
-      if (returnTarget) returnTarget.focus();
+      if (isValidSurfaceFocusTarget(returnTarget)) returnTarget.focus();
       else if (modalStack.length > 0) focusModal(modalStack[modalStack.length - 1]);
+      else focusDocumentFallback();
     }
   };
 }
@@ -158,12 +175,18 @@ export function CurrentSheetSurface({
       dialog: null,
       backdrop: null,
       onClose,
-      returnFocus: () => returnFocusRef?.current ?? automaticReturnFocusRef.current,
+      returnFocus: () => {
+        const explicitTarget = returnFocusRef?.current ?? null;
+        return isValidSurfaceFocusTarget(explicitTarget) ? explicitTarget : automaticReturnFocusRef.current;
+      },
       initialFocus: () => initialFocusRef?.current ?? null,
     };
   }
   entryRef.current.onClose = onClose;
-  entryRef.current.returnFocus = () => returnFocusRef?.current ?? automaticReturnFocusRef.current;
+  entryRef.current.returnFocus = () => {
+    const explicitTarget = returnFocusRef?.current ?? null;
+    return isValidSurfaceFocusTarget(explicitTarget) ? explicitTarget : automaticReturnFocusRef.current;
+  };
   entryRef.current.initialFocus = () => initialFocusRef?.current ?? null;
 
   useEffect(() => {

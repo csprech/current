@@ -7,9 +7,42 @@ export const surfaceFocusableSelector = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+function isSurfaceElementVisible(element: HTMLElement, boundary?: HTMLElement) {
+  for (let current: HTMLElement | null = element; current; current = current.parentElement) {
+    if (
+      current.hidden
+      || current.hasAttribute("inert")
+      || current.getAttribute("aria-hidden") === "true"
+    ) {
+      return false;
+    }
+
+    const style = window.getComputedStyle(current);
+    if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse") {
+      return false;
+    }
+
+    if (current === boundary) break;
+  }
+
+  return true;
+}
+
+export function isValidSurfaceFocusTarget(
+  target: HTMLElement | null,
+  boundary?: HTMLElement,
+): target is HTMLElement {
+  return Boolean(
+    target?.isConnected
+    && (!boundary || boundary.contains(target))
+    && target.matches(surfaceFocusableSelector)
+    && isSurfaceElementVisible(target, boundary),
+  );
+}
+
 export function getSurfaceFocusableElements(root: HTMLElement) {
   return Array.from(root.querySelectorAll<HTMLElement>(surfaceFocusableSelector))
-    .filter((element) => element.getAttribute("aria-hidden") !== "true" && !element.hasAttribute("inert"));
+    .filter((element) => isValidSurfaceFocusTarget(element, root));
 }
 
 export interface SurfaceIsolationSnapshot {

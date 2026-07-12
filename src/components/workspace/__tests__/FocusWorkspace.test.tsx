@@ -14,7 +14,9 @@ describe("FocusWorkspace", () => {
     );
 
     expect(screen.getByRole("main", { name: "Annotate" })).toHaveAttribute("data-surface", "focus");
-    fireEvent.click(screen.getByRole("button", { name: "Back to canvas" }));
+    const back = screen.getByRole("button", { name: "Back to canvas" });
+    expect(back).toHaveClass("current-focus-workspace__back");
+    fireEvent.click(back);
     expect(onBack).toHaveBeenCalledOnce();
     expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
   });
