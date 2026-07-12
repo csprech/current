@@ -603,7 +603,7 @@
   font-size: 0.625rem;
   cursor: pointer;
 }
-.current-settings-tabs__tab[aria-selected="true"] {
+.current-settings-tabs__tab[aria-pressed="true"] {
   color: var(--current-inspector);
   background: var(--current-paper);
   box-shadow: 0 1px 3px rgb(37 38 43 / 10%);

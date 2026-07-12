@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { WorkflowCanvas } from "@/components/WorkflowCanvas";
+import { WorkflowCanvas, decorateNodeSemanticState } from "@/components/WorkflowCanvas";
 import { ReactFlowProvider } from "@xyflow/react";
 
 // Mock the workflow store
@@ -153,6 +153,20 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
 }
 
 describe("WorkflowCanvas", () => {
+  it("decorates render nodes from skipped, disabled, and locked workflow sources", () => {
+    const node = createMockNode("node-1", "prompt", { groupId: "group-1" });
+    const decorated = decorateNodeSemanticState(
+      node as never,
+      { "group-1": { id: "group-1", name: "Locked", color: "blue", position: { x: 0, y: 0 }, size: { width: 1, height: 1 }, locked: true } },
+      new Set(["node-1"]),
+      new Set(["node-1"])
+    );
+    expect(decorated.data).toEqual(expect.objectContaining({
+      isInLockedGroup: true,
+      isSkipped: true,
+      isDisabled: true,
+    }));
+  });
   beforeEach(() => {
     vi.clearAllMocks();
     // Default mock implementation

@@ -57,8 +57,8 @@ describe("nodePresentation", () => {
       label: "Error",
       detail: "Model unavailable",
     });
-    expect(deriveNodeStatus({ running: true, locked: true })).toEqual({ state: "running", label: "Running" });
-    expect(deriveNodeStatus({ locked: true, disabled: true })).toEqual({ state: "locked", label: "Locked" });
+    expect(deriveNodeStatus({ running: true, locked: true })).toEqual({ state: "locked", label: "Locked" });
+    expect(deriveNodeStatus({ locked: true, disabled: true })).toEqual({ state: "disabled", label: "Disabled" });
     expect(deriveNodeStatus({ disabled: true, skipped: true })).toEqual({ state: "disabled", label: "Disabled" });
     expect(deriveNodeStatus({ skipped: true, complete: true })).toEqual({
       state: "skipped",
@@ -67,6 +67,13 @@ describe("nodePresentation", () => {
     });
     expect(deriveNodeStatus({ complete: true })).toEqual({ state: "complete", label: "Complete" });
     expect(deriveNodeStatus({})).toEqual({ state: "idle", label: "Ready" });
+  });
+
+  it("does not announce a paused conditional switch as the default active route", () => {
+    expect(deriveNodeStatusFromData("conditionalSwitch", {
+      evaluationPaused: true,
+      rules: [{ label: "Portrait", isMatched: false }],
+    }).detail).toBe("Evaluation paused · No active route · 1 rule");
   });
 
   it("normalizes legacy node data into explicit Current states", () => {

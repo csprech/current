@@ -143,7 +143,7 @@ describe("LLMGenerateNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole("status")).toHaveTextContent("API rate limit exceeded");
+      expect(screen.getByText(/API rate limit exceeded/)).toBeInTheDocument();
       expect(screen.getAllByText(/API rate limit exceeded/)).toHaveLength(1);
     });
 

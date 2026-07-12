@@ -58,7 +58,7 @@ import { EdgeToolbar } from "./EdgeToolbar";
 import { GlobalImageHistory } from "./GlobalImageHistory";
 import { AssetLibrary } from "./AssetLibrary";
 import { GroupBackgroundsPortal, GroupControlsOverlay } from "./GroupsOverlay";
-import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable } from "@/types";
+import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable, WorkflowNode, NodeGroup } from "@/types";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { FloatingNodeHeader } from "./nodes/FloatingNodeHeader";
 import { getMinimapColor } from "./nodes/nodePresentation";
@@ -291,6 +291,31 @@ export const isPanningRef = { current: false };
 /** Shared ref so child components (BaseNode) can skip hover updates during node drags */
 export const isDraggingNodeRef = { current: false };
 
+export function decorateNodeSemanticState(
+  node: WorkflowNode,
+  groups: Record<string, NodeGroup>,
+  dimmedNodeIds: Set<string>,
+  skippedNodeIds: Set<string>
+): WorkflowNode {
+  const isDisabled = node.type !== "switch" && node.type !== "conditionalSwitch" && dimmedNodeIds.has(node.id);
+  const isSkipped = skippedNodeIds.has(node.id);
+  const isInLockedGroup = Boolean(node.groupId && groups[node.groupId]?.locked);
+  const data = node.data as Record<string, unknown>;
+  const semanticDataChanged =
+    data.isDisabled !== isDisabled ||
+    data.isSkipped !== isSkipped ||
+    data.isInLockedGroup !== isInLockedGroup;
+  const extraClasses = [isDisabled ? "switch-dimmed" : "", isSkipped ? "node-skipped" : ""].filter(Boolean).join(" ");
+  const baseClass = (node.className || "").replace(/\bswitch-dimmed\b/g, "").replace(/\bnode-skipped\b/g, "").trim();
+  const className = extraClasses ? `${baseClass} ${extraClasses}`.trim() : baseClass;
+  if (!semanticDataChanged && node.className === className) return node;
+  return {
+    ...node,
+    className,
+    data: { ...data, isDisabled, isSkipped, isInLockedGroup },
+  } as WorkflowNode;
+}
+
 export function WorkflowCanvas() {
   const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds } =
     useWorkflowStore(useShallow((state) => ({
@@ -435,26 +460,8 @@ export function WorkflowCanvas() {
 
   // Apply dimming className to nodes downstream of disabled Switch outputs or skipped by optional inputs
   const allNodes = useMemo(() => {
-    return nodes.map((node) => {
-      // Never dim Switch or ConditionalSwitch nodes themselves
-      if (node.type === "switch" || node.type === "conditionalSwitch") return node;
-
-      const isDimmed = dimmedNodeIds.has(node.id);
-      const isSkipped = skippedNodeIds.has(node.id);
-      const extraClasses = [
-        isDimmed ? "switch-dimmed" : "",
-        isSkipped ? "node-skipped" : "",
-      ].filter(Boolean).join(" ");
-
-      // Preserve existing className if any, add/remove dimmed/skipped classes
-      const baseClass = (node.className || "").replace(/\bswitch-dimmed\b/g, "").replace(/\bnode-skipped\b/g, "").trim();
-      const newClass = extraClasses ? `${baseClass} ${extraClasses}`.trim() : baseClass;
-
-      // Only create new node object if className changed
-      if (node.className === newClass) return node;
-      return { ...node, className: newClass };
-    });
-  }, [nodes, dimmedNodeIds, skippedNodeIds]);
+    return nodes.map((node) => decorateNodeSemanticState(node, groups, dimmedNodeIds, skippedNodeIds));
+  }, [nodes, groups, dimmedNodeIds, skippedNodeIds]);
 
   // Node title mapping for FloatingNodeHeaders
   const NODE_TITLES: Record<string, string> = {

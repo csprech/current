@@ -19,12 +19,10 @@ export function NodeStatusFooter({ state, label, detail, action }: NodeStatusFoo
     <div
       className="current-node-status nodrag nopan"
       data-state={state}
-      role="status"
-      aria-live="polite"
     >
       <span className="current-node-status__indicator" aria-hidden="true" />
       <span className="current-node-status__copy">
-        <strong>{label}</strong>
+        <strong role="status" aria-live="polite" aria-atomic="true" data-state={state}>{label}</strong>
         {detail && <span>{detail}</span>}
       </span>
       {action && (

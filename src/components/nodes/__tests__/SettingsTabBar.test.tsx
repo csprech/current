@@ -30,9 +30,10 @@ describe("SettingsTabBar", () => {
     const primaryTab = screen.getByText("Nano Banana");
     const fallbackTab = screen.getByText("Flux Dev");
 
-    expect(screen.getByRole("tablist")).toHaveClass("current-settings-tabs");
-    expect(primaryTab).toHaveAttribute("aria-selected", "true");
-    expect(fallbackTab).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("group", { name: "Model settings" })).toHaveClass("current-settings-tabs");
+    expect(primaryTab).toHaveAttribute("aria-pressed", "true");
+    expect(fallbackTab).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
   });
 
   it("calls onTabChange when clicking inactive tab", () => {
@@ -63,5 +64,13 @@ describe("SettingsTabBar", () => {
 
     fireEvent.click(screen.getByText("Nano Banana"));
     expect(onTabChange).not.toHaveBeenCalled();
+  });
+
+  it("keeps both segmented buttons in the keyboard focus order", () => {
+    render(<SettingsTabBar activeTab="primary" onTabChange={vi.fn()} primaryLabel="Primary" fallbackLabel="Fallback" />);
+    const buttons = screen.getAllByRole("button");
+    expect(buttons).toHaveLength(2);
+    buttons[1].focus();
+    expect(buttons[1]).toHaveFocus();
   });
 });

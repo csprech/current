@@ -275,7 +275,7 @@ describe("GenerateVideoNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole("status")).toHaveTextContent("Video generation failed");
+      expect(screen.getByText(/Video generation failed/)).toBeInTheDocument();
     });
 
     it("should show error overlay when status is error with existing output", () => {
@@ -289,7 +289,7 @@ describe("GenerateVideoNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole("status")).toHaveTextContent("Generation failed");
+      expect(screen.getByText(/Generation failed/)).toBeInTheDocument();
     });
 
     it("should show 'Failed' when error message is null", () => {

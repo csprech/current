@@ -126,6 +126,21 @@ describe("BaseNode", () => {
       expect(screen.getByText("Running")).toBeInTheDocument();
     });
 
+    it.each([
+      ["isInLockedGroup", "locked", "Locked"],
+      ["isDisabled", "disabled", "Disabled"],
+      ["isSkipped", "skipped", "Skipped"],
+    ])("uses canvas-provided %s state ahead of running", (flag, state, label) => {
+      mockUseWorkflowStore.mockImplementation((selector) => selector({
+        currentNodeIds: ["test-node-1"],
+        hoveredNodeId: null,
+        setHoveredNodeId: mockSetHoveredNodeId,
+      }));
+      render(<TestWrapper><BaseNode {...defaultProps} nodeData={{ [flag]: true }} /></TestWrapper>);
+      expect(screen.getByTestId("current-node")).toHaveAttribute("data-state", state);
+      expect(screen.getByRole("status")).toHaveTextContent(label);
+    });
+
     it("should apply error styling when hasError is true", () => {
       const { container } = render(
         <TestWrapper>

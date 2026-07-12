@@ -6,14 +6,15 @@ import { Position, useUpdateNodeInternals, useReactFlow, NodeProps } from "@xyfl
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNode, SwitchNodeData, HandleType } from "@/types";
+import { getHandlePresentation } from "./nodePresentation";
 
 const HANDLE_COLORS: Record<HandleType, string> = {
-  image: "#10b981",             // emerald — matches globals.css
-  text: "#3b82f6",              // blue — matches globals.css
-  video: "#ec4899",             // pink — video handle style
-  audio: "rgb(167, 139, 250)", // violet — matches GenerateAudioNode/OutputNode
-  "3d": "#f97316",              // orange — matches globals.css
-  easeCurve: "#ffffff",         // white — default handle style
+  image: getHandlePresentation("image").color,
+  text: getHandlePresentation("text").color,
+  video: getHandlePresentation("video").color,
+  audio: getHandlePresentation("audio").color,
+  "3d": getHandlePresentation("3d").color,
+  easeCurve: getHandlePresentation("easeCurve").color,
 };
 
 export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {
@@ -193,7 +194,7 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
                     checked={sw.enabled}
                     onChange={() => handleToggle(sw.id)}
                   />
-                  <div className="w-8 h-4 bg-neutral-600 peer-checked:bg-violet-500 rounded-full transition-colors relative">
+                  <div className="w-8 h-4 bg-neutral-600 peer-checked:bg-[#5578F6] rounded-full transition-colors relative">
                     <div className={`absolute top-0.5 left-0.5 bg-white h-3 w-3 rounded-full transition-transform ${sw.enabled ? "translate-x-4" : ""}`} />
                   </div>
                 </label>
@@ -202,7 +203,7 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
                 {editingId === sw.id ? (
                   <input
                     type="text"
-                    className="flex-1 bg-neutral-700 text-neutral-100 text-xs px-1 py-0.5 rounded border border-violet-500 outline-none"
+                    className="flex-1 bg-neutral-700 text-neutral-100 text-xs px-1 py-0.5 rounded border border-[#5578F6] outline-none focus:ring-1 focus:ring-[#5578F6]"
                     defaultValue={sw.name}
                     autoFocus
                     onBlur={(e) => handleNameEdit(sw.id, e.target.value)}
@@ -252,7 +253,7 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
 
             {/* Add switch button */}
             <button
-              className="w-full flex items-center justify-center gap-1 text-neutral-400 hover:text-neutral-100 text-xs py-1 mt-2 rounded hover:bg-violet-900/30 transition-colors"
+              className="w-full flex items-center justify-center gap-1 text-neutral-400 hover:text-neutral-100 text-xs py-1 mt-2 rounded hover:bg-[#5578F6]/10 focus-visible:ring-1 focus-visible:ring-[#5578F6] transition-colors"
               onClick={handleAddSwitch}
             >
               <svg

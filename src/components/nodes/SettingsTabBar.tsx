@@ -14,11 +14,10 @@ export function SettingsTabBar({
   fallbackLabel,
 }: SettingsTabBarProps) {
   return (
-    <div className="current-settings-tabs" role="tablist" aria-label="Model settings">
+    <div className="current-settings-tabs" role="group" aria-label="Model settings">
       <button
         type="button"
-        role="tab"
-        aria-selected={activeTab === "primary"}
+        aria-pressed={activeTab === "primary"}
         className="current-settings-tabs__tab"
         onClick={() => {
           if (activeTab !== "primary") onTabChange("primary");
@@ -28,8 +27,7 @@ export function SettingsTabBar({
       </button>
       <button
         type="button"
-        role="tab"
-        aria-selected={activeTab === "fallback"}
+        aria-pressed={activeTab === "fallback"}
         className="current-settings-tabs__tab"
         onClick={() => {
           if (activeTab !== "fallback") onTabChange("fallback");

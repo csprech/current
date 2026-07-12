@@ -254,7 +254,7 @@ describe("GenerateImageNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole("status")).toHaveTextContent("API error occurred");
+      expect(screen.getByText(/API error occurred/)).toBeInTheDocument();
       expect(screen.getAllByText(/API error occurred/)).toHaveLength(1);
     });
 
@@ -269,7 +269,7 @@ describe("GenerateImageNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole("status")).toHaveTextContent("Generation failed");
+      expect(screen.getByText(/Generation failed/)).toBeInTheDocument();
     });
 
     it("should show 'Failed' when error message is null", () => {

@@ -131,10 +131,10 @@ export function deriveNodeStatus(
   input: NodeStatusInput
 ): { state: CurrentNodeState; label: string; detail?: string } {
   if (input.error) return { state: "error", label: "Error", detail: input.error };
-  if (input.running) return { state: "running", label: "Running" };
-  if (input.locked) return { state: "locked", label: "Locked" };
   if (input.disabled) return { state: "disabled", label: "Disabled" };
+  if (input.locked) return { state: "locked", label: "Locked" };
   if (input.skipped) return { state: "skipped", label: "Skipped", detail: "Missing optional input" };
+  if (input.running) return { state: "running", label: "Running" };
   if (input.complete) return { state: "complete", label: "Complete" };
   return { state: "idle", label: "Ready" };
 }
@@ -245,6 +245,11 @@ function deriveNodeDetail(nodeType: NodeType | undefined, record: Record<string,
     parts.push(`${switches.length} branch${switches.length === 1 ? "" : "es"}`);
   } else if (nodeType === "conditionalSwitch") {
     const rules = Array.isArray(record.rules) ? record.rules as Array<Record<string, unknown>> : [];
+    if (record.evaluationPaused) {
+      parts.push("Evaluation paused", "No active route");
+      parts.push(`${rules.length} rule${rules.length === 1 ? "" : "s"}`);
+      return parts.join(" · ");
+    }
     const active = rules.find((rule) => rule.isMatched);
     parts.push(active && typeof active.label === "string" ? `${active.label} active` : "Default active");
     parts.push(`${rules.length} rule${rules.length === 1 ? "" : "s"}`);
@@ -280,7 +285,7 @@ export function deriveNodeStatusFromData(
     running,
     locked: modifiers.locked ?? Boolean(record.locked || record.isLocked || record.isInLockedGroup),
     disabled: modifiers.disabled ?? Boolean(record.disabled || record.isDisabled),
-    skipped: modifiers.skipped ?? Boolean(record.skipped || status === "skipped"),
+    skipped: modifiers.skipped ?? Boolean(record.skipped || record.isSkipped || status === "skipped"),
     complete,
   });
   const recoveryDetail = result.state === "error" && nodeType && getNodeRole(nodeType) === "generator"

@@ -38,4 +38,12 @@ describe("NodeStatusFooter", () => {
     expect(screen.getByText("Running")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveAttribute("aria-live", "polite");
   });
+
+  it("keeps dynamic metadata outside the polite live region", () => {
+    render(<NodeStatusFooter state="complete" label="Complete" detail="128 characters" />);
+    const liveRegion = screen.getByRole("status");
+    expect(liveRegion).toHaveTextContent("Complete");
+    expect(liveRegion).not.toHaveTextContent("128 characters");
+    expect(screen.getByText("128 characters")).not.toHaveAttribute("aria-live");
+  });
 });
