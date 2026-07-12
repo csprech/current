@@ -104,12 +104,16 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
   const [isEditingComment, setIsEditingComment] = useState(false);
   const [editCommentValue, setEditCommentValue] = useState(comment || "");
   const [showCommentTooltip, setShowCommentTooltip] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number } | null>(null);
+  const removeNode = useWorkflowStore((state) => state.removeNode);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
   const commentPopoverRef = useRef<HTMLDivElement>(null);
   const commentButtonRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
 
   // Check if comment is focused for navigation
   const isCommentFocused = focusedCommentNodeId === id;
@@ -219,6 +223,45 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isEditingComment, handleCommentSubmit]);
+
+  useEffect(() => {
+    if (!isMoreOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (moreButtonRef.current?.contains(target) || moreMenuRef.current?.contains(target)) return;
+      setIsMoreOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isMoreOpen]);
+
+  useEffect(() => {
+    if (!isMoreOpen) return;
+    moreMenuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
+  }, [isMoreOpen]);
+
+  const closeMoreMenu = useCallback((restoreFocus = false) => {
+    if (restoreFocus) {
+      moreButtonRef.current?.focus();
+    }
+    setIsMoreOpen(false);
+  }, []);
+
+  const handleMoreMenuKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      closeMoreMenu(true);
+      return;
+    }
+
+    if (event.key === "Home" || event.key === "End" || event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      moreMenuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
+    }
+  }, [closeMoreMenu]);
 
   // Determine if controls should be visible
   const showControls = isHovered || selected;
@@ -571,6 +614,55 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
               </button>
             </div>
           )}
+
+          {/* Contextual actions that do not compete with the primary controls. */}
+          <div className="relative shrink-0">
+            <button
+              ref={moreButtonRef}
+              type="button"
+              className="current-node-header__more nodrag nopan"
+              aria-label="More node actions"
+              aria-haspopup="menu"
+              aria-expanded={isMoreOpen}
+              aria-controls={isMoreOpen ? `node-actions-${id}` : undefined}
+              title="More node actions"
+              onClick={() => setIsMoreOpen((open) => !open)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  setIsMoreOpen(true);
+                }
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.75" />
+                <circle cx="12" cy="12" r="1.75" />
+                <circle cx="19" cy="12" r="1.75" />
+              </svg>
+            </button>
+            {isMoreOpen && (
+              <div
+                ref={moreMenuRef}
+                id={`node-actions-${id}`}
+                className="current-node-header__menu nodrag nopan"
+                role="menu"
+                aria-label="Node actions"
+                onKeyDown={handleMoreMenuKeyDown}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="current-node-header__menu-danger"
+                  onClick={() => {
+                    setIsMoreOpen(false);
+                    removeNode(id);
+                  }}
+                >
+                  Delete Node
+                </button>
+              </div>
+            )}
+          </div>
           </div>
         </div>
       </div>

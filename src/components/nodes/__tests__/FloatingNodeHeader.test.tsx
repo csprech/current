@@ -4,6 +4,7 @@ import { FloatingNodeHeader } from "@/components/nodes/FloatingNodeHeader";
 
 const setNodes = vi.fn();
 const getNodes = vi.fn(() => []);
+const removeNode = vi.fn();
 
 vi.mock("@xyflow/react", () => ({
   useReactFlow: () => ({
@@ -15,7 +16,7 @@ vi.mock("@xyflow/react", () => ({
 
 vi.mock("@/store/workflowStore", () => ({
   useWorkflowStore: (selector: (state: unknown) => unknown) =>
-    selector({ hoveredNodeId: null }),
+    selector({ hoveredNodeId: null, removeNode }),
 }));
 
 describe("FloatingNodeHeader", () => {
@@ -53,5 +54,53 @@ describe("FloatingNodeHeader", () => {
     );
 
     expect(container.querySelector(".current-node-header")).toHaveAttribute("data-role", "router");
+  });
+
+  it("opens the contextual menu from the keyboard and returns focus on Escape", () => {
+    render(
+      <FloatingNodeHeader
+        id="generate-1"
+        type="nanoBanana"
+        position={{ x: 10, y: 20 }}
+        width={320}
+        selected
+        title="Generate Image"
+      />
+    );
+
+    const more = screen.getByRole("button", { name: "More node actions" });
+    fireEvent.keyDown(more, { key: "ArrowDown" });
+
+    expect(screen.getByRole("menu", { name: "Node actions" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Delete Node" })).toHaveFocus();
+
+    fireEvent.keyDown(screen.getByRole("menu"), { key: "Escape" });
+    expect(screen.queryByRole("menu", { name: "Node actions" })).not.toBeInTheDocument();
+    expect(more).toHaveFocus();
+  });
+
+  it("runs the existing delete action and closes when clicking outside", () => {
+    render(
+      <FloatingNodeHeader
+        id="router-1"
+        type="router"
+        position={{ x: 0, y: 0 }}
+        width={280}
+        selected
+        title="Router"
+      />
+    );
+
+    const more = screen.getByRole("button", { name: "More node actions" });
+    expect(more).toHaveClass("nodrag", "nopan");
+    fireEvent.click(more);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete Node" }));
+    expect(removeNode).toHaveBeenCalledWith("router-1");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+
+    fireEvent.click(more);
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 });
