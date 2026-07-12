@@ -28,6 +28,12 @@ interface BaseNodeProps {
   settingsPanel?: ReactNode;
   /** Tutorial identifier for highlighting */
   dataTutorial?: string;
+  /** Accessible semantic state copy supplied by specialized nodes. */
+  stateLabel?: string;
+  /** Accessible explanation for the current semantic state. */
+  stateDetail?: string;
+  /** Visible status treatment supplied by specialized nodes. */
+  statusFooter?: ReactNode;
 }
 
 /**
@@ -72,6 +78,9 @@ export function BaseNode({
   settingsExpanded = false,
   settingsPanel,
   dataTutorial,
+  stateLabel,
+  stateDetail,
+  statusFooter,
 }: BaseNodeProps) {
   const currentNodeIds = useWorkflowStore((state) => state.currentNodeIds);
   const setHoveredNodeId = useWorkflowStore((state) => state.setHoveredNodeId);
@@ -286,14 +295,28 @@ export function BaseNode({
   );
 
   const hasExpandedSettings = settingsExpanded && settingsPanel;
+  const isRunning = isCurrentlyExecuting || isExecuting;
+  const nodeState = hasError ? "error" : isRunning ? "running" : selected ? "selected" : "idle";
+  const accessibleStateLabel = stateLabel ?? (hasError ? "Node error" : isRunning ? "Running" : null);
+  const stateDescription = accessibleStateLabel ? (
+    <span className="sr-only">
+      <span>{accessibleStateLabel}</span>
+      {stateDetail && <span>{stateDetail}</span>}
+    </span>
+  ) : null;
+
+  const materialClassName = `current-node ${selected ? "current-node--selected" : ""}`;
 
   return (
     <div
       className={hasExpandedSettings
-        ? `relative flex flex-col w-full h-full overflow-visible iris-card rounded-xl ${selected ? "iris-card-selected" : ""} ${(isCurrentlyExecuting || isExecuting) ? "iris-card-exec" : ""} ${hasError ? "iris-card-error" : ""}`
+        ? `relative flex flex-col w-full h-full overflow-visible rounded-xl ${materialClassName}`
         : "contents"}
       onDoubleClick={handleResizeHandleDblClick}
       data-tutorial={hasExpandedSettings ? dataTutorial : undefined}
+      data-testid={hasExpandedSettings ? "current-node" : undefined}
+      data-state={hasExpandedSettings ? nodeState : undefined}
+      data-selected={hasExpandedSettings ? String(selected) : undefined}
     >
       <NodeResizer
         isVisible={selected}
@@ -307,15 +330,15 @@ export function BaseNode({
         className={`
           ${hasExpandedSettings ? "flex-1 min-h-0 w-full" : "h-full w-full"} flex flex-col overflow-visible relative
           ${hasExpandedSettings
-            /* Outer wrapper is the material card; inner is a transparent top segment */
+            /* Outer wrapper owns the material; inner is a transparent top segment. */
             ? `${settingsExpanded ? "rounded-t-xl" : "rounded-xl"}`
-            : `iris-card ${settingsExpanded ? "rounded-t-xl" : "rounded-xl"}
-               ${(isCurrentlyExecuting || isExecuting) ? "iris-card-exec" : ""}
-               ${hasError ? "iris-card-error" : ""}
-               ${selected ? "iris-card-selected" : ""}`}
+            : `${materialClassName} ${settingsExpanded ? "rounded-t-xl" : "rounded-xl"}`}
           ${className}
         `}
         data-tutorial={!hasExpandedSettings ? dataTutorial : undefined}
+        data-testid={!hasExpandedSettings ? "current-node" : undefined}
+        data-state={!hasExpandedSettings ? nodeState : undefined}
+        data-selected={!hasExpandedSettings ? String(selected) : undefined}
         onMouseEnter={(e) => {
           if (e.buttons !== 0 || isPanningRef.current || isDraggingNodeRef.current) return;
           setHoveredNodeId(id);
@@ -326,7 +349,11 @@ export function BaseNode({
         }}
       >
         <div ref={contentRef} style={{ contain: "layout style" }} className={contentClassName ?? (fullBleed ? "flex-1 min-h-0 relative" : "px-3 pb-4 flex-1 min-h-0 overflow-visible flex flex-col")}>{children}</div>
+        {!hasExpandedSettings && stateDescription}
+        {!hasExpandedSettings && statusFooter}
       </div>
+      {hasExpandedSettings && stateDescription}
+      {hasExpandedSettings && statusFooter}
       {settingsPanel && (
         <div ref={settingsPanelRef}>
           {settingsPanel}

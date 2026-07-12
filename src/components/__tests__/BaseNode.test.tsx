@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BaseNode } from "@/components/nodes/BaseNode";
+import { NodeStatusFooter } from "@/components/nodes/NodeStatusFooter";
 import { ReactFlowProvider } from "@xyflow/react";
 
 // Mock the workflow store
@@ -86,8 +87,10 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".iris-card-selected");
-      expect(nodeDiv).toBeInTheDocument();
+      const nodeDiv = screen.getByTestId("current-node");
+      expect(nodeDiv).toHaveAttribute("data-selected", "true");
+      expect(nodeDiv).toHaveAttribute("data-state", "selected");
+      expect(container.querySelector(".iris-card")).not.toBeInTheDocument();
     });
 
     it("should apply executing styling when isExecuting is true", () => {
@@ -97,8 +100,9 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".iris-card-exec");
-      expect(nodeDiv).toBeInTheDocument();
+      const nodeDiv = screen.getByTestId("current-node");
+      expect(nodeDiv).toHaveAttribute("data-state", "running");
+      expect(screen.getByText("Running")).toBeInTheDocument();
     });
 
     it("should apply executing styling when currentNodeIds includes the node", () => {
@@ -117,8 +121,9 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".iris-card-exec");
-      expect(nodeDiv).toBeInTheDocument();
+      const nodeDiv = screen.getByTestId("current-node");
+      expect(nodeDiv).toHaveAttribute("data-state", "running");
+      expect(screen.getByText("Running")).toBeInTheDocument();
     });
 
     it("should apply error styling when hasError is true", () => {
@@ -128,8 +133,26 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".iris-card-error");
-      expect(nodeDiv).toBeInTheDocument();
+      const nodeDiv = screen.getByTestId("current-node");
+      expect(nodeDiv).toHaveAttribute("data-state", "error");
+      expect(screen.getByText("Node error")).toBeInTheDocument();
+    });
+
+    it("renders an explicit state label, detail, and specialized footer", () => {
+      render(
+        <TestWrapper>
+          <BaseNode
+            {...defaultProps}
+            stateLabel="Waiting"
+            stateDetail="Connect an image input"
+            statusFooter={<NodeStatusFooter state="skipped" label="Skipped" />}
+          />
+        </TestWrapper>
+      );
+
+      expect(screen.getByText("Waiting")).toBeInTheDocument();
+      expect(screen.getByText("Connect an image input")).toBeInTheDocument();
+      expect(screen.getByText("Skipped")).toBeInTheDocument();
     });
   });
 

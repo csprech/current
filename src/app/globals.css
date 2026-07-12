@@ -485,10 +485,8 @@
     radial-gradient(100% 120% at 50% 130%, #ececf0 0%, #e8e8ed 100%);
 }
 
-/* Node material: a white card floating on the stage. No backdrop-blur here —
-   dozens of these must stay cheap to pan. The Apple feel comes from the soft
-   diffuse shadow doing the lifting, not the border. */
-.iris-card {
+/* Current node chassis. No backdrop blur here: these surfaces move as a group. */
+.current-node {
   background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
   border: 0.5px solid rgba(20, 20, 30, 0.06);
   box-shadow:
@@ -498,7 +496,7 @@
     0 22px 50px -16px rgba(20, 20, 35, 0.08);
   transition: box-shadow 0.25s ease, border-color 0.2s ease;
 }
-.iris-card:hover {
+.current-node:hover {
   border-color: rgba(20, 20, 30, 0.09);
   box-shadow:
     inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
@@ -506,7 +504,8 @@
     0 14px 34px -8px rgba(20, 20, 35, 0.13),
     0 30px 66px -18px rgba(20, 20, 35, 0.11);
 }
-.iris-card-selected {
+.current-node--selected,
+.current-node[data-selected="true"] {
   border-color: rgba(74, 134, 247, 0.65) !important;
   box-shadow:
     inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
@@ -514,37 +513,101 @@
     0 0 22px -2px rgba(74, 134, 247, 0.3),
     0 12px 30px -8px rgba(20, 20, 35, 0.14) !important;
 }
-/* A node breathing while it renders — the spectrum's violet, alive. */
-.iris-card-exec {
-  border-color: rgba(123, 108, 246, 0.6) !important;
-  animation: iris-breathe 2.6s ease-in-out infinite;
+/* State is always carried by text/data-state; animation is only reinforcement. */
+.current-node[data-state="running"] {
+  border-color: color-mix(in srgb, var(--current-blue) 68%, transparent) !important;
+  animation: current-node-breathe 2.6s ease-in-out infinite;
 }
-@keyframes iris-breathe {
+@keyframes current-node-breathe {
   0%, 100% {
     box-shadow:
       inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
-      0 0 0 1px rgba(123, 108, 246, 0.3),
-      0 0 16px -3px rgba(123, 108, 246, 0.25),
+      0 0 0 1px color-mix(in srgb, var(--current-blue) 32%, transparent),
+      0 0 16px -3px color-mix(in srgb, var(--current-blue) 25%, transparent),
       0 12px 30px -8px rgba(20, 20, 35, 0.12);
   }
   50% {
     box-shadow:
       inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
-      0 0 0 1px rgba(123, 108, 246, 0.55),
-      0 0 34px 0 rgba(123, 108, 246, 0.4),
+      0 0 0 1px color-mix(in srgb, var(--current-blue) 55%, transparent),
+      0 0 34px 0 color-mix(in srgb, var(--current-aqua) 38%, transparent),
       0 12px 30px -8px rgba(20, 20, 35, 0.12);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .iris-card-exec { animation: none; box-shadow: 0 0 0 1px rgba(123,108,246,0.45), 0 12px 30px -8px rgba(20,20,35,0.12) !important; }
+  .current-node[data-state="running"] { animation: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--current-blue) 45%, transparent), 0 12px 30px -8px rgba(20,20,35,0.12) !important; }
 }
-.iris-card-error {
-  border-color: rgba(239, 68, 68, 0.7) !important;
+.current-node[data-state="error"] {
+  border-color: color-mix(in srgb, var(--current-danger) 72%, transparent) !important;
   box-shadow:
     inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px rgba(239, 68, 68, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--current-danger) 35%, transparent),
     0 12px 30px -8px rgba(20, 20, 35, 0.12) !important;
 }
+
+.current-node-status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.65rem;
+  color: var(--current-graphite);
+  background: color-mix(in srgb, var(--current-canvas) 72%, transparent);
+  border-top: 1px solid var(--current-divider);
+  font-size: 0.6875rem;
+  line-height: 1.25;
+}
+.current-node-status__indicator {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--current-minimap-neutral);
+}
+.current-node-status__copy { display: flex; min-width: 0; flex-direction: column; }
+.current-node-status__copy strong { color: var(--current-inspector); font-weight: 650; }
+.current-node-status[data-state="running"] .current-node-status__indicator { background: var(--current-blue); }
+.current-node-status[data-state="complete"] .current-node-status__indicator { background: var(--current-success); }
+.current-node-status[data-state="skipped"] .current-node-status__indicator,
+.current-node-status[data-state="locked"] .current-node-status__indicator { background: var(--current-warning); }
+.current-node-status[data-state="error"] .current-node-status__indicator { background: var(--current-danger); }
+.current-node-status button {
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--current-divider);
+  border-radius: 0.4rem;
+  color: var(--current-blue);
+  background: var(--current-paper);
+  font-weight: 650;
+  cursor: pointer;
+}
+.current-node-status button:focus-visible { outline: none; box-shadow: var(--current-focus); }
+.current-node > .current-node-status:last-child { border-radius: 0 0 0.75rem 0.75rem; }
+
+.current-node-header {
+  min-height: 1.75rem;
+  color: var(--current-graphite);
+}
+.current-node-header__role {
+  display: inline-flex;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--current-steel-blue) 22%, transparent);
+  border-radius: 0.4rem;
+  color: var(--current-steel-blue);
+  background: color-mix(in srgb, var(--current-steel-blue) 9%, var(--current-paper));
+}
+.current-node-header__role svg { width: 0.8rem; height: 0.8rem; }
+.current-node-header__role[data-role="generator"] { color: var(--current-blue); background: color-mix(in srgb, var(--current-blue) 10%, var(--current-paper)); }
+.current-node-header__role[data-role="input"],
+.current-node-header__role[data-role="output"] { color: var(--current-aqua); background: color-mix(in srgb, var(--current-aqua) 10%, var(--current-paper)); }
+.current-node-header__role[data-role="router"] { color: var(--current-aqua-cyan); background: color-mix(in srgb, var(--current-aqua-cyan) 10%, var(--current-paper)); }
+.current-node-header__title { color: var(--current-graphite); text-transform: none; }
+.current-node-header__title:focus-visible { border-radius: 0.25rem; box-shadow: var(--current-focus); }
+.current-node-header__controls:focus-within { opacity: 1; }
+.current-node-header__controls button:focus-visible { outline: none; box-shadow: var(--current-focus); }
 
 /* Frosted chrome — real vibrancy, few instances, always on top. */
 .iris-topbar {

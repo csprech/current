@@ -7,6 +7,7 @@ import { NodeType, ProviderType } from "@/types";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { ProviderBadge } from "./ProviderBadge";
+import { getNodeRole, type NodeRole } from "./nodePresentation";
 
 export interface CommentNavigationProps {
   currentIndex: number;
@@ -24,6 +25,24 @@ const RUNNABLE_TYPES = new Set([
   'removeBackground',
 ]);
 const EXPANDABLE_TYPES = new Set(['prompt', 'promptConstructor', 'splitGrid', 'annotation']);
+
+function RoleGlyph({ role }: { role: NodeRole }) {
+  const paths: Record<NodeRole, ReactNode> = {
+    input: <path d="M5 12h14M12 5l7 7-7 7" />,
+    generator: <path d="m12 3 1.4 5.1L18 6l-2.1 4.6L21 12l-5.1 1.4L18 18l-4.6-2.1L12 21l-1.4-5.1L6 18l2.1-4.6L3 12l5.1-1.4L6 6l4.6 2.1L12 3Z" />,
+    processor: <path d="M5 7h14M8 7v10m8-10v10M5 17h14" />,
+    router: <path d="M5 6h5v5m0 0 4-4h5m-9 4 4 4h5" />,
+    output: <path d="M19 12H5m7 7-7-7 7-7" />,
+  };
+
+  return (
+    <span className="current-node-header__role" data-role={role} aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        {paths[role]}
+      </svg>
+    </span>
+  );
+}
 
 interface FloatingNodeHeaderProps {
   id: string;
@@ -76,6 +95,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
 }: FloatingNodeHeaderProps) {
   const canRun = RUNNABLE_TYPES.has(type);
   const canExpand = EXPANDABLE_TYPES.has(type);
+  const role = getNodeRole(type);
   const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const isBodyHovered = useWorkflowStore((state) => state.hoveredNodeId === id);
   const isHovered = isHeaderHovered || isBodyHovered;
@@ -332,13 +352,15 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
       }}
     >
       <div
-        className="px-1 py-1 flex items-center justify-between w-full pointer-events-auto cursor-grab"
+        className="current-node-header group px-1 py-1 flex items-center justify-between w-full pointer-events-auto cursor-grab"
+        data-role={role}
         onMouseEnter={() => setIsHeaderHovered(true)}
         onMouseLeave={() => setIsHeaderHovered(false)}
         onPointerDown={handleHeaderPointerDown}
       >
         {/* Title Section */}
-        <div className="flex-1 min-w-0 max-w-[60%] flex items-center gap-1.5 pl-2">
+        <div className="flex-1 min-w-0 max-w-[60%] flex items-center gap-1.5 pl-1">
+          <RoleGlyph role={role} />
           {provider && <ProviderBadge provider={provider} />}
           {isEditingTitle ? (
             <input
@@ -349,16 +371,19 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
               onBlur={handleTitleSubmit}
               onKeyDown={handleTitleKeyDown}
               placeholder="Custom title..."
-              className="nodrag nopan w-full bg-transparent border-none outline-none text-xs font-semibold tracking-wide text-neutral-300 placeholder:text-neutral-500 uppercase"
+              aria-label="Node title"
+              className="current-node-header__title nodrag nopan w-full bg-transparent border-none outline-none text-xs font-semibold tracking-wide placeholder:text-neutral-500"
             />
           ) : (
-            <span
-              className="nodrag text-xs font-semibold uppercase tracking-wide text-neutral-400 cursor-text truncate"
+            <button
+              type="button"
+              className="current-node-header__title nodrag nopan min-w-0 border-0 bg-transparent p-0 text-left text-xs font-semibold tracking-wide cursor-text truncate"
               onClick={() => setIsEditingTitle(true)}
               title="Click to edit title"
+              aria-label={`Edit ${customTitle ? `${customTitle} - ${title}` : title} title`}
             >
               {customTitle ? `${customTitle} - ${title}` : title}
-            </span>
+            </button>
           )}
         </div>
 
@@ -372,7 +397,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
           )}
 
         {/* Controls - right-aligned, fade in on hover/selected */}
-        <div className={`shrink-0 flex items-center gap-1 transition-opacity duration-200 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`current-node-header__controls shrink-0 flex items-center gap-1 transition-opacity duration-200 focus-within:opacity-100 group-focus-within:opacity-100 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           {/* Header Action (e.g. Browse button) */}
           {headerAction}
 
@@ -401,6 +426,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                   : "text-neutral-500 hover:text-neutral-200 border border-neutral-600"
               }`}
               title={comment ? "Edit comment" : "Add comment"}
+              aria-label={comment ? "Edit comment" : "Add comment"}
             >
               {comment ? (
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -433,6 +459,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                       }}
                       className="nodrag nopan w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
                       title="Previous comment"
+                      aria-label="Previous comment"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -448,6 +475,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                       }}
                       className="nodrag nopan w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
                       title="Next comment"
+                      aria-label="Next comment"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -501,6 +529,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                 onClick={() => onExpandNode(id, type)}
                 className="nodrag nopan p-0.5 rounded transition-all duration-200 ease-in-out text-neutral-500 group-hover:text-neutral-200 border border-neutral-600 flex items-center overflow-hidden group-hover:pr-2"
                 title="Expand editor"
+                aria-label="Expand editor"
               >
                 <svg
                   className="w-3.5 h-3.5 flex-shrink-0"
@@ -531,6 +560,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                 disabled={isExecuting}
                 className="nodrag nopan p-0.5 rounded transition-all duration-200 ease-in-out text-neutral-500 group-hover:text-neutral-200 border border-neutral-600 flex items-center overflow-hidden group-hover:pr-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Run this node"
+                aria-label="Run this node"
               >
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
