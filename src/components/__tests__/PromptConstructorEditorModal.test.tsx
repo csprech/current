@@ -40,4 +40,48 @@ describe("PromptConstructorEditorModal", () => {
     expect(screen.getByRole("alertdialog", { name: "You have unsaved changes" })).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it("can submit directly from the dirty-state alert", () => {
+    const onSubmit = vi.fn();
+    const onClose = vi.fn();
+    render(
+      <PromptConstructorEditorModal
+        isOpen
+        initialTemplate="Original"
+        availableVariables={[]}
+        onSubmit={onSubmit}
+        onClose={onClose}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("Type @ to insert variables..."), { target: { value: "Changed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    const submitButtons = screen.getAllByRole("button", { name: "Submit" });
+    expect(submitButtons).toHaveLength(2);
+    fireEvent.click(submitButtons[1]);
+    expect(onSubmit).toHaveBeenCalledWith("Changed");
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+
+  it("closes autocomplete before the focused workspace handles Escape", () => {
+    render(
+      <PromptConstructorEditorModal
+        isOpen
+        initialTemplate=""
+        availableVariables={[{ nodeId: "subject", name: "subject", value: "world" }]}
+        onSubmit={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    const textarea = screen.getByPlaceholderText("Type @ to insert variables...");
+    fireEvent.change(textarea, { target: { value: "@", selectionStart: 1 } });
+    expect(screen.getAllByText("@subject")).toHaveLength(2);
+
+    fireEvent.keyDown(textarea, { key: "Escape" });
+    expect(screen.getAllByText("@subject")).toHaveLength(1);
+    expect(screen.getByRole("main", { name: "Edit Prompt Constructor" })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.getByRole("alertdialog", { name: "You have unsaved changes" })).toBeInTheDocument();
+  });
 });

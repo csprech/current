@@ -35,6 +35,11 @@ const createDefaultNodeData = (): SplitGridNodeData => ({
 });
 
 describe("SplitGridSettingsModal", () => {
+  it("uses a Current sheet for split-grid settings", () => {
+    render(<SplitGridSettingsModal nodeId="test-node" nodeData={createDefaultNodeData()} onClose={vi.fn()} />);
+    expect(screen.getByRole("dialog", { name: "Split Grid Settings" })).toHaveAttribute("data-surface", "sheet");
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetNodeById.mockReturnValue({

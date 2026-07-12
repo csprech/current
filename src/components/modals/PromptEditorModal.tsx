@@ -62,6 +62,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
   }, [hasUnsavedChanges, onClose]);
 
   const handleSubmit = useCallback(() => {
+    setShowConfirmation(false);
     onSubmit(prompt);
     onClose();
   }, [prompt, onSubmit, onClose]);
@@ -126,6 +127,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
         danger
         onCancel={handleDismissConfirmation}
         onConfirm={onClose}
+        alternateAction={{ label: "Submit", onClick: handleSubmit, variant: "primary" }}
       />
     </>
   );

@@ -108,6 +108,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
   }, [showAutocomplete, closeAutocomplete, handleAttemptClose]);
 
   const handleSubmit = useCallback(() => {
+    setShowConfirmation(false);
     onSubmit(template);
     onClose();
   }, [template, onSubmit, onClose]);
@@ -264,6 +265,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
         danger
         onCancel={handleDismissConfirmation}
         onConfirm={onClose}
+        alternateAction={{ label: "Submit", onClick: handleSubmit, variant: "primary" }}
       />
     </>
   );

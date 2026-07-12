@@ -141,6 +141,11 @@ describe("CostDialog", () => {
   });
 
   describe("Basic Rendering", () => {
+    it("uses a Current sheet for workflow costs", () => {
+      render(<CostDialog predictedCost={createGeminiOnlyCost()} incurredCost={0} onClose={vi.fn()} />);
+      expect(screen.getByRole("dialog", { name: "Workflow Costs" })).toHaveAttribute("data-surface", "sheet");
+    });
+
     it("requires explicit confirmation for cost reset", () => {
       render(
         <CostDialog predictedCost={createGeminiOnlyCost()} incurredCost={12} onClose={vi.fn()} />

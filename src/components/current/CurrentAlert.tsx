@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, type ReactNode, type RefObject } from "react";
-import { CurrentButton } from "./CurrentButton";
+import { CurrentButton, type CurrentButtonVariant } from "./CurrentButton";
 import { CurrentSheetSurface } from "./CurrentSheet";
 
 export interface CurrentAlertProps {
@@ -14,6 +14,11 @@ export interface CurrentAlertProps {
   confirmLabel?: string;
   danger?: boolean;
   returnFocusRef?: RefObject<HTMLElement | null>;
+  alternateAction?: {
+    label: string;
+    onClick: () => void;
+    variant?: CurrentButtonVariant;
+  };
 }
 
 export function CurrentAlert({
@@ -26,6 +31,7 @@ export function CurrentAlert({
   confirmLabel = "Confirm",
   danger = false,
   returnFocusRef,
+  alternateAction,
 }: CurrentAlertProps) {
   const descriptionId = `current-alert-description-${useId().replace(/:/g, "")}`;
 
@@ -45,6 +51,11 @@ export function CurrentAlert({
       <div className="current-alert__actions">
         <CurrentButton variant="secondary" onClick={onCancel}>{cancelLabel}</CurrentButton>
         <CurrentButton variant={danger ? "danger" : "primary"} onClick={onConfirm}>{confirmLabel}</CurrentButton>
+        {alternateAction && (
+          <CurrentButton variant={alternateAction.variant ?? "primary"} onClick={alternateAction.onClick}>
+            {alternateAction.label}
+          </CurrentButton>
+        )}
       </div>
     </CurrentSheetSurface>
   );

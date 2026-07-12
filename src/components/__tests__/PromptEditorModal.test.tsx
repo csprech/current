@@ -219,6 +219,20 @@ describe("PromptEditorModal", () => {
   });
 
   describe("Unsaved Changes Confirmation Dialog", () => {
+    it("can submit directly from the dirty-state alert", () => {
+      const onSubmit = vi.fn();
+      const onClose = vi.fn();
+      render(<PromptEditorModal isOpen initialPrompt="Original" onSubmit={onSubmit} onClose={onClose} />);
+      fireEvent.change(screen.getByPlaceholderText("Describe what to generate..."), { target: { value: "Changed" } });
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      const submitButtons = screen.getAllByRole("button", { name: "Submit" });
+      expect(submitButtons).toHaveLength(2);
+      fireEvent.click(submitButtons[1]);
+      expect(onSubmit).toHaveBeenCalledWith("Changed");
+      expect(onClose).toHaveBeenCalledOnce();
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+
     it("should show discard and keep-editing actions in the confirmation dialog", () => {
       render(
         <PromptEditorModal
@@ -336,6 +350,22 @@ describe("PromptEditorModal", () => {
   });
 
   describe("Escape Key", () => {
+    it("dismisses only the nested dirty alert before handling the workspace", () => {
+      const onClose = vi.fn();
+      render(<PromptEditorModal isOpen initialPrompt="Original" onSubmit={vi.fn()} onClose={onClose} />);
+      fireEvent.change(screen.getByPlaceholderText("Describe what to generate..."), { target: { value: "Changed" } });
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+      expect(screen.getByRole("main", { name: "Edit Prompt" })).toBeInTheDocument();
+      expect(onClose).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(window, { key: "Escape" });
+      expect(screen.getByRole("alertdialog", { name: "You have unsaved changes" })).toBeInTheDocument();
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
     it("should close modal without saving when Escape is pressed and no changes", () => {
       const onSubmit = vi.fn();
       const onClose = vi.fn();

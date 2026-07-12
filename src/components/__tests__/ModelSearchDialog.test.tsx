@@ -164,6 +164,7 @@ describe("ModelSearchDialog", () => {
       );
 
       expect(screen.getByText("Browse Models")).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Browse Models" })).toHaveAttribute("data-surface", "sheet");
     });
 
     it("should register and unregister modal count", async () => {

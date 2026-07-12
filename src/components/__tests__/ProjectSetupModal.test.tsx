@@ -8,6 +8,16 @@ const mockSetUseExternalImageStorage = vi.fn();
 const mockUpdateProviderApiKey = vi.fn();
 const mockToggleProvider = vi.fn();
 const mockUseWorkflowStore = vi.fn();
+const mockIncrementModalCount = vi.fn();
+const mockDecrementModalCount = vi.fn();
+
+vi.mock("@xyflow/react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@xyflow/react")>();
+  return {
+    ...actual,
+    useReactFlow: () => ({ screenToFlowPosition: (position: { x: number; y: number }) => position }),
+  };
+});
 
 vi.mock("@/store/workflowStore", () => ({
   useWorkflowStore: (selector?: (state: unknown) => unknown) => {
@@ -16,6 +26,7 @@ vi.mock("@/store/workflowStore", () => ({
     }
     return mockUseWorkflowStore((s: unknown) => s);
   },
+  useProviderApiKeys: () => ({ replicateApiKey: null, falApiKey: null, kieApiKey: null, wavespeedApiKey: null }),
   generateWorkflowId: () => "mock-workflow-id",
 }));
 
@@ -63,6 +74,11 @@ const createDefaultState = (overrides = {}) => ({
   setUseExternalImageStorage: mockSetUseExternalImageStorage,
   updateProviderApiKey: mockUpdateProviderApiKey,
   toggleProvider: mockToggleProvider,
+  addNode: vi.fn(),
+  incrementModalCount: mockIncrementModalCount,
+  decrementModalCount: mockDecrementModalCount,
+  recentModels: [],
+  trackModelUsage: vi.fn(),
   ...overrides,
 });
 
@@ -143,6 +159,18 @@ describe("ProjectSetupModal", () => {
   });
 
   describe("Tab Navigation", () => {
+    it("returns nested model search focus to its precise opener", async () => {
+      render(<ProjectSetupModal isOpen mode="settings" onSave={vi.fn()} onClose={vi.fn()} />);
+      fireEvent.click(screen.getByRole("button", { name: "Node Defaults" }));
+      const opener = screen.getAllByRole("button", { name: "Select Model" })[0];
+      opener.focus();
+      fireEvent.click(opener);
+      expect(await screen.findByRole("dialog", { name: "Browse Models" })).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Close Browse Models" }));
+      await waitFor(() => expect(opener).toHaveFocus());
+      expect(screen.getByRole("dialog", { name: "Project Settings" })).toBeInTheDocument();
+    });
+
     it("should render Project and Providers tabs", () => {
       render(
         <ProjectSetupModal

@@ -1,6 +1,6 @@
 import { createRef, useRef, useState } from "react";
 import { renderToString } from "react-dom/server";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   ActivityIcon,
@@ -199,6 +199,52 @@ describe("Current surface primitives", () => {
     expect(screen.getByRole("button", { name: "Open settings" })).toHaveFocus();
   });
 
+  it("automatically returns focus to the active opener without an explicit ref", () => {
+    function Harness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button onClick={() => setOpen(true)}>Open automatic sheet</button>
+          <CurrentSheet open={open} title="Automatic sheet" onClose={() => setOpen(false)}>
+            Content
+          </CurrentSheet>
+        </>
+      );
+    }
+
+    render(<Harness />);
+    const opener = screen.getByRole("button", { name: "Open automatic sheet" });
+    opener.focus();
+    fireEvent.click(opener);
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(opener).toHaveFocus();
+  });
+
+  it("returns a nested sheet to the precise control that opened it", () => {
+    function Harness() {
+      const [outerOpen, setOuterOpen] = useState(false);
+      const [innerOpen, setInnerOpen] = useState(false);
+      return (
+        <>
+          <button onClick={() => setOuterOpen(true)}>Open outer</button>
+          <CurrentSheet open={outerOpen} title="Outer" onClose={() => setOuterOpen(false)}>
+            <button onClick={() => setInnerOpen(true)}>Open inner</button>
+            <CurrentSheet open={innerOpen} title="Inner" onClose={() => setInnerOpen(false)}>Inner content</CurrentSheet>
+          </CurrentSheet>
+        </>
+      );
+    }
+
+    render(<Harness />);
+    fireEvent.click(screen.getByRole("button", { name: "Open outer" }));
+    const nestedOpener = screen.getByRole("button", { name: "Open inner" });
+    nestedOpener.focus();
+    fireEvent.click(nestedOpener);
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(nestedOpener).toHaveFocus();
+    expect(screen.getByRole("dialog", { name: "Outer" })).toBeInTheDocument();
+  });
+
   it("does not return focus while the sheet remains open", () => {
     const returnFocusRef = createRef<HTMLButtonElement>();
     render(
@@ -327,6 +373,27 @@ describe("Current surface primitives", () => {
     );
 
     expect(screen.getByRole("button", { name: "Delete project" })).toHaveAttribute("data-variant", "danger");
+  });
+
+  it("supports one disciplined alternate action in a three-action alert", () => {
+    const onAlternate = vi.fn();
+    render(
+      <CurrentAlert
+        open
+        title="Unsaved changes"
+        description="Choose how to continue."
+        cancelLabel="Keep editing"
+        confirmLabel="Discard"
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+        alternateAction={{ label: "Submit", onClick: onAlternate, variant: "primary" }}
+      />,
+    );
+
+    const alert = screen.getByRole("alertdialog", { name: "Unsaved changes" });
+    expect(within(alert).getAllByRole("button")).toHaveLength(3);
+    fireEvent.click(within(alert).getByRole("button", { name: "Submit" }));
+    expect(onAlternate).toHaveBeenCalledOnce();
   });
 
   it("returns focus when an alert is cancelled", () => {

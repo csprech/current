@@ -45,6 +45,7 @@ describe("WorkflowBrowserModal", () => {
     );
 
     expect(screen.getByTestId("workflow-browser-view")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Open Workflow" })).toHaveAttribute("data-surface", "sheet");
   });
 
   it("should call onClose when backdrop is clicked", () => {

@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type MouseEvent, type ReactNode, ty
 import { createPortal } from "react-dom";
 import { CloseIcon } from "./CurrentIcons";
 import { CurrentIconButton } from "./CurrentIconButton";
+import { getSurfaceFocusableElements } from "./surfaceFocus";
 
 export interface CurrentSheetProps {
   open: boolean;
@@ -34,24 +35,10 @@ interface ModalEntry {
 const modalStack: ModalEntry[] = [];
 const inertSnapshots = new Map<HTMLElement, boolean>();
 
-const focusableSelector = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "[tabindex]:not([tabindex='-1'])",
-].join(",");
-
-function getFocusableElements(dialog: HTMLElement) {
-  return Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector))
-    .filter((element) => element.getAttribute("aria-hidden") !== "true" && !element.hasAttribute("inert"));
-}
-
 function focusModal(entry: ModalEntry) {
   if (!entry.dialog) return;
   const requestedControl = entry.initialFocus();
-  const firstControl = getFocusableElements(entry.dialog)[0];
+  const firstControl = getSurfaceFocusableElements(entry.dialog)[0];
   (requestedControl ?? firstControl ?? entry.dialog).focus();
 }
 
@@ -95,12 +82,13 @@ function handleModalKeyDown(event: KeyboardEvent) {
 
   if (event.key === "Escape") {
     event.preventDefault();
+    event.stopImmediatePropagation();
     topModal.onClose();
     return;
   }
 
   if (event.key !== "Tab" || !topModal.dialog) return;
-  const controls = getFocusableElements(topModal.dialog);
+  const controls = getSurfaceFocusableElements(topModal.dialog);
   if (controls.length === 0) {
     event.preventDefault();
     topModal.dialog.focus();
@@ -161,6 +149,8 @@ export function CurrentSheetSurface({
   const dialogRef = useRef<HTMLElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const entryRef = useRef<ModalEntry | null>(null);
+  const automaticReturnFocusRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
 
   if (!entryRef.current) {
     entryRef.current = {
@@ -168,13 +158,24 @@ export function CurrentSheetSurface({
       dialog: null,
       backdrop: null,
       onClose,
-      returnFocus: () => returnFocusRef?.current ?? null,
+      returnFocus: () => returnFocusRef?.current ?? automaticReturnFocusRef.current,
       initialFocus: () => initialFocusRef?.current ?? null,
     };
   }
   entryRef.current.onClose = onClose;
-  entryRef.current.returnFocus = () => returnFocusRef?.current ?? null;
+  entryRef.current.returnFocus = () => returnFocusRef?.current ?? automaticReturnFocusRef.current;
   entryRef.current.initialFocus = () => initialFocusRef?.current ?? null;
+
+  useEffect(() => {
+    if (open && !wasOpenRef.current) {
+      automaticReturnFocusRef.current = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    } else if (!open) {
+      automaticReturnFocusRef.current = null;
+    }
+    wasOpenRef.current = open;
+  }, [open]);
 
   useEffect(() => {
     setPortalTarget(document.body);
