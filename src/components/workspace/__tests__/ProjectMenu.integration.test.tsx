@@ -12,7 +12,17 @@ vi.mock("@/store/workflowStore", () => ({
 }));
 
 vi.mock("@/components/ProjectSetupModal", () => ({
-  ProjectSetupModal: () => null,
+  ProjectSetupModal: ({
+    isOpen,
+    onSave,
+  }: {
+    isOpen: boolean;
+    onSave: (id: string, name: string, path: string) => void | Promise<void>;
+  }) => isOpen ? (
+    <button type="button" onClick={() => void onSave("new-project", "New Project", "/tmp/new-project")}>
+      Complete project setup
+    </button>
+  ) : null,
 }));
 
 vi.mock("@/components/WorkflowBrowserModal", () => ({
@@ -107,5 +117,64 @@ describe("ProjectMenu version history integration", () => {
     expect(alertSpy).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Dismiss notice" }));
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("shows an inline error when a configured save returns false", async () => {
+    const saveToFile = vi.fn().mockResolvedValue(false);
+    mockUseWorkflowStore.mockImplementation((selector) => selector(createState({ saveToFile })));
+    render(<ProjectMenu />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Save project" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Failed to save project. Please try again.");
+    expect(saveToFile).toHaveBeenCalledOnce();
+  });
+
+  it("shows an inline error when the first project save returns false", async () => {
+    const saveToFile = vi.fn().mockResolvedValue(false);
+    const setWorkflowMetadata = vi.fn();
+    mockUseWorkflowStore.mockImplementation((selector) => selector(createState({
+      workflowName: null,
+      workflowId: null,
+      saveDirectoryPath: null,
+      saveToFile,
+      setWorkflowMetadata,
+    })));
+    render(<ProjectMenu />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure save location" }));
+    fireEvent.click(screen.getByRole("button", { name: "Complete project setup" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Failed to save project. Please try again.");
+    expect(setWorkflowMetadata).toHaveBeenCalledWith("new-project", "New Project", "/tmp/new-project");
+    expect(saveToFile).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("button", { name: "Complete project setup" })).not.toBeInTheDocument();
+  });
+
+  it("shows an inline error when a configured save rejects", async () => {
+    const saveToFile = vi.fn().mockRejectedValue(new Error("disk unavailable"));
+    mockUseWorkflowStore.mockImplementation((selector) => selector(createState({ saveToFile })));
+    render(<ProjectMenu />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Save project" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Failed to save project. Please try again.");
+    expect(saveToFile).toHaveBeenCalledOnce();
+  });
+
+  it("clears a stale save error after a successful save", async () => {
+    const saveToFile = vi.fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    mockUseWorkflowStore.mockImplementation((selector) => selector(createState({ saveToFile })));
+    render(<ProjectMenu />);
+
+    const saveButton = screen.getByRole("button", { name: "Save project" });
+    fireEvent.click(saveButton);
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+    fireEvent.click(saveButton);
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+    expect(saveToFile).toHaveBeenCalledTimes(2);
   });
 });

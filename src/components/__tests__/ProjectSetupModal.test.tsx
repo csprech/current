@@ -57,6 +57,7 @@ const defaultProviderSettings: ProviderSettings = {
   providers: {
     gemini: { id: "gemini", name: "Gemini", enabled: true, apiKey: null, apiKeyEnvVar: "GEMINI_API_KEY" },
     openai: { id: "openai", name: "OpenAI", enabled: false, apiKey: null },
+    anthropic: { id: "anthropic", name: "Anthropic", enabled: false, apiKey: null },
     replicate: { id: "replicate", name: "Replicate", enabled: false, apiKey: null },
     fal: { id: "fal", name: "fal.ai", enabled: false, apiKey: null },
     kie: { id: "kie", name: "Kie.ai", enabled: false, apiKey: null },
@@ -565,6 +566,34 @@ describe("ProjectSetupModal", () => {
           "/path/to/project/My New Project"
         );
       });
+    });
+
+    it("keeps project validation active until the save callback settles", async () => {
+      let resolveSave: ((saved: boolean) => void) | undefined;
+      const onSave = vi.fn(() => new Promise<boolean>((resolve) => {
+        resolveSave = resolve;
+      }));
+      render(
+        <ProjectSetupModal
+          isOpen
+          onClose={vi.fn()}
+          onSave={onSave}
+          mode="new"
+        />
+      );
+      fireEvent.change(screen.getByPlaceholderText("my-project"), {
+        target: { value: "My Project" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("/Users/username/projects/my-project"), {
+        target: { value: "/path/to/project" },
+      });
+
+      fireEvent.click(screen.getByText("Create"));
+      await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+      expect(screen.getByText("Validating...")).toBeInTheDocument();
+
+      resolveSave!(true);
+      await waitFor(() => expect(screen.getByText("Create")).toBeInTheDocument());
     });
 
     it("should show 'Validating...' while validating directory", async () => {

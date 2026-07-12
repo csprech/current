@@ -84,7 +84,7 @@ const getProviderIcon = (provider: ProviderType) => {
 interface ProjectSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (id: string, name: string, directoryPath: string) => void;
+  onSave: (id: string, name: string, directoryPath: string) => void | boolean | Promise<void | boolean>;
   mode: "new" | "settings";
 }
 
@@ -303,7 +303,7 @@ export function ProjectSetupModal({
       setUseExternalImageStorage(externalStorage);
       // Remember the base directory for next time
       setLastProjectBaseDir(directoryPath);
-      onSave(id, name.trim(), fullProjectPath);
+      await onSave(id, name.trim(), fullProjectPath);
       setIsValidating(false);
     } catch (err) {
       setError(

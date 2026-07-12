@@ -129,9 +129,20 @@ export function ProjectMenu() {
     setProjectModalMode(mode);
     setShowProjectModal(true);
   });
-  const handleSave = () => {
+  const attemptSave = async (): Promise<boolean> => {
+    try {
+      const saved = await saveToFile();
+      setRecoveryError(saved ? null : "Failed to save project. Please try again.");
+      return saved;
+    } catch (error) {
+      console.error("Failed to save project:", error);
+      setRecoveryError("Failed to save project. Please try again.");
+      return false;
+    }
+  };
+  const handleSave = async () => {
     if (canSave) {
-      void saveToFile();
+      await attemptSave();
     } else {
       setProjectModalMode(workflowName ? "settings" : "new");
       setShowProjectModal(true);
@@ -140,12 +151,7 @@ export function ProjectMenu() {
   const handleProjectSave = async (id: string, name: string, path: string) => {
     setWorkflowMetadata(id, name, path);
     setShowProjectModal(false);
-    setTimeout(() => {
-      saveToFile().catch((error) => {
-        console.error("Failed to save project:", error);
-        setRecoveryError("Failed to save project. Please try again.");
-      });
-    }, 50);
+    return attemptSave();
   };
   const handleOpenDirectory = async () => {
     if (!saveDirectoryPath) return;
