@@ -167,6 +167,24 @@ describe("WorkflowCanvas", () => {
       isDisabled: true,
     }));
   });
+
+  it("preserves exact node and data identity when no semantic decoration is active", () => {
+    const node = createMockNode("node-1", "prompt");
+    const decorated = decorateNodeSemanticState(node as never, {}, new Set(), new Set());
+    expect(decorated).toBe(node);
+    expect(decorated.data).toBe(node.data);
+  });
+
+  it("removes stale semantic flags and classes when decoration resets", () => {
+    const node = createMockNode("node-1", "prompt", {
+      className: "existing switch-dimmed node-skipped",
+      data: { isDisabled: true, isSkipped: true, isInLockedGroup: true, prompt: "Keep me" },
+    });
+    const reset = decorateNodeSemanticState(node as never, {}, new Set(), new Set());
+    expect(reset).not.toBe(node);
+    expect(reset.className).toBe("existing");
+    expect(reset.data).toEqual({ prompt: "Keep me" });
+  });
   beforeEach(() => {
     vi.clearAllMocks();
     // Default mock implementation

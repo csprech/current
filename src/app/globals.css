@@ -619,6 +619,15 @@
 .current-node-parameters input:focus-visible,
 .current-node-parameters select:focus-visible { outline: none; box-shadow: var(--current-focus); }
 
+.current-route-toggle { background: var(--current-steel-blue); }
+.peer:checked + .current-route-toggle { background: var(--current-blue); }
+.current-route-field--blue { border-color: var(--current-blue); }
+.current-route-field--aqua { border-color: var(--current-aqua); }
+.current-route-field:focus { box-shadow: var(--current-focus); }
+.current-route-add--blue:hover { background: color-mix(in srgb, var(--current-blue) 10%, transparent); }
+.current-route-add--aqua:hover { background: color-mix(in srgb, var(--current-aqua) 10%, transparent); }
+.current-route-add:focus-visible { outline: none; box-shadow: var(--current-focus); }
+
 .current-node-header {
   min-height: 1.75rem;
   color: var(--current-graphite);

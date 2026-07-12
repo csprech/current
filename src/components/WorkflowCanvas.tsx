@@ -301,18 +301,27 @@ export function decorateNodeSemanticState(
   const isSkipped = skippedNodeIds.has(node.id);
   const isInLockedGroup = Boolean(node.groupId && groups[node.groupId]?.locked);
   const data = node.data as Record<string, unknown>;
-  const semanticDataChanged =
-    data.isDisabled !== isDisabled ||
-    data.isSkipped !== isSkipped ||
-    data.isInLockedGroup !== isInLockedGroup;
+  const hasSyntheticState =
+    Object.prototype.hasOwnProperty.call(data, "isDisabled") ||
+    Object.prototype.hasOwnProperty.call(data, "isSkipped") ||
+    Object.prototype.hasOwnProperty.call(data, "isInLockedGroup");
   const extraClasses = [isDisabled ? "switch-dimmed" : "", isSkipped ? "node-skipped" : ""].filter(Boolean).join(" ");
   const baseClass = (node.className || "").replace(/\bswitch-dimmed\b/g, "").replace(/\bnode-skipped\b/g, "").trim();
   const className = extraClasses ? `${baseClass} ${extraClasses}`.trim() : baseClass;
-  if (!semanticDataChanged && node.className === className) return node;
+  const nextClassName = className || undefined;
+  const classChanged = node.className !== nextClassName;
+  if (!isDisabled && !isSkipped && !isInLockedGroup && !hasSyntheticState && !classChanged) return node;
+  const nextData = { ...data };
+  delete nextData.isDisabled;
+  delete nextData.isSkipped;
+  delete nextData.isInLockedGroup;
+  if (isDisabled) nextData.isDisabled = true;
+  if (isSkipped) nextData.isSkipped = true;
+  if (isInLockedGroup) nextData.isInLockedGroup = true;
   return {
     ...node,
-    className,
-    data: { ...data, isDisabled, isSkipped, isInLockedGroup },
+    className: nextClassName,
+    data: nextData,
   } as WorkflowNode;
 }
 

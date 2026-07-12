@@ -311,7 +311,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
             {editingId === rule.id ? (
               <input
                 type="text"
-                className="w-14 bg-neutral-700 text-neutral-100 text-[10px] px-1 py-0.5 rounded border border-[#47CBB3] outline-none focus:ring-1 focus:ring-[#47CBB3]"
+                className="current-route-field current-route-field--aqua w-14 bg-neutral-700 text-neutral-100 text-[10px] px-1 py-0.5 rounded border outline-none"
                 defaultValue={rule.label}
                 autoFocus
                 onBlur={(e) => handleLabelEdit(rule.id, e.target.value)}
@@ -386,7 +386,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
 
         {/* Add rule button — after Default so it doesn't displace handle alignment */}
         <button
-          className="w-full flex items-center justify-center gap-1 text-neutral-400 hover:text-neutral-100 text-[10px] py-1 mt-1 rounded hover:bg-[#47CBB3]/10 focus-visible:ring-1 focus-visible:ring-[#47CBB3] transition-colors"
+          className="current-route-add current-route-add--aqua w-full flex items-center justify-center gap-1 text-neutral-400 hover:text-neutral-100 text-[10px] py-1 mt-1 rounded transition-colors"
           onClick={handleAddRule}
         >
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
