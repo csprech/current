@@ -2,6 +2,7 @@ import type { WorkflowFile } from "@/store/workflowStore";
 import type { NodeGroup, WorkflowProposal } from "@/types";
 import { repairWorkflowJSON, validateWorkflowJSON } from "./validation";
 import { getNodeConnectionCapabilities } from "@/lib/workflow/nodeCapabilities";
+import { getAppliedProposalNodeData } from "./proposalNodeConfig";
 
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -14,8 +15,8 @@ function canonicalize(value: unknown): unknown {
   );
 }
 
-function stableId(proposal: WorkflowProposal): string {
-  const input = JSON.stringify(canonicalize(proposal));
+function stableId(appliedProposal: unknown): string {
+  const input = JSON.stringify(canonicalize(appliedProposal));
   let hash = 2166136261;
   for (let index = 0; index < input.length; index += 1) {
     hash ^= input.charCodeAt(index);
@@ -57,22 +58,37 @@ export function proposalToWorkflow(proposal: WorkflowProposal): WorkflowFile {
     }
   }
 
+  const appliedNodes = proposal.nodes.map((node) => ({
+    id: node.id,
+    type: node.type,
+    data: getAppliedProposalNodeData(node),
+  }));
+  const appliedProposal = {
+    name: proposal.name,
+    nodes: appliedNodes,
+    connections: proposal.connections.map(({ from, to, type, description }) => ({
+      from,
+      to,
+      type,
+      description,
+    })),
+    groups: proposal.groups?.map(({ name, color, nodeIds }) => ({
+      name,
+      color,
+      nodeIds: [...nodeIds].sort(),
+    })),
+  };
+
   const workflow = repairWorkflowJSON({
     version: 1,
-    id: stableId(proposal),
+    id: stableId(appliedProposal),
     name: proposal.name,
     edgeStyle: "curved",
-    nodes: proposal.nodes.map((node, index) => ({
+    nodes: appliedNodes.map((node, index) => ({
       id: node.id,
       type: node.type,
       position: { x: 80 + (index % 3) * 390, y: 100 + Math.floor(index / 3) * 390 },
-      data: {
-        customTitle: node.suggestedTitle,
-        comment: node.purpose,
-        ...(node.suggestedSettings ?? {}),
-        ...(node.suggestedPrompt !== undefined ? { prompt: node.suggestedPrompt } : {}),
-        ...(node.suggestedModel !== undefined ? { model: node.suggestedModel } : {}),
-      },
+      data: node.data,
     })),
     edges: proposal.connections.map((connection, index) => ({
       id: `proposal-edge-${index + 1}-${connection.from}-${connection.to}`,

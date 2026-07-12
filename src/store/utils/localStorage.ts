@@ -78,13 +78,13 @@ export interface WorkflowOpenedIdentity {
 export const markWorkflowOpened = (
   identity: WorkflowOpenedIdentity,
   openedAt: number = Date.now()
-): void => {
-  if (typeof window === "undefined") return;
+): boolean => {
+  if (typeof window === "undefined") return false;
   let configs: Record<string, WorkflowSaveConfig>;
   try {
     configs = loadSaveConfigs();
   } catch {
-    return;
+    return false;
   }
   const matchedEntry =
     (identity.workflowId && configs[identity.workflowId]
@@ -96,10 +96,15 @@ export const markWorkflowOpened = (
         config.directoryPath === identity.directoryPath
     );
 
-  if (!matchedEntry) return;
+  if (!matchedEntry) return false;
   const [workflowId, config] = matchedEntry;
   configs[workflowId] = { ...config, lastOpenedAt: openedAt };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 // Cost data helpers

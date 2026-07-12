@@ -27,6 +27,7 @@ describe("Launchpad", () => {
   };
 
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.clearAllMocks();
     localStorage.clear();
     global.fetch = vi.fn();
@@ -107,6 +108,22 @@ describe("Launchpad", () => {
     render(<Launchpad {...props} />);
     const refreshed = screen.getAllByRole("button", { name: /Last (opened|saved)/ });
     expect(refreshed[0]).toHaveAccessibleName(/Recent project, Last opened/);
+  });
+
+  it("continues opening a recent project when recency persistence fails", async () => {
+    const workflow = { id: "recent", version: 1, name: "Recent project", edgeStyle: "curved", nodes: [], edges: [] };
+    localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
+      recent: { workflowId: "recent", name: "Recent project", directoryPath: "/work/recent", generationsPath: null, lastSavedAt: 100 },
+    }));
+    vi.mocked(global.fetch).mockResolvedValue({ ok: true, json: async () => ({ success: true, workflow }) } as Response);
+    render(<Launchpad {...props} />);
+    const setItem = vi.spyOn(window.localStorage, "setItem").mockImplementation(() => { throw new DOMException("Quota exceeded", "QuotaExceededError"); });
+
+    fireEvent.click(screen.getByRole("button", { name: /Recent project, Last saved/ }));
+
+    await waitFor(() => expect(props.onWorkflowGenerated).toHaveBeenCalledWith(workflow, "/work/recent"));
+    expect(setItem).toHaveBeenCalled();
+    expect(screen.queryByText(/Quota exceeded/)).not.toBeInTheDocument();
   });
 
   it("safely ignores malformed recent-project storage", () => {

@@ -313,6 +313,60 @@ describe("WorkflowCanvas", () => {
       expect(mockOnNodesChange).not.toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ type: "remove" })]));
     });
 
+    it("ignores node and history-media drops while the launchpad is active", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
+      render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
+      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+
+      fireEvent.dragOver(root, {
+        dataTransfer: {
+          types: ["application/node-type"],
+          items: [],
+          dropEffect: "",
+          getData: vi.fn(),
+        },
+      });
+      expect(screen.queryByText("Drop to create node")).not.toBeInTheDocument();
+
+      fireEvent.drop(root, {
+        dataTransfer: {
+          types: ["application/node-type", "application/history-image"],
+          items: [],
+          files: [],
+          getData: vi.fn((type: string) => type === "application/node-type"
+            ? "prompt"
+            : JSON.stringify({ image: "data:image/png;base64,test" })),
+        },
+        clientX: 100,
+        clientY: 100,
+      });
+
+      expect(mockAddNode).not.toHaveBeenCalled();
+      expect(mockUpdateNodeData).not.toHaveBeenCalled();
+    });
+
+    it("ignores workflow file drops while the launchpad is active", async () => {
+      mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
+      render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
+      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const workflowFile = new File([
+        JSON.stringify({ version: 1, nodes: [], edges: [] }),
+      ], "workflow.json", { type: "application/json" });
+
+      fireEvent.drop(root, {
+        dataTransfer: {
+          types: ["Files"],
+          items: [{ kind: "file", type: "application/json" }],
+          files: [workflowFile],
+          getData: vi.fn(() => ""),
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(mockLoadWorkflow).not.toHaveBeenCalled();
+      expect(mockAddNode).not.toHaveBeenCalled();
+    });
+
     it("should not show welcome modal when canvas has nodes", () => {
       // When a workflow with nodes is loaded, the store sets showQuickstart to false.
       // The component renders the modal based solely on showQuickstart state.

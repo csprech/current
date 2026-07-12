@@ -66,6 +66,38 @@ describe("PromptWorkflowView", () => {
     expect(props.onWorkflowGenerated).not.toHaveBeenCalled();
   });
 
+  it("shows the exact prompt, template, model, safe settings, groups, and flow descriptions that will be applied", async () => {
+    const configuredProposal = {
+      ...proposal,
+      nodes: [
+        { id: "prompt", type: "prompt", purpose: "Campaign brief", suggestedTitle: "Brief", suggestedPrompt: "Photograph the launch product" },
+        { id: "template", type: "promptConstructor", purpose: "Compose prompt", suggestedTitle: "Prompt template", suggestedPrompt: "{{subject}} in {{scene}}" },
+        { id: "generate", type: "nanoBanana", purpose: "Create campaign", suggestedTitle: "Campaign image", suggestedModel: "nano-banana-pro", suggestedSettings: { aspectRatio: "16:9", resolution: "2K", customTitle: "Injected" } },
+      ],
+      connections: [
+        { from: "prompt", to: "generate", type: "text", description: "The reviewed brief drives image generation" },
+      ],
+      groups: [
+        { name: "Campaign generation", color: "blue", nodeIds: ["prompt", "template", "generate"], purpose: "Keeps approved generation steps together" },
+      ],
+    };
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, proposal: configuredProposal }) });
+    renderView();
+    await requestProposal();
+
+    expect(screen.getByText("Prompt: Photograph the launch product")).toBeInTheDocument();
+    expect(screen.getByText("Template: {{subject}} in {{scene}}")).toBeInTheDocument();
+    expect(screen.getByText("Model: nano-banana-pro")).toBeInTheDocument();
+    expect(screen.getByText("Aspect ratio: 16:9")).toBeInTheDocument();
+    expect(screen.getByText("Resolution: 2K")).toBeInTheDocument();
+    expect(screen.queryByText(/Injected/)).not.toBeInTheDocument();
+    expect(screen.getByText("Campaign generation")).toBeInTheDocument();
+    expect(screen.getByText("Color: blue")).toBeInTheDocument();
+    expect(screen.getByText("Keeps approved generation steps together")).toBeInTheDocument();
+    expect(screen.getByText("Brief, Prompt template, Campaign image")).toBeInTheDocument();
+    expect(screen.getByText("The reviewed brief drives image generation")).toBeInTheDocument();
+  });
+
   it("builds the exact reviewed proposal locally after explicit confirmation without a second generation", async () => {
     const onWorkflowGenerated = vi.fn();
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, proposal }) });

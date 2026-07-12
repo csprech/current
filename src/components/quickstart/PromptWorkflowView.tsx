@@ -5,6 +5,7 @@ import { CurrentButton, InlineNotice } from "@/components/current";
 import type { WorkflowFile } from "@/store/workflowStore";
 import type { WorkflowProposal } from "@/types/quickstart";
 import { proposalToWorkflow } from "@/lib/quickstart/proposalToWorkflow";
+import { getProposalNodeConfigRows } from "@/lib/quickstart/proposalNodeConfig";
 import { QuickstartBackButton } from "./QuickstartBackButton";
 
 interface PromptWorkflowViewProps {
@@ -90,7 +91,11 @@ export function PromptWorkflowView({ onBack, onWorkflowGenerated }: PromptWorkfl
               {proposal.nodes.map((node, index) => (
                 <li key={node.id}>
                   <span>{index + 1}</span>
-                  <div><strong>{node.suggestedTitle}</strong><p>{node.purpose}</p></div>
+                  <div>
+                    <strong>{node.suggestedTitle}</strong>
+                    <p>{node.purpose}</p>
+                    {getProposalNodeConfigRows(node).map((row) => <p key={row}>{row}</p>)}
+                  </div>
                 </li>
               ))}
             </ol>
@@ -98,6 +103,19 @@ export function PromptWorkflowView({ onBack, onWorkflowGenerated }: PromptWorkfl
               <div className="current-workflow-proposal__connections">
                 <h4>Flow</h4>
                 {proposal.connections.map((connection) => <p key={`${connection.from}-${connection.to}`}>{connection.description}</p>)}
+              </div>
+            )}
+            {proposal.groups && proposal.groups.length > 0 && (
+              <div className="current-workflow-proposal__groups">
+                <h4>Groups</h4>
+                {proposal.groups.map((group) => (
+                  <div key={group.name}>
+                    <strong>{group.name}</strong>
+                    <p>Color: {group.color}</p>
+                    <p>{group.purpose}</p>
+                    <p>{group.nodeIds.map((nodeId) => proposal.nodes.find((node) => node.id === nodeId)?.suggestedTitle).filter(Boolean).join(", ")}</p>
+                  </div>
+                ))}
               </div>
             )}
             {proposal.warnings?.map((warning) => <InlineNotice key={warning} tone="warning">{warning}</InlineNotice>)}

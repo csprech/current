@@ -1879,6 +1879,7 @@ export function WorkflowCanvas() {
 
   const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    if (showQuickstart) return;
     event.dataTransfer.dropEffect = "copy";
 
     // Check if dragging a node type from the action bar
@@ -1920,17 +1921,19 @@ export function WorkflowCanvas() {
       setIsDragOver(true);
       setDropType("image");
     }
-  }, []);
+  }, [showQuickstart]);
 
   const handleDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    if (showQuickstart) return;
     setIsDragOver(false);
     setDropType(null);
-  }, []);
+  }, [showQuickstart]);
 
   const handleDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
+      if (showQuickstart) return;
       setIsDragOver(false);
       setDropType(null);
 
@@ -2061,7 +2064,7 @@ export function WorkflowCanvas() {
         reader.readAsDataURL(file);
       });
     },
-    [screenToFlowPosition, addNode, updateNodeData, loadWorkflow]
+    [screenToFlowPosition, addNode, updateNodeData, loadWorkflow, showQuickstart]
   );
 
   return (

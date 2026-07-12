@@ -101,4 +101,22 @@ describe("WorkflowBrowserView", () => {
       lastOpenedAt: expect.any(Number),
     });
   });
+
+  it("continues a successful workflow open when recency persistence fails", async () => {
+    const onWorkflowLoaded = vi.fn();
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({ json: async () => listResponse() } as Response)
+      .mockResolvedValueOnce({
+        json: async () => ({ success: true, workflow }),
+      } as Response);
+    render(<WorkflowBrowserView onWorkflowLoaded={onWorkflowLoaded} />);
+    const workflowButton = await screen.findByRole("button", { name: /Studio Flow/ });
+    const setItem = vi.spyOn(window.localStorage, "setItem").mockImplementation(() => { throw new DOMException("Storage denied", "SecurityError"); });
+
+    fireEvent.click(workflowButton);
+
+    await waitFor(() => expect(onWorkflowLoaded).toHaveBeenCalledWith(workflow, "/workflows/studio-flow"));
+    expect(setItem).toHaveBeenCalled();
+    expect(screen.queryByText(/Storage denied/)).not.toBeInTheDocument();
+  });
 });

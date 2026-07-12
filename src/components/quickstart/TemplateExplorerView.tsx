@@ -38,6 +38,14 @@ const hoverThumbnails: Record<string, string> = Object.fromEntries(
   Object.keys(TEMPLATE_OUTCOMES).map((id) => [id, `/template-thumbnails/${id}.png`]),
 );
 
+function classifyCommunityOutcome(workflow: CommunityWorkflowMeta): Exclude<Outcome, "all"> | null {
+  const content = `${workflow.name} ${workflow.description} ${(workflow.tags ?? []).join(" ")}`.toLowerCase();
+  if (/\b(compose|composite|composition|combine|merge|scene|background)\b/.test(content)) return "compose";
+  if (/\b(refine|style|stylize|colour|color|variation|enhance|retouch|polish)\b/.test(content)) return "refine";
+  if (/\b(create|generate|generator|generation|campaign|portrait|product)\b/.test(content)) return "create";
+  return null;
+}
+
 export function TemplateExplorerView({ onBack, onWorkflowSelected }: TemplateExplorerViewProps) {
   const [communityWorkflows, setCommunityWorkflows] = useState<CommunityWorkflowMeta[]>([]);
   const [isLoadingList, setIsLoadingList] = useState(true);
@@ -57,9 +65,11 @@ export function TemplateExplorerView({ onBack, onWorkflowSelected }: TemplateExp
     const matchesSearch = !normalizedQuery || `${preset.name} ${preset.description}`.toLowerCase().includes(normalizedQuery);
     return matchesOutcome && matchesSearch;
   });
-  const filteredCommunity = communityWorkflows.filter((workflow) =>
-    !normalizedQuery || `${workflow.name} ${workflow.author} ${workflow.description}`.toLowerCase().includes(normalizedQuery),
-  );
+  const filteredCommunity = communityWorkflows.filter((workflow) => {
+    const matchesOutcome = outcome === "all" || classifyCommunityOutcome(workflow) === outcome;
+    const matchesSearch = !normalizedQuery || `${workflow.name} ${workflow.author} ${workflow.description}`.toLowerCase().includes(normalizedQuery);
+    return matchesOutcome && matchesSearch;
+  });
 
   useEffect(() => {
     let active = true;
