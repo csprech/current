@@ -16,6 +16,15 @@ import {
 } from "./nodeCatalog";
 
 const CATEGORIES = ["All", "Input", "Generate", "Process", "Route", "Output"] as const;
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
+
 function paneCenter() {
   const rect = document.querySelector(".react-flow")?.getBoundingClientRect();
   return rect
@@ -35,6 +44,8 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
   const setModelSearchOpen = useWorkflowStore((state) => state.setModelSearchOpen);
   const { screenToFlowPosition } = useReactFlow();
   const searchRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("All");
@@ -60,15 +71,60 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
 
   useEffect(() => {
     if (!open) return;
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      setIsDragging(false);
-      close();
+    const handleDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setIsDragging(false);
+        close();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const controls = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+        .filter((element) => !element.hasAttribute("inert") && element.getAttribute("aria-hidden") !== "true");
+      if (controls.length === 0) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      const focusIsOutside = !dialogRef.current.contains(document.activeElement);
+      if (event.shiftKey && (document.activeElement === first || focusIsOutside)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || focusIsOutside)) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
+    document.addEventListener("keydown", handleDialogKeyDown);
+    return () => document.removeEventListener("keydown", handleDialogKeyDown);
   }, [close, open]);
+
+  useEffect(() => {
+    if (!open || isDragging || !backdropRef.current) return;
+    const backdrop = backdropRef.current;
+    const snapshots = Array.from(document.body.children)
+      .filter((element): element is HTMLElement => element instanceof HTMLElement && element !== backdrop)
+      .map((element) => ({
+        element,
+        inert: element.hasAttribute("inert"),
+        ariaHidden: element.getAttribute("aria-hidden"),
+      }));
+    for (const { element } of snapshots) {
+      element.setAttribute("inert", "");
+      element.setAttribute("aria-hidden", "true");
+    }
+    return () => {
+      for (const { element, inert, ariaHidden } of snapshots) {
+        if (inert) element.setAttribute("inert", "");
+        else element.removeAttribute("inert");
+        if (ariaHidden === null) element.removeAttribute("aria-hidden");
+        else element.setAttribute("aria-hidden", ariaHidden);
+      }
+    };
+  }, [isDragging, open]);
 
   const results = useMemo(() => NODE_CATALOG.filter((item) =>
     (category === "All" || item.category === category) && matchesNodeCatalogItem(item, query)
@@ -113,8 +169,8 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
   })).filter((group) => group.items.length > 0);
 
   return createPortal(
-    <div className={`current-add-palette__backdrop${isDragging ? " is-dragging" : ""}`} onMouseDown={(event) => event.target === event.currentTarget && close()}>
-      <section className="current-add-palette" role="dialog" aria-modal="true" aria-label="Add node">
+    <div ref={backdropRef} className={`current-add-palette__backdrop${isDragging ? " is-dragging" : ""}`} onMouseDown={(event) => event.target === event.currentTarget && close()}>
+      <section ref={dialogRef} className="current-add-palette" role="dialog" aria-modal="true" aria-label="Add node" tabIndex={-1}>
         <header className="current-add-palette__header">
           <div>
             <span className="current-add-palette__eyebrow">Workspace</span>

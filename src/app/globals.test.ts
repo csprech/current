@@ -1,0 +1,13 @@
+import fs from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+
+describe("Current Add Palette brand colors", () => {
+  it("uses the approved Current accent and focus tokens", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const palette = css.slice(css.indexOf("/* Current Add Palette */"));
+    expect(palette).toContain("var(--current-blue)");
+    expect(palette).toContain("var(--current-focus)");
+    expect(palette).not.toMatch(/#8b78c8|#e7e3f2|#4d3e77|#4f3b7d|225, 219, 241|237, 234, 245/);
+  });
+});

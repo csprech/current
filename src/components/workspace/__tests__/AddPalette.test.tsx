@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AddPalette } from "@/components/workspace/AddPalette";
-import { NODE_CATALOG, matchesNodeCatalogItem } from "@/components/workspace/nodeCatalog";
+import { NODE_CATALOG, matchesNodeCatalogItem, recordRecentNode } from "@/components/workspace/nodeCatalog";
 
 const mockAddNode = vi.fn();
 const mockSetModelSearchOpen = vi.fn();
@@ -109,6 +109,43 @@ describe("AddPalette", () => {
     await waitFor(() => expect(opener).toHaveFocus());
   });
 
+  it("traps keyboard focus inside the dialog", async () => {
+    render(<AddPalette open onClose={vi.fn()} />);
+    const search = screen.getByRole("searchbox", { name: "Search nodes" });
+    const lastControl = screen.getByRole("button", { name: "Connector style: Angular" });
+    await waitFor(() => expect(search).toHaveFocus());
+
+    lastControl.focus();
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(search).toHaveFocus();
+
+    search.focus();
+    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+    expect(lastControl).toHaveFocus();
+  });
+
+  it("isolates background content while open and relaxes isolation only during drag", () => {
+    const workspace = document.createElement("main");
+    workspace.setAttribute("aria-hidden", "false");
+    document.body.appendChild(workspace);
+    const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "none" };
+    const { unmount } = render(<AddPalette open onClose={vi.fn()} />);
+
+    expect(workspace).toHaveAttribute("inert");
+    expect(workspace).toHaveAttribute("aria-hidden", "true");
+    const prompt = screen.getByRole("button", { name: "Prompt" });
+    fireEvent.dragStart(prompt, { dataTransfer });
+    expect(workspace).not.toHaveAttribute("inert");
+    expect(workspace).toHaveAttribute("aria-hidden", "false");
+    fireEvent.dragEnd(prompt, { dataTransfer });
+    expect(workspace).toHaveAttribute("inert");
+    expect(workspace).toHaveAttribute("aria-hidden", "true");
+
+    unmount();
+    expect(workspace).not.toHaveAttribute("inert");
+    expect(workspace).toHaveAttribute("aria-hidden", "false");
+  });
+
   it("closes from the backdrop when no drag is active", () => {
     const onClose = vi.fn();
     render(<AddPalette open onClose={onClose} />);
@@ -179,5 +216,23 @@ describe("AddPalette", () => {
     expect(mockSetModelSearchOpen).toHaveBeenCalledWith(true);
     fireEvent.click(screen.getByRole("button", { name: "Connector style: Angular" }));
     expect(mockSetEdgeStyle).toHaveBeenCalledWith("curved");
+  });
+
+  it("treats unavailable session storage as best-effort", () => {
+    const unavailableStorage = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(() => { throw new DOMException("Storage unavailable", "SecurityError"); }),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+      key: vi.fn(),
+      length: 0,
+    };
+    vi.stubGlobal("sessionStorage", unavailableStorage);
+    try {
+      expect(() => recordRecentNode("prompt")).not.toThrow();
+      expect(unavailableStorage.setItem).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

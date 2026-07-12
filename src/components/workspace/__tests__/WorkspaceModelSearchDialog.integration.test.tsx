@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AddPalette } from "@/components/workspace/AddPalette";
@@ -17,13 +18,22 @@ describe("global workspace model search", () => {
   afterEach(() => useWorkflowStore.getState().setModelSearchOpen(false));
 
   it("opens from Add Palette and closes through the store-bound global host", () => {
+    function Workspace() {
+      const [paletteOpen, setPaletteOpen] = useState(true);
+      return (
+        <>
+          <AddPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+          <WorkspaceModelSearchDialog />
+        </>
+      );
+    }
     render(
       <ReactFlowProvider>
-        <AddPalette open onClose={vi.fn()} />
-        <WorkspaceModelSearchDialog />
+        <Workspace />
       </ReactFlowProvider>
     );
     fireEvent.click(screen.getByRole("button", { name: "Browse models" }));
+    expect(screen.queryByRole("dialog", { name: "Add node" })).not.toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: "Browse Models" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Close models" }));
     expect(screen.queryByRole("dialog", { name: "Browse Models" })).not.toBeInTheDocument();

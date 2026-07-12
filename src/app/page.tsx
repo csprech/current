@@ -17,6 +17,10 @@ export default function Home() {
   );
   const cleanupAutoSave = useWorkflowStore((state) => state.cleanupAutoSave);
   const setShowQuickstart = useWorkflowStore((state) => state.setShowQuickstart);
+  const isModalOpen = useWorkflowStore((state) => state.isModalOpen);
+  const modelSearchOpen = useWorkflowStore((state) => state.modelSearchOpen);
+  const shortcutsDialogOpen = useWorkflowStore((state) => state.shortcutsDialogOpen);
+  const showQuickstart = useWorkflowStore((state) => state.showQuickstart);
   const [showFTUX, setShowFTUX] = useState(false);
   const [addPaletteOpen, setAddPaletteOpen] = useState(false);
 
@@ -38,12 +42,14 @@ export default function Home() {
   useEffect(() => {
     const openAddPalette = (event: KeyboardEvent) => {
       if (event.key.toLocaleLowerCase() !== "k" || (!event.metaKey && !event.ctrlKey)) return;
+      const renderedModal = document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"]');
+      if (addPaletteOpen || showFTUX || showQuickstart || isModalOpen || modelSearchOpen || shortcutsDialogOpen || renderedModal) return;
       event.preventDefault();
       setAddPaletteOpen(true);
     };
     window.addEventListener("keydown", openAddPalette);
     return () => window.removeEventListener("keydown", openAddPalette);
-  }, []);
+  }, [addPaletteOpen, isModalOpen, modelSearchOpen, shortcutsDialogOpen, showFTUX, showQuickstart]);
 
   // Client-side only FTUX check (SSR-safe)
   useEffect(() => {

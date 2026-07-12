@@ -54,8 +54,12 @@ export function readRecentNodes(): NodeType[] {
 
 export function recordRecentNode(type: NodeType) {
   if (typeof sessionStorage === "undefined" || !NODE_CATALOG_BY_TYPE.has(type)) return;
-  const next = [type, ...readRecentNodes().filter((recent) => recent !== type)].slice(0, RECENTS_LIMIT);
-  sessionStorage.setItem(CURRENT_ADD_PALETTE_RECENTS_KEY, JSON.stringify(next));
+  try {
+    const next = [type, ...readRecentNodes().filter((recent) => recent !== type)].slice(0, RECENTS_LIMIT);
+    sessionStorage.setItem(CURRENT_ADD_PALETTE_RECENTS_KEY, JSON.stringify(next));
+  } catch {
+    // Recents are optional; storage privacy or quota failures must not block node creation.
+  }
 }
 
 function normalize(value: string) {
