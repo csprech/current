@@ -113,7 +113,7 @@ export function QuickstartTemplatesView({
   const isLoading = loadingWorkflowId !== null;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="current-quickstart-view flex flex-col h-full">
       {/* Header */}
       <div className="px-6 py-4 border-b border-neutral-700 flex items-center gap-4">
         <QuickstartBackButton onClick={onBack} disabled={isLoading} />
@@ -256,7 +256,7 @@ export function QuickstartTemplatesView({
                     group flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all text-left
                     ${
                       loadingWorkflowId === workflow.id
-                        ? "bg-purple-600/20 border-purple-500/50"
+                        ? "bg-cyan-600/20 border-cyan-500/50"
                         : "bg-neutral-800/50 border-neutral-700 hover:border-neutral-600 hover:bg-neutral-800"
                     }
                     ${isLoading && loadingWorkflowId !== workflow.id ? "opacity-50" : ""}
@@ -268,14 +268,14 @@ export function QuickstartTemplatesView({
                       w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0
                       ${
                         loadingWorkflowId === workflow.id
-                          ? "bg-purple-500/30"
+                          ? "bg-cyan-500/20"
                           : "bg-neutral-700/50 group-hover:bg-neutral-700"
                       }
                     `}
                   >
                     {loadingWorkflowId === workflow.id ? (
                       <svg
-                        className="w-4 h-4 text-purple-400 animate-spin"
+                        className="w-4 h-4 text-cyan-500 animate-spin"
                         fill="none"
                         viewBox="0 0 24 24"
                       >
@@ -313,7 +313,7 @@ export function QuickstartTemplatesView({
                     <div className="text-sm font-medium text-neutral-200 truncate">
                       {workflow.name}
                     </div>
-                    <div className="text-[10px] text-purple-400/80">
+                    <div className="text-[10px] text-cyan-600/80">
                       @{workflow.author}
                     </div>
                   </div>

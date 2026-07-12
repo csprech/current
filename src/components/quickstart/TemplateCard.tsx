@@ -27,8 +27,8 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
 
 const CATEGORY_COLORS: Record<TemplateCategory, string> = {
   simple: "bg-blue-500/20 text-blue-300",
-  advanced: "bg-purple-500/20 text-purple-300",
-  community: "bg-amber-500/20 text-amber-300",
+  advanced: "bg-cyan-500/20 text-cyan-700",
+  community: "bg-sky-500/20 text-sky-700",
 };
 
 export function TemplateCard({
@@ -42,7 +42,7 @@ export function TemplateCard({
 }: TemplateCardProps) {
   return (
     <div
-      className={`
+      className={`current-template-card
         group w-full rounded-lg border p-4 transition-all flex gap-4
         ${
           isLoading

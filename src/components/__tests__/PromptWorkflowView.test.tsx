@@ -34,7 +34,7 @@ describe("PromptWorkflowView", () => {
         />
       );
 
-      expect(screen.getByText("Prompt a Workflow")).toBeInTheDocument();
+      expect(screen.getByText("Describe a workflow")).toBeInTheDocument();
     });
 
     it("should render back button", () => {

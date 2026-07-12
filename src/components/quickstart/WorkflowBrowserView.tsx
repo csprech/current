@@ -165,7 +165,7 @@ export function WorkflowBrowserView({
   // State A: No default directory configured
   if (defaultDir === null) {
     return (
-      <div className="p-8 flex flex-col items-center">
+      <div className="current-quickstart-view p-8 flex flex-col items-center">
         {onBack && (
           <div className="w-full mb-4">
             <QuickstartBackButton onClick={onBack} />
@@ -208,7 +208,7 @@ export function WorkflowBrowserView({
 
   // State B: Default directory configured — show listing
   return (
-    <div className="flex flex-col h-full max-h-[70vh]">
+    <div className="current-quickstart-view flex flex-col h-full max-h-[70vh]">
       {/* Header */}
       <div className="px-6 pt-4 pb-3 border-b border-neutral-700/50 flex-shrink-0">
         {onBack && (

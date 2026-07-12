@@ -72,8 +72,8 @@ vi.mock("@/components/GroupsOverlay", () => ({
   GroupControlsOverlay: () => null,
 }));
 
-vi.mock("@/components/quickstart", () => ({
-  WelcomeModal: () => <div data-testid="welcome-modal" />,
+vi.mock("@/components/workspace/Launchpad", () => ({
+  Launchpad: () => <main aria-label="Current launchpad" data-testid="launchpad" />,
 }));
 
 vi.mock("@/utils/gridSplitter", () => ({
@@ -259,8 +259,8 @@ describe("WorkflowCanvas", () => {
     });
   });
 
-  describe("Welcome Modal", () => {
-    it("should show welcome modal when canvas is empty and showQuickstart is true", () => {
+  describe("Launchpad", () => {
+    it("shows the launchpad and makes the canvas inaccessible while quickstart is active", () => {
       mockUseWorkflowStore.mockImplementation((selector) => {
         return selector(createDefaultState({
           nodes: [],
@@ -274,7 +274,19 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTestId("welcome-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("launchpad")).toBeInTheDocument();
+      const canvasWorkspace = document.querySelector('[data-testid="canvas-workspace"]');
+      expect(canvasWorkspace).toHaveAttribute("aria-hidden", "true");
+      expect(canvasWorkspace).toHaveAttribute("inert");
+    });
+
+    it("does not run canvas keyboard shortcuts while the launchpad is active", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
+
+      render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
+      fireEvent.keyDown(window, { key: "Enter", metaKey: true });
+
+      expect(mockExecuteWorkflow).not.toHaveBeenCalled();
     });
 
     it("should not show welcome modal when canvas has nodes", () => {
@@ -293,7 +305,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      expect(screen.queryByTestId("welcome-modal")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("launchpad")).not.toBeInTheDocument();
     });
 
     it("should not show welcome modal when showQuickstart is false", () => {
@@ -310,7 +322,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      expect(screen.queryByTestId("welcome-modal")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("launchpad")).not.toBeInTheDocument();
     });
   });
 

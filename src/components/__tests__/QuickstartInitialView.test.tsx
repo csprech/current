@@ -17,7 +17,7 @@ describe("QuickstartInitialView", () => {
   });
 
   describe("Basic Rendering", () => {
-    it("should render the iris title and logo", () => {
+    it("should render the Current title and logo", () => {
       render(
         <QuickstartInitialView
           onNewProject={mockOnNewProject}
@@ -27,7 +27,8 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      expect(screen.getByText("iris")).toBeInTheDocument();
+      expect(screen.getByText("current")).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
     });
 
     it("should render the description text", () => {
@@ -55,10 +56,10 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      expect(screen.getByText("New project")).toBeInTheDocument();
-      expect(screen.getByText("Load workflow")).toBeInTheDocument();
-      expect(screen.getByText("Templates")).toBeInTheDocument();
-      expect(screen.getByText("Prompt a workflow")).toBeInTheDocument();
+      expect(screen.getByText("New canvas")).toBeInTheDocument();
+      expect(screen.getByText("Open project")).toBeInTheDocument();
+      expect(screen.getByText("Browse templates")).toBeInTheDocument();
+      expect(screen.getByText("Describe a workflow")).toBeInTheDocument();
     });
 
     it("should render option descriptions", () => {
@@ -71,10 +72,10 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      expect(screen.getByText("Start a new workflow")).toBeInTheDocument();
-      expect(screen.getByText("Open existing file")).toBeInTheDocument();
-      expect(screen.getByText("Pre-built workflows")).toBeInTheDocument();
-      expect(screen.getByText("Prompt a workflow")).toBeInTheDocument();
+      expect(screen.getByText("Begin with an open workspace")).toBeInTheDocument();
+      expect(screen.getByText("Continue a workflow from your library")).toBeInTheDocument();
+      expect(screen.getByText("Start from a proven creative system")).toBeInTheDocument();
+      expect(screen.getByText("Turn an idea into a connected flow")).toBeInTheDocument();
     });
   });
 
@@ -89,7 +90,7 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("New project"));
+      fireEvent.click(screen.getByText("New canvas"));
 
       expect(mockOnNewProject).toHaveBeenCalledTimes(1);
     });
@@ -104,7 +105,7 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      expect(screen.getByText("Start a new workflow")).toBeInTheDocument();
+      expect(screen.getByText("Begin with an open workspace")).toBeInTheDocument();
     });
   });
 
@@ -119,7 +120,7 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Load workflow"));
+      fireEvent.click(screen.getByText("Open project"));
 
       expect(mockOnSelectLoad).toHaveBeenCalledTimes(1);
     });
@@ -136,7 +137,7 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Templates"));
+      fireEvent.click(screen.getByText("Browse templates"));
 
       expect(mockOnSelectTemplates).toHaveBeenCalledTimes(1);
     });
@@ -153,7 +154,7 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Prompt a workflow"));
+      fireEvent.click(screen.getByText("Describe a workflow"));
 
       expect(mockOnSelectVibe).toHaveBeenCalledTimes(1);
     });

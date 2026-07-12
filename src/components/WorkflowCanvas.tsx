@@ -62,7 +62,7 @@ import { FloatingNodeHeader } from "./nodes/FloatingNodeHeader";
 import { getMinimapColor } from "./nodes/nodePresentation";
 import { detectAndSplitGrid } from "@/utils/gridSplitter";
 import { logger } from "@/utils/logger";
-import { WelcomeModal } from "./quickstart";
+import { Launchpad } from "./workspace/Launchpad";
 import { ProjectSetupModal } from "./ProjectSetupModal";
 import { EditOperation } from "@/lib/chat/editOperations";
 import { stripBinaryData } from "@/lib/chat/contextBuilder";
@@ -1530,6 +1530,8 @@ export function WorkflowCanvas() {
 
   // Keyboard shortcuts for copy/paste and stacking selected nodes
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (showQuickstart) return;
+
     // Ignore if user is typing in an input field
     if (
       event.target instanceof HTMLInputElement ||
@@ -1821,7 +1823,7 @@ export function WorkflowCanvas() {
           ]);
         });
       }
-  }, [nodes, onNodesChange, copySelectedNodes, pasteNodes, clearClipboard, clipboard, getViewport, addNode, updateNodeData, executeWorkflow, setShortcutsDialogOpen, undo, redo]);
+  }, [nodes, onNodesChange, copySelectedNodes, pasteNodes, clearClipboard, clipboard, getViewport, addNode, updateNodeData, executeWorkflow, setShortcutsDialogOpen, showQuickstart, undo, redo]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -2097,15 +2099,14 @@ export function WorkflowCanvas() {
         </div>
       )}
 
-      {/* Welcome Modal */}
+      {/* Launchpad replaces the canvas as an accessible workspace view. */}
       {showQuickstart && (
-        <WelcomeModal
+        <Launchpad
           onWorkflowGenerated={async (workflow, directoryPath) => {
             await loadWorkflow(workflow, directoryPath);
             setShowQuickstart(false);
           }}
-          onClose={() => setShowQuickstart(false)}
-          onNewProject={() => {
+          onNewCanvas={() => {
             clearWorkflow();
             setShowQuickstart(false);
             setShowNewProjectSetup(true);
@@ -2129,6 +2130,12 @@ export function WorkflowCanvas() {
         />
       )}
 
+      <div
+        data-testid="canvas-workspace"
+        className="contents"
+        aria-hidden={showQuickstart ? true : undefined}
+        inert={showQuickstart ? true : undefined}
+      >
       {workspaceView === "outputs" ? <OutputsWorkspace /> : <ReactFlow
         nodes={allNodes}
         edges={edges}
@@ -2331,6 +2338,7 @@ export function WorkflowCanvas() {
           })}
         </ViewportPortal>
       </ReactFlow>}
+      </div>
 
       {/* Connection drop menu */}
       {connectionDrop && connectionDrop.handleType && (

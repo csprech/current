@@ -7,6 +7,7 @@ import { FTUXWelcomeStep } from "./FTUXWelcomeStep";
 import { FTUXApiKeysStep } from "./FTUXApiKeysStep";
 import { FTUXModelDefaultsStep } from "./FTUXModelDefaultsStep";
 import { FTUXReadyStep } from "./FTUXReadyStep";
+import { CurrentAlert, CurrentButton, CurrentMark, CurrentSheet } from "@/components/current";
 
 export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
   const [currentStep, setCurrentStep] = useState<FTUXStep>(1);
@@ -59,70 +60,27 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/25 backdrop-blur-sm"
-      onWheelCapture={(e) => e.stopPropagation()}
+    <>
+      <CurrentSheet
+      open
+      title={currentStep === 1 ? "Welcome to Current" : getStepTitle()}
+      onClose={() => setShowSkipConfirm(true)}
+      width={currentStep === 4 ? "compact" : "standard"}
     >
-      <div className={`relative iris-glass rounded-xl w-full ${currentStep === 4 ? 'max-w-[420px]' : 'max-w-[640px]'} mx-4 shadow-2xl overflow-clip flex flex-col ${currentStep === 4 ? '' : 'max-h-[80vh]'}`}>
-        {/* Header */}
+      <div className="current-ftux">
         {currentStep !== 4 && (
-          <div className="px-8 pt-8 pb-4 border-b border-neutral-700/50 shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg viewBox="0 0 40 40" className="w-6 h-6" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="irisMarkFtux" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0" stopColor="#7b6cf6" />
-                      <stop offset="0.35" stopColor="#35c9e6" />
-                      <stop offset="0.7" stopColor="#35d39a" />
-                      <stop offset="1" stopColor="#f77a8e" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="20" cy="20" r="18" fill="url(#irisMarkFtux)" />
-                  <circle cx="20" cy="20" r="7" fill="#171717" />
-                </svg>
-                <h2 className="text-xl font-medium text-neutral-100">
-                  Welcome to <span className="lowercase">iris</span>
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSkipConfirm(true)}
-                className="text-neutral-400 hover:text-neutral-100 transition-colors"
-                aria-label="Close"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Step indicators */}
-            <div className="flex gap-2 mt-4">
+          <div className="current-ftux__progress">
+            <CurrentMark />
+            <span>Step {currentStep} of 4</span>
+            <div className="current-ftux__steps" aria-label={`Setup step ${currentStep} of 4`}>
               {([1, 2, 3, 4] as const).map((step) => (
-                <div
-                  key={step}
-                  className={`h-1 flex-1 rounded-full transition-colors ${
-                    step <= currentStep ? "bg-white" : "bg-neutral-700"
-                  }`}
-                />
+                <span key={step} data-active={step <= currentStep ? "true" : undefined} />
               ))}
             </div>
           </div>
         )}
 
-        {/* Content area */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="current-ftux__content">
           {currentStep === 1 && <FTUXWelcomeStep />}
           {currentStep === 2 && <FTUXApiKeysStep />}
           {currentStep === 3 && <FTUXModelDefaultsStep />}
@@ -134,59 +92,27 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
           )}
         </div>
 
-        {/* Footer */}
         {currentStep !== 4 && (
-          <div className="flex justify-between gap-2 px-8 py-5 border-t border-neutral-700/50 shrink-0">
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={currentStep === 1}
-              className={`px-4 py-2 text-sm text-neutral-400 hover:text-neutral-100 transition-all ${
-                currentStep === 1 ? "opacity-0 pointer-events-none" : ""
-              }`}
-            >
+          <div className="current-ftux__footer">
+            <CurrentButton variant="quiet" onClick={handleBack} disabled={currentStep === 1}>
               Back
-            </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              className="px-4 py-2 text-sm bg-white text-neutral-900 rounded-lg hover:bg-neutral-200 transition-colors font-medium"
-            >
+            </CurrentButton>
+            <CurrentButton variant="primary" onClick={handleNext}>
               {getButtonText()}
-            </button>
+            </CurrentButton>
           </div>
         )}
 
-        {/* Skip confirmation dialog */}
-        {showSkipConfirm && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
-            <div className="iris-glass rounded-xl p-6 shadow-2xl max-w-sm mx-4">
-              <h3 className="text-lg font-semibold text-neutral-100 mb-2">
-                Skip setup?
-              </h3>
-              <p className="text-sm text-neutral-400 mb-4">
-                You can configure API keys and model defaults later in settings.
-              </p>
-              <div className="flex gap-2 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowSkipConfirm(false)}
-                  className="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-100 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSkip}
-                  className="px-4 py-2 text-sm bg-white text-neutral-900 rounded-lg hover:bg-neutral-200 transition-colors"
-                >
-                  Skip
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+      </CurrentSheet>
+      <CurrentAlert
+        open={showSkipConfirm}
+        title="Skip setup?"
+        description="You can configure API keys and model defaults later in settings."
+        onCancel={() => setShowSkipConfirm(false)}
+        onConfirm={handleSkip}
+        confirmLabel="Skip"
+      />
+    </>
   );
 }

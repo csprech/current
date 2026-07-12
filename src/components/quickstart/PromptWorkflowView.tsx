@@ -58,12 +58,12 @@ export function PromptWorkflowView({
   const canGenerate = description.trim().length >= 3 && !isGenerating;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="current-quickstart-view flex flex-col h-full">
       {/* Header */}
       <div className="px-6 py-4 border-b border-neutral-700 flex items-center gap-4">
         <QuickstartBackButton onClick={onBack} disabled={isGenerating} />
         <h2 className="text-lg font-semibold text-neutral-100">
-          Prompt a Workflow
+          Describe a workflow
         </h2>
       </div>
 

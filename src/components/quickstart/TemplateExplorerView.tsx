@@ -281,7 +281,7 @@ export function TemplateExplorerView({
   const isLoading = loadingWorkflowId !== null;
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="current-quickstart-view flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-neutral-700 flex items-center gap-4">
         <QuickstartBackButton onClick={onBack} disabled={isLoading} />

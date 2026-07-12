@@ -89,14 +89,14 @@ describe("WelcomeModal", () => {
         />
       );
 
-      expect(screen.getByText("iris")).toBeInTheDocument();
-      expect(screen.getByText("New project")).toBeInTheDocument();
-      expect(screen.getByText("Templates")).toBeInTheDocument();
-      expect(screen.getByText("Prompt a workflow")).toBeInTheDocument();
+      expect(screen.getByText("current")).toBeInTheDocument();
+      expect(screen.getByText("New canvas")).toBeInTheDocument();
+      expect(screen.getByText("Browse templates")).toBeInTheDocument();
+      expect(screen.getByText("Describe a workflow")).toBeInTheDocument();
     });
 
-    it("should render modal overlay with backdrop", () => {
-      const { container } = render(
+    it("should render a workspace view rather than a modal overlay", () => {
+      render(
         <WelcomeModal
           onWorkflowGenerated={mockOnWorkflowGenerated}
           onClose={mockOnClose}
@@ -104,8 +104,8 @@ describe("WelcomeModal", () => {
         />
       );
 
-      const backdrop = container.querySelector(".bg-black\\/25");
-      expect(backdrop).toBeInTheDocument();
+      expect(screen.getByRole("main", { name: "Current launchpad" })).toBeInTheDocument();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
 
@@ -119,7 +119,7 @@ describe("WelcomeModal", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("New project"));
+      fireEvent.click(screen.getByText("New canvas"));
 
       expect(mockOnNewProject).toHaveBeenCalled();
     });
@@ -134,7 +134,7 @@ describe("WelcomeModal", () => {
       );
 
       await act(async () => {
-        fireEvent.click(screen.getByText("Templates"));
+        fireEvent.click(screen.getByText("Browse templates"));
       });
 
       await waitFor(() => {
@@ -152,9 +152,9 @@ describe("WelcomeModal", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Prompt a workflow"));
+      fireEvent.click(screen.getByText("Describe a workflow"));
 
-      expect(screen.getByText("Prompt a Workflow")).toBeInTheDocument();
+      expect(screen.getByText("Describe a workflow")).toBeInTheDocument();
       expect(screen.getByText("Describe your workflow")).toBeInTheDocument();
     });
   });
@@ -171,7 +171,7 @@ describe("WelcomeModal", () => {
 
       // Navigate to templates
       await act(async () => {
-        fireEvent.click(screen.getByText("Templates"));
+        fireEvent.click(screen.getByText("Browse templates"));
       });
 
       await waitFor(() => {
@@ -183,8 +183,8 @@ describe("WelcomeModal", () => {
         fireEvent.click(screen.getByText("Back"));
       });
 
-      expect(screen.getByText("iris")).toBeInTheDocument();
-      expect(screen.getByText("New project")).toBeInTheDocument();
+      expect(screen.getByText("current")).toBeInTheDocument();
+      expect(screen.getByText("New canvas")).toBeInTheDocument();
     });
 
     it("should navigate back to initial view from prompt view", () => {
@@ -197,13 +197,13 @@ describe("WelcomeModal", () => {
       );
 
       // Navigate to prompt view
-      fireEvent.click(screen.getByText("Prompt a workflow"));
-      expect(screen.getByText("Prompt a Workflow")).toBeInTheDocument();
+      fireEvent.click(screen.getByText("Describe a workflow"));
+      expect(screen.getByText("Describe a workflow")).toBeInTheDocument();
 
       // Click back
       fireEvent.click(screen.getByText("Back"));
 
-      expect(screen.getByText("iris")).toBeInTheDocument();
+      expect(screen.getByText("current")).toBeInTheDocument();
     });
   });
 
@@ -217,7 +217,7 @@ describe("WelcomeModal", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Load workflow"));
+      fireEvent.click(screen.getByText("Open project"));
 
       expect(screen.getByTestId("workflow-browser-view")).toBeInTheDocument();
     });
@@ -231,11 +231,11 @@ describe("WelcomeModal", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Load workflow"));
+      fireEvent.click(screen.getByText("Open project"));
       expect(screen.getByTestId("workflow-browser-view")).toBeInTheDocument();
 
       fireEvent.click(screen.getByText("Back"));
-      expect(screen.getByText("iris")).toBeInTheDocument();
+      expect(screen.getByText("current")).toBeInTheDocument();
     });
 
     it("should call onWorkflowGenerated when a workflow is loaded from browser", () => {
@@ -247,7 +247,7 @@ describe("WelcomeModal", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Load workflow"));
+      fireEvent.click(screen.getByText("Open project"));
       fireEvent.click(screen.getByTestId("load-workflow-btn"));
 
       expect(mockOnWorkflowGenerated).toHaveBeenCalledWith(
@@ -269,7 +269,7 @@ describe("WelcomeModal", () => {
 
       // Navigate to templates
       await act(async () => {
-        fireEvent.click(screen.getByText("Templates"));
+        fireEvent.click(screen.getByText("Browse templates"));
       });
 
       await waitFor(() => {
@@ -290,9 +290,9 @@ describe("WelcomeModal", () => {
       );
 
       // Navigate to vibe/prompt view
-      fireEvent.click(screen.getByText("Prompt a workflow"));
+      fireEvent.click(screen.getByText("Describe a workflow"));
 
-      expect(screen.getByText("Prompt a Workflow")).toBeInTheDocument();
+      expect(screen.getByText("Describe a workflow")).toBeInTheDocument();
       expect(screen.getByText("Generate Workflow")).toBeInTheDocument();
     });
   });
