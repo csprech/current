@@ -11,6 +11,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act } from "@testing-library/react";
 import { useWorkflowStore } from "../workflowStore";
 import type { WorkflowNode, WorkflowEdge } from "@/types";
+import { logger } from "@/utils/logger";
 
 // Mock the Toast hook
 vi.mock("@/components/Toast", () => ({
@@ -2400,6 +2401,41 @@ describe("workflowStore integration tests", () => {
       await Promise.all([p1, p2]);
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("treats a missing provider key as recoverable during regeneration", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve(JSON.stringify({
+          error: "API key not configured. Add GEMINI_API_KEY to .env.local or configure in Settings.",
+        })),
+      });
+      useWorkflowStore.setState({
+        nodes: [
+          createTestNode("prompt-1", "prompt", { prompt: "test" }),
+          createTestNode("nanoBanana-1", "nanoBanana", {
+            aspectRatio: "1:1",
+            resolution: "1K",
+            model: "nano-banana",
+            inputImages: [],
+          }),
+        ],
+        edges: [createTestEdge("prompt-1", "nanoBanana-1", "text", "text")],
+      });
+
+      await useWorkflowStore.getState().regenerateNode("nanoBanana-1");
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        "node.error",
+        "Node regeneration blocked by provider configuration",
+        expect.objectContaining({ nodeId: "nanoBanana-1" })
+      );
+      expect(logger.error).not.toHaveBeenCalled();
+      expect(useWorkflowStore.getState().nodes[1].data).toEqual(expect.objectContaining({
+        status: "error",
+        error: expect.stringContaining("API key not configured"),
+      }));
     });
 
     it("should execute each node exactly once with multiple disconnected nodes", async () => {

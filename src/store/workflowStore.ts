@@ -64,6 +64,7 @@ import {
   clearNodeImageRefs,
   findLoopSubgraph,
   copyLoopOutput,
+  isProviderConfigurationError,
 } from "./utils/executionUtils";
 import { getConnectedInputsPure, validateWorkflowPure, type ConnectedInputs } from "./utils/connectedInputs";
 import { evaluateRule } from "./utils/ruleEvaluation";
@@ -136,6 +137,25 @@ function saveLogSession(): void {
       console.error('Failed to save log session:', err);
     });
   }
+}
+
+function logExecutionFailure(
+  category: "workflow.error" | "node.error",
+  message: string,
+  recoverableMessage: string,
+  context: Record<string, unknown>,
+  error: unknown,
+): void {
+  if (isProviderConfigurationError(error)) {
+    logger.warn(category, recoverableMessage, {
+      ...context,
+      error: error.message,
+      recovery: "Configure the provider API key in Settings",
+    });
+    return;
+  }
+
+  logger.error(category, message, context, error instanceof Error ? error : undefined);
 }
 
 export type EdgeStyle = "angular" | "curved";
@@ -1496,12 +1516,12 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
             if (r.status === 'rejected' &&
                 !(r.reason instanceof DOMException && r.reason.name === 'AbortError')) {
               const failedNode = batch[i];
-              logger.error('workflow.error', 'Node execution failed in parallel batch', {
+              logExecutionFailure('workflow.error', 'Node execution failed in parallel batch', 'Node execution blocked by provider configuration', {
                 level: levelIdx,
                 nodeId: failedNode.id,
                 nodeType: failedNode.type,
                 error: r.reason instanceof Error ? r.reason.message : String(r.reason),
-              });
+              }, r.reason);
               abortController.abort();
               throw r.reason;
             }
@@ -1639,7 +1659,13 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       if (error instanceof DOMException && error.name === 'AbortError') {
         logger.info('workflow.end', 'Workflow execution cancelled by user');
       } else {
-        logger.error('workflow.error', 'Workflow execution failed', {}, error instanceof Error ? error : undefined);
+        logExecutionFailure(
+          'workflow.error',
+          'Workflow execution failed',
+          'Workflow execution blocked by provider configuration',
+          {},
+          error,
+        );
         // Show error toast for the failed node
         useToast.getState().show(
           `Workflow failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -1863,9 +1889,13 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       saveLogSession();
       await logger.endSession();
     } catch (error) {
-      logger.error('node.error', 'Node regeneration failed', {
-        nodeId,
-      }, error instanceof Error ? error : undefined);
+      logExecutionFailure(
+        'node.error',
+        'Node regeneration failed',
+        'Node regeneration blocked by provider configuration',
+        { nodeId },
+        error,
+      );
       updateNodeData(nodeId, {
         status: "error",
         error: error instanceof Error ? error.message : "Regeneration failed",
@@ -2064,10 +2094,10 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
           );
 
           if (failed) {
-            logger.error('node.error', 'Node execution failed in batch', {
+            logExecutionFailure('node.error', 'Node execution failed in batch', 'Node execution blocked by provider configuration', {
               level: level.level,
               error: failed.reason instanceof Error ? failed.reason.message : String(failed.reason),
-            });
+            }, failed.reason);
             abortController.abort();
             throw failed.reason;
           }
@@ -2116,7 +2146,13 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       if (error instanceof DOMException && error.name === 'AbortError') {
         logger.info('node.execution', 'Selected nodes execution cancelled by user');
       } else {
-        logger.error('node.error', 'Selected nodes execution failed', {}, error instanceof Error ? error : undefined);
+        logExecutionFailure(
+          'node.error',
+          'Selected nodes execution failed',
+          'Selected node execution blocked by provider configuration',
+          {},
+          error,
+        );
         useToast.getState().show(
           `Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
           "error"

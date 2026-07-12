@@ -13,6 +13,16 @@ export const CONCURRENCY_SETTINGS_KEY = "node-banana-concurrency-limit";
 export const DEFAULT_MAX_CONCURRENT_CALLS = 3;
 
 /**
+ * Provider credentials are user-configurable prerequisites, not application
+ * crashes. Keep this intentionally narrow so unexpected execution failures
+ * continue to use the error channel during development.
+ */
+export function isProviderConfigurationError(error: unknown): error is Error {
+  if (!(error instanceof Error)) return false;
+  return /(?:api key|[A-Z][A-Z0-9_]*_API_KEY).*(?:not configured|required)/i.test(error.message);
+}
+
+/**
  * Load concurrency setting from localStorage
  */
 export const loadConcurrencySetting = (): number => {

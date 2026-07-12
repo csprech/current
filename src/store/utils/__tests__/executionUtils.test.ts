@@ -8,6 +8,7 @@ import {
   saveConcurrencySetting,
   DEFAULT_MAX_CONCURRENT_CALLS,
   CONCURRENCY_SETTINGS_KEY,
+  isProviderConfigurationError,
 } from "../executionUtils";
 import type { WorkflowNode, WorkflowEdge } from "@/types";
 
@@ -116,6 +117,22 @@ describe("chunk", () => {
 
   it("should throw on Infinity size", () => {
     expect(() => chunk([1, 2], Infinity)).toThrow("Invalid chunk size: must be a positive integer");
+  });
+});
+
+describe("isProviderConfigurationError", () => {
+  it("recognizes provider key setup failures", () => {
+    expect(isProviderConfigurationError(new Error(
+      "API key not configured. Add GEMINI_API_KEY to .env.local or configure in Settings."
+    ))).toBe(true);
+    expect(isProviderConfigurationError(new Error(
+      "Replicate API key required. Configure it in Settings."
+    ))).toBe(true);
+  });
+
+  it("does not downgrade unexpected execution failures", () => {
+    expect(isProviderConfigurationError(new Error("Provider returned malformed image data"))).toBe(false);
+    expect(isProviderConfigurationError("API key not configured")).toBe(false);
   });
 });
 
