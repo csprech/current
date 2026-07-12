@@ -855,6 +855,14 @@ function EaseCurveControls({ node }: { node: Node }) {
   useEffect(() => {
     if (!showPresets) return;
 
+    const presetButtons = Array.from(
+      presetsPopupRef.current?.querySelectorAll<HTMLButtonElement>("button[data-preset]") ?? []
+    );
+    const currentPreset = presetButtons.find(
+      (button) => button.dataset.preset === nodeData.easingPreset
+    );
+    (currentPreset ?? presetButtons[0])?.focus();
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -866,6 +874,7 @@ function EaseCurveControls({ node }: { node: Node }) {
       if (presetsButtonRef.current?.contains(e.target as HTMLElement)) return;
       if (presetsPopupRef.current?.contains(e.target as HTMLElement)) return;
       setShowPresets(false);
+      presetsButtonRef.current?.focus();
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -874,7 +883,7 @@ function EaseCurveControls({ node }: { node: Node }) {
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showPresets]);
+  }, [nodeData.easingPreset, showPresets]);
 
   const inheritedEdge = useMemo(() => {
     return edges.find((e) => e.target === node.id && e.targetHandle === "easeCurve") || null;
@@ -1012,6 +1021,8 @@ function EaseCurveControls({ node }: { node: Node }) {
             {presetThumbnails.map(({ name, polyline }) => (
               <button
                 key={name}
+                data-preset={name}
+                aria-pressed={nodeData.easingPreset === name}
                 onClick={() => handleSelectEasing(name)}
                 aria-label={`Use ${name} easing preset`}
                 className="nodrag nopan p-1 bg-neutral-900 hover:bg-neutral-700 rounded flex flex-col items-center gap-1 transition-colors"

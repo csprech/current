@@ -174,6 +174,62 @@ function hasApprovedTarget(openingSource: string): boolean {
   return styleWidth !== null && styleHeight !== null && styleWidth >= 28 && styleHeight >= 28;
 }
 
+function expressionProvidesAccessibleName(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const node = value as AstNode;
+  switch (node.type) {
+    case "StringLiteral":
+      return typeof node.value === "string" && node.value.trim().length > 0;
+    case "NumericLiteral":
+    case "BigIntLiteral":
+      return true;
+    case "NullLiteral":
+    case "BooleanLiteral":
+    case "JSXEmptyExpression":
+      return false;
+    case "Identifier":
+      return node.name !== "undefined";
+    case "ConditionalExpression":
+      return expressionProvidesAccessibleName(node.consequent) && expressionProvidesAccessibleName(node.alternate);
+    case "LogicalExpression":
+      return node.operator === "??"
+        && expressionProvidesAccessibleName(node.left)
+        && expressionProvidesAccessibleName(node.right);
+    case "TemplateLiteral": {
+      const quasis = (node.quasis as AstNode[] | undefined) ?? [];
+      const staticText = quasis.map((quasi) => {
+        const cooked = (quasi.value as { cooked?: unknown } | undefined)?.cooked;
+        return typeof cooked === "string" ? cooked : "";
+      }).join("");
+      if (staticText.trim().length > 0) return true;
+      const expressions = (node.expressions as AstNode[] | undefined) ?? [];
+      return expressions.length > 0 && expressions.every(expressionProvidesAccessibleName);
+    }
+    case "TSAsExpression":
+    case "TSTypeAssertion":
+    case "TSNonNullExpression":
+    case "ParenthesizedExpression":
+      return expressionProvidesAccessibleName(node.expression);
+    default:
+      // Calls and member expressions are dynamic names whose emptiness cannot be
+      // established statically. Known-empty syntax is rejected above.
+      return true;
+  }
+}
+
+function attributeProvidesAccessibleName(attribute: AstNode): boolean {
+  if (attribute.type !== "JSXAttribute") return false;
+  const name = attribute.name as AstNode | undefined;
+  if (name?.name !== "aria-label" && name?.name !== "aria-labelledby") return false;
+  const value = attribute.value as AstNode | null | undefined;
+  if (!value) return false;
+  if (value.type === "StringLiteral") {
+    return typeof value.value === "string" && value.value.trim().length > 0;
+  }
+  if (value.type !== "JSXExpressionContainer") return false;
+  return expressionProvidesAccessibleName(value.expression);
+}
+
 function findIconControlViolations(source: string, file = "fixture.tsx"): string[] {
   const ast = parse(source, { sourceType: "module", plugins: ["typescript", "jsx"] });
   const violations: string[] = [];
@@ -185,10 +241,7 @@ function findIconControlViolations(source: string, file = "fixture.tsx"): string
     if (!containsSvg(children) || hasVisibleNonIconContent(children)) return;
 
     const attributes = (opening.attributes as AstNode[] | undefined) ?? [];
-    const isNamed = attributes.some((attribute) => {
-      const name = attribute.name as AstNode | undefined;
-      return attribute.type === "JSXAttribute" && name?.name === "aria-label";
-    });
+    const isNamed = attributes.some(attributeProvidesAccessibleName);
     const openingSource = source.slice(opening.start ?? 0, opening.end ?? 0);
     if (isNamed && hasApprovedTarget(openingSource)) return;
     violations.push(`${file}:${opening.loc?.start.line ?? 1}`);
@@ -235,6 +288,19 @@ describe("icon control source scanner", () => {
     ["padding only", `<button aria-label="Play" className="p-2"><svg /></button>`, false],
     ["shared Current action class", `<button aria-label="Play" className={active ? "current-media-action" : "current-icon-button"}><svg /></button>`, true],
   ])("classifies %s", (_name, source, valid) => {
+    expect(findIconControlViolations(source)).toEqual(valid ? [] : ["fixture.tsx:1"]);
+  });
+
+  it.each([
+    ["empty aria-label", `<button aria-label="" className="current-icon-button"><svg /></button>`, false],
+    ["whitespace aria-label", `<button aria-label="   " className="current-icon-button"><svg /></button>`, false],
+    ["undefined aria-label", `<button aria-label={undefined} className="current-icon-button"><svg /></button>`, false],
+    ["null aria-label", `<button aria-label={null} className="current-icon-button"><svg /></button>`, false],
+    ["false aria-label", `<button aria-label={false} className="current-icon-button"><svg /></button>`, false],
+    ["non-empty aria-label", `<button aria-label="Play" className="current-icon-button"><svg /></button>`, true],
+    ["dynamic aria-label", `<button aria-label={label} className="current-icon-button"><svg /></button>`, true],
+    ["non-empty aria-labelledby", `<button aria-labelledby="play-label" className="current-icon-button"><svg /></button>`, true],
+  ])("validates %s", (_name, source, valid) => {
     expect(findIconControlViolations(source)).toEqual(valid ? [] : ["fixture.tsx:1"]);
   });
 });

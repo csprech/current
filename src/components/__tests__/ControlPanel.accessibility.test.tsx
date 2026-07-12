@@ -8,7 +8,7 @@ const state = {
     id: "ease-1",
     type: "easeCurve",
     selected: true,
-    data: { bezierHandles: [0.42, 0, 0.58, 1], outputDuration: 1.5 },
+    data: { bezierHandles: [0.42, 0, 0.58, 1], outputDuration: 1.5, easingPreset: null as string | null },
   }],
   updateNodeData,
   regenerateNode: vi.fn(),
@@ -36,7 +36,10 @@ vi.mock("@/components/CubicBezierEditor", () => ({
 }));
 
 describe("ControlPanel easing presets semantics", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    state.nodes[0].data.easingPreset = null;
+  });
 
   it("uses a labeled group of ordinary buttons instead of an incomplete menu composite", () => {
     render(<ControlPanel onClose={vi.fn()} />);
@@ -58,6 +61,35 @@ describe("ControlPanel easing presets semantics", () => {
     expect(screen.getByRole("group", { name: "Easing presets" })).toBeInTheDocument();
 
     fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(screen.queryByRole("group", { name: "Easing presets" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it("moves focus to the first preset and returns it after selection", () => {
+    render(<ControlPanel onClose={vi.fn()} />);
+    const trigger = screen.getByRole("button", { name: "Presets" });
+    fireEvent.click(trigger);
+
+    const firstPreset = screen.getByRole("button", { name: "Use linear easing preset" });
+    expect(firstPreset).toHaveFocus();
+    fireEvent.click(firstPreset);
+
+    expect(screen.queryByRole("group", { name: "Easing presets" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it("focuses the current preset and preserves focus through rerender and outside close", () => {
+    state.nodes[0].data.easingPreset = "easeOutQuad";
+    const { rerender } = render(<ControlPanel onClose={vi.fn()} />);
+    const trigger = screen.getByRole("button", { name: "Presets" });
+    fireEvent.click(trigger);
+    const currentPreset = screen.getByRole("button", { name: "Use easeOutQuad easing preset" });
+    expect(currentPreset).toHaveFocus();
+
+    rerender(<ControlPanel onClose={vi.fn()} />);
+    expect(currentPreset).toHaveFocus();
+    fireEvent.mouseDown(document.body);
 
     expect(screen.queryByRole("group", { name: "Easing presets" })).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
