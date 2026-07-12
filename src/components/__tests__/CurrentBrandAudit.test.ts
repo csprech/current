@@ -18,8 +18,7 @@ const LEGACY_TERMS = [
 // their named Current variables; user-authored color values are data, not source chrome.
 const RETIRED_CATEGORY_ACCENTS = /(?:lime|violet|purple|pink|fuchsia|orange|yellow|green|emerald|amber|cyan|teal|rose)-(?:[1-9]00|50)/i;
 const RETIRED_HARDCODED_ACCENTS = /#bef264|rgb\(167,\s*139,\s*250\)|rgb\(251,\s*191,\s*36\)/i;
-const UNDERSIZED_BUTTON = /(?:^|\s)(?:w|h)-(?:[1-6])(?:\s|$)/;
-const CURRENT_ACTION_TARGET = /current-(?:icon-button|media-action|toolbar-action)/;
+const CURRENT_ACTION_TARGET = /current-(?:icon-button|media-action|toolbar-action|node-header__more)/;
 
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
@@ -75,14 +74,104 @@ function hasVisibleNonIconContent(value: unknown): boolean {
   const node = value as AstNode;
   if (node.type === "JSXText") return typeof node.value === "string" && node.value.trim().length > 0;
   if (node.type === "JSXExpressionContainer") {
-    const expression = node.expression as AstNode | undefined;
-    return expression?.type !== "JSXEmptyExpression";
+    return expressionProvidesVisibleContent(node.expression);
   }
   if (node.type === "JSXElement") {
-    if (jsxElementName(node) === "svg") return false;
+    const name = jsxElementName(node);
+    if (name === "svg") return false;
+    if (name === "img" || name === "video" || name === "audio" || name === "canvas") return true;
     return hasVisibleNonIconContent(node.children);
   }
+  if (node.type === "JSXFragment") return hasVisibleNonIconContent(node.children);
   return false;
+}
+
+function expressionProvidesVisibleContent(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(expressionProvidesVisibleContent);
+  if (!value || typeof value !== "object") return false;
+  const node = value as AstNode;
+  switch (node.type) {
+    case "JSXEmptyExpression":
+    case "NullLiteral":
+    case "BooleanLiteral":
+      return false;
+    case "StringLiteral":
+      return typeof node.value === "string" && node.value.trim().length > 0;
+    case "NumericLiteral":
+    case "BigIntLiteral":
+      return true;
+    case "JSXElement":
+    case "JSXFragment":
+      return hasVisibleNonIconContent(node);
+    case "ConditionalExpression":
+      return expressionProvidesVisibleContent(node.consequent) || expressionProvidesVisibleContent(node.alternate);
+    case "LogicalExpression":
+      return expressionProvidesVisibleContent(node.right);
+    case "ArrayExpression":
+      return expressionProvidesVisibleContent(node.elements);
+    case "TSAsExpression":
+    case "TSTypeAssertion":
+    case "TSNonNullExpression":
+    case "ParenthesizedExpression":
+      return expressionProvidesVisibleContent(node.expression);
+    case "TemplateLiteral": {
+      const quasis = (node.quasis as AstNode[] | undefined) ?? [];
+      const hasText = quasis.some((quasi) => {
+        const cooked = (quasi.value as { cooked?: unknown } | undefined)?.cooked;
+        return typeof cooked === "string" && cooked.trim().length > 0;
+      });
+      return hasText || expressionProvidesVisibleContent(node.expressions);
+    }
+    default:
+      // Identifiers, calls, and member expressions commonly render dynamic labels.
+      // Treat them as visible unless their syntax proves they only select elements.
+      return true;
+  }
+}
+
+function lengthInPixels(raw: string, unitlessIsPixels = false): number | null {
+  const match = raw.trim().match(/^(\d+(?:\.\d+)?)(px|rem)?$/);
+  if (!match) return null;
+  const value = Number(match[1]);
+  if (match[2] === "rem") return value * 16;
+  if (match[2] === "px" || unitlessIsPixels) return value;
+  return null;
+}
+
+function tailwindDimension(openingSource: string, axis: "w" | "h"): number | null {
+  const arbitrary = openingSource.match(new RegExp(`(?:^|[\\s\"'\\\`])${axis}-\\[([^\\]]+)\\]`));
+  if (arbitrary) return lengthInPixels(arbitrary[1]);
+  const scaled = openingSource.match(new RegExp(`(?:^|[\\s\"'\\\`])${axis}-(\\d+(?:\\.\\d+)?)(?=[\\s\"'\\\`}])`));
+  return scaled ? Number(scaled[1]) * 4 : null;
+}
+
+function inlineStyleDimension(openingSource: string, property: "width" | "height"): number | null {
+  const match = openingSource.match(
+    new RegExp(`\\b${property}\\s*:\\s*(?:\"([^\"]+)\"|'([^']+)'|(\\d+(?:\\.\\d+)?))`)
+  );
+  if (!match) return null;
+  return lengthInPixels(match[1] ?? match[2] ?? match[3], Boolean(match[3]));
+}
+
+function hasApprovedTarget(openingSource: string): boolean {
+  if (CURRENT_ACTION_TARGET.test(openingSource)) return true;
+
+  const arbitrarySize = openingSource.match(/(?:^|[\s"'`])size-\[([^\]]+)\]/);
+  const scaledSize = openingSource.match(/(?:^|[\s"'`])size-(\d+(?:\.\d+)?)(?=[\s"'`}])/);
+  const size = arbitrarySize
+    ? lengthInPixels(arbitrarySize[1])
+    : scaledSize
+      ? Number(scaledSize[1]) * 4
+      : null;
+  if (size !== null && size >= 28) return true;
+
+  const classWidth = tailwindDimension(openingSource, "w");
+  const classHeight = tailwindDimension(openingSource, "h");
+  if (classWidth !== null && classHeight !== null && classWidth >= 28 && classHeight >= 28) return true;
+
+  const styleWidth = inlineStyleDimension(openingSource, "width");
+  const styleHeight = inlineStyleDimension(openingSource, "height");
+  return styleWidth !== null && styleHeight !== null && styleWidth >= 28 && styleHeight >= 28;
 }
 
 function findIconControlViolations(source: string, file = "fixture.tsx"): string[] {
@@ -101,9 +190,7 @@ function findIconControlViolations(source: string, file = "fixture.tsx"): string
       return attribute.type === "JSXAttribute" && name?.name === "aria-label";
     });
     const openingSource = source.slice(opening.start ?? 0, opening.end ?? 0);
-    const isSmall = UNDERSIZED_BUTTON.test(openingSource);
-    const usesCurrentTarget = CURRENT_ACTION_TARGET.test(openingSource);
-    if (isNamed && (!isSmall || usesCurrentTarget)) return;
+    if (isNamed && hasApprovedTarget(openingSource)) return;
     violations.push(`${file}:${opening.loc?.start.line ?? 1}`);
   });
 
@@ -124,6 +211,31 @@ describe("icon control source scanner", () => {
     const source = `<button className="current-icon-button"><svg /></button>`;
 
     expect(findIconControlViolations(source)).toEqual(["fixture.tsx:1"]);
+  });
+
+  it.each([
+    ["conditional SVG with an approved target", `<button aria-label="Play" className="current-icon-button">{ready ? <svg /> : null}</button>`, true],
+    ["conditional SVG without a name", `<button className="current-icon-button">{ready ? <svg /> : null}</button>`, false],
+    ["fragment-wrapped conditional SVG without a name", `<button className="current-icon-button">{ready && <><svg /></>}</button>`, false],
+    ["literal visible text", `<button><svg /> Save</button>`, true],
+    ["expression-provided visible text", `<button><svg />{label}</button>`, true],
+    ["conditional visible text", `<button><svg />{ready ? "Save" : null}</button>`, true],
+    ["conditional text element", `<button><svg />{ready ? <span>Save</span> : null}</button>`, true],
+    ["size-6", `<button aria-label="Play" className="size-6"><svg /></button>`, false],
+    ["size-7", `<button aria-label="Play" className="size-7"><svg /></button>`, true],
+    ["size-8", `<button aria-label="Play" className="size-8"><svg /></button>`, true],
+    ["paired w-7 and h-7", `<button aria-label="Play" className="w-7 h-7"><svg /></button>`, true],
+    ["paired w-8 and h-8", `<button aria-label="Play" className="w-8 h-8"><svg /></button>`, true],
+    ["only one known dimension", `<button aria-label="Play" className="w-8"><svg /></button>`, false],
+    ["arbitrary small size", `<button aria-label="Play" className="size-[24px]"><svg /></button>`, false],
+    ["arbitrary large size", `<button aria-label="Play" className="size-[28px]"><svg /></button>`, true],
+    ["arbitrary large dimensions", `<button aria-label="Play" className="w-[2rem] h-[2rem]"><svg /></button>`, true],
+    ["small inline dimensions", `<button aria-label="Play" style={{ width: 24, height: 24 }}><svg /></button>`, false],
+    ["large inline dimensions", `<button aria-label="Play" style={{ width: 32, height: 32 }}><svg /></button>`, true],
+    ["padding only", `<button aria-label="Play" className="p-2"><svg /></button>`, false],
+    ["shared Current action class", `<button aria-label="Play" className={active ? "current-media-action" : "current-icon-button"}><svg /></button>`, true],
+  ])("classifies %s", (_name, source, valid) => {
+    expect(findIconControlViolations(source)).toEqual(valid ? [] : ["fixture.tsx:1"]);
   });
 });
 

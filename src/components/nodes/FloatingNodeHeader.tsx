@@ -463,7 +463,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
               onClick={() => setIsEditingComment(!isEditingComment)}
               onMouseEnter={() => comment && !isCommentFocused && setShowCommentTooltip(true)}
               onMouseLeave={() => setShowCommentTooltip(false)}
-              className={`nodrag nopan p-0.5 rounded transition-colors ${
+              className={`current-media-action nodrag nopan ${
                 comment
                   ? "text-blue-400 hover:text-blue-200"
                   : "text-neutral-500 hover:text-neutral-200 border border-neutral-600"

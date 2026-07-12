@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { AssetEntry, AssetType } from "@/app/api/assets/route";
@@ -13,6 +13,30 @@ const TYPE_FILTERS: { key: TypeFilter; label: string }[] = [
   { key: "video", label: "Videos" },
   { key: "audio", label: "Audio" },
 ];
+
+const FOCUSABLE_SELECTOR = [
+  "button:not(:disabled)",
+  "a[href]",
+  "input:not(:disabled)",
+  "select:not(:disabled)",
+  "textarea:not(:disabled)",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+function containTabFocus(event: KeyboardEvent, container: HTMLElement | null): void {
+  if (event.key !== "Tab" || !container) return;
+  const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -138,18 +162,48 @@ function AssetLightbox({
   dataUrl: string;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    closeButtonRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      } else {
+        containTabFocus(e, dialogRef.current);
+      }
+    };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      previouslyFocused?.focus();
+    };
   }, [onClose]);
 
   return createPortal(
     <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Preview ${asset.filename}`}
       className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
       onClick={onClose}
     >
-      <div className="max-w-[90vw] max-h-[90vh] flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
+      <div className="relative max-w-[90vw] max-h-[90vh] flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
+        <button
+          ref={closeButtonRef}
+          type="button"
+          onClick={onClose}
+          aria-label={`Close preview of ${asset.filename}`}
+          className="current-media-action current-media-action--overlay absolute -top-4 -right-4 z-10"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
         {asset.type === "image" && (
           <img src={dataUrl} alt={asset.filename} className="max-w-full max-h-[80vh] object-contain rounded-lg" />
         )}
@@ -187,6 +241,33 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [lightbox, setLightbox] = useState<{ asset: AssetEntry; dataUrl: string } | null>(null);
+  const panelId = useId();
+  const panelTitleId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isOpen || embedded) return;
+    const trigger = triggerRef.current;
+    searchRef.current?.focus();
+    return () => trigger?.focus();
+  }, [embedded, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || embedded) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (lightbox) return;
+        event.preventDefault();
+        setIsOpen(false);
+        return;
+      }
+      if (!lightbox) containTabFocus(event, panelRef.current);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [embedded, isOpen, lightbox]);
 
   const refresh = useCallback(async () => {
     if (!workflowPath) return;
@@ -254,8 +335,12 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
     <>
       {/* Trigger button — sits left of the session history button */}
       <button
+        ref={triggerRef}
+        type="button"
         onClick={() => setIsOpen((v) => !v)}
         aria-label="Open asset library"
+        aria-expanded={isOpen}
+        aria-controls={panelId}
         className="absolute bottom-4 right-80 z-10 w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-neutral-400 hover:text-neutral-100 shadow-lg transition-colors"
         title="Asset library"
       >
@@ -266,10 +351,17 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
 
       {isOpen &&
         createPortal(
-          <div role="dialog" aria-label="Asset library" className="fixed top-0 right-0 h-full w-96 current-transient-surface shadow-2xl z-[200] flex flex-col">
+          <div
+            ref={panelRef}
+            id={panelId}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={panelTitleId}
+            className="fixed top-0 right-0 h-full w-96 current-transient-surface shadow-2xl z-[200] flex flex-col"
+          >
             {/* Header */}
             <div className="px-4 py-3 border-b border-neutral-700 flex items-center justify-between shrink-0">
-              <span className="text-sm font-medium text-neutral-200">Asset Library</span>
+              <span id={panelTitleId} className="text-sm font-medium text-neutral-200">Asset Library</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={refresh}
@@ -294,7 +386,9 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
             {/* Controls */}
             <div className="px-4 py-2 border-b border-neutral-700 shrink-0 space-y-2">
               <input
-                type="text"
+                ref={searchRef}
+                type="search"
+                aria-label="Search assets"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by filename…"

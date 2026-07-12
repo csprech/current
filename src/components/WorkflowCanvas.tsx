@@ -2312,7 +2312,7 @@ export function WorkflowCanvas() {
                       if (cap) setFallbackDialogState({ nodeId: node.id, capability: cap });
                     }
                   }}
-                  className={`nodrag nopan p-0.5 rounded transition-colors border flex items-center ${
+                  className={`current-media-action nodrag nopan ${
                     hasFallback
                       ? "text-blue-400 border-blue-600/60 hover:text-blue-200"
                       : "text-neutral-500 border-neutral-600 hover:text-neutral-200"

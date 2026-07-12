@@ -643,7 +643,7 @@ export function ModelSearchDialog({
               disabled={isRefreshing || isLoading}
               aria-label="Refresh models and schemas"
               title="Refresh models & schemas"
-              className="p-2 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="current-toolbar-action text-neutral-400 hover:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg
                 className={`w-4 h-4${isRefreshing ? " animate-spin" : ""}`}

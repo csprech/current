@@ -150,7 +150,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
           {messages.length > 0 && (
             <button
               onClick={() => setMessages([])}
-              className="text-neutral-400 hover:text-neutral-200 transition-colors p-1"
+              className="current-toolbar-action text-neutral-400 hover:text-neutral-200"
               aria-label="Clear chat"
               title="Clear chat history"
             >
@@ -161,7 +161,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
           )}
           <button
             onClick={onClose}
-            className="text-neutral-400 hover:text-neutral-200 transition-colors p-1"
+            className="current-toolbar-action text-neutral-400 hover:text-neutral-200"
             aria-label="Close chat"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -308,7 +308,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
               <span>Focused on {selectedNodeIds.length} selected node{selectedNodeIds.length !== 1 ? 's' : ''}</span>
               <button
                 onClick={() => setChipDismissed(true)}
-                className="text-neutral-400 hover:text-neutral-200 transition-colors"
+                className="current-media-action text-neutral-400 hover:text-neutral-200"
                 aria-label="Dismiss"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -341,7 +341,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
               type="submit"
               disabled={isLoading || !input.trim()}
               aria-label="Send message"
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="current-media-action current-media-action--primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

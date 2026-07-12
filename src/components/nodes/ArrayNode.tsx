@@ -263,7 +263,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
               onClick={handleAutoRouteToPrompts}
               disabled={previewItems.length === 0}
               aria-label="Auto-route to prompts"
-              className="nodrag nopan shrink-0 py-1 px-1.5 bg-neutral-800 rounded-md text-neutral-400 hover:text-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="current-media-action nodrag nopan shrink-0 text-neutral-400 hover:text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Auto-route to Prompts"
             >
               <svg className="w-3.5 h-3.5 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">

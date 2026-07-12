@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import { useMemo, useState, useCallback, useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Node } from "@xyflow/react";
 import { useWorkflowStore, saveNanoBananaDefaults, useProviderApiKeys } from "@/store/workflowStore";
@@ -848,6 +848,7 @@ function EaseCurveControls({ node }: { node: Node }) {
   const edges = useWorkflowStore((state) => state.edges);
   const removeEdge = useWorkflowStore((state) => state.removeEdge);
   const [showPresets, setShowPresets] = useState(false);
+  const presetsPopupId = useId();
   const presetsButtonRef = useRef<HTMLButtonElement>(null);
   const presetsPopupRef = useRef<HTMLDivElement>(null);
 
@@ -855,7 +856,11 @@ function EaseCurveControls({ node }: { node: Node }) {
     if (!showPresets) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setShowPresets(false);
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setShowPresets(false);
+        presetsButtonRef.current?.focus();
+      }
     };
     const handleClickOutside = (e: MouseEvent) => {
       if (presetsButtonRef.current?.contains(e.target as HTMLElement)) return;
@@ -898,6 +903,7 @@ function EaseCurveControls({ node }: { node: Node }) {
         bezierHandles: getEasingBezier(name),
       });
       setShowPresets(false);
+      presetsButtonRef.current?.focus();
     },
     [node.id, updateNodeData]
   );
@@ -943,6 +949,8 @@ function EaseCurveControls({ node }: { node: Node }) {
           <button
             ref={presetsButtonRef}
             onClick={() => setShowPresets(!showPresets)}
+            aria-expanded={showPresets}
+            aria-controls={presetsPopupId}
             className="nodrag nopan text-xs px-2 py-0.5 bg-neutral-700 hover:bg-neutral-600 border border-neutral-600 rounded text-neutral-300 transition-colors"
           >
             Presets
@@ -990,7 +998,8 @@ function EaseCurveControls({ node }: { node: Node }) {
       {showPresets && typeof document !== 'undefined' && createPortal(
         <div
           ref={presetsPopupRef}
-          role="menu"
+          id={presetsPopupId}
+          role="group"
           aria-label="Easing presets"
           className="fixed z-[100] current-transient-surface rounded-lg shadow-xl p-2 max-h-[60vh] overflow-y-auto nowheel"
           style={{
@@ -1003,7 +1012,6 @@ function EaseCurveControls({ node }: { node: Node }) {
             {presetThumbnails.map(({ name, polyline }) => (
               <button
                 key={name}
-                role="menuitem"
                 onClick={() => handleSelectEasing(name)}
                 aria-label={`Use ${name} easing preset`}
                 className="nodrag nopan p-1 bg-neutral-900 hover:bg-neutral-700 rounded flex flex-col items-center gap-1 transition-colors"
