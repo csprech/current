@@ -230,7 +230,8 @@ export function GroupNode({ id, data, selected }: NodeProps<GroupNodeType>) {
           {/* Delete Button */}
           <button
             onClick={handleDelete}
-            className="p-0.5 rounded hover:bg-white/20 text-white/70 hover:text-neutral-100 transition-colors"
+            aria-label="Delete group"
+            className="current-media-action text-white/70 hover:text-neutral-100"
             title="Delete group"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

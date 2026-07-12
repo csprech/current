@@ -347,10 +347,9 @@ describe("OutputNode", () => {
       const clickableArea = img.closest(".cursor-pointer");
       fireEvent.click(clickableArea!);
 
-      // Find and click close button (it's the button with X icon inside the lightbox)
-      const closeButton = document.querySelector(".fixed.inset-0 button");
-      expect(closeButton).toBeInTheDocument();
-      fireEvent.click(closeButton!);
+      const closeButton = screen.getByRole("button", { name: "Close output preview" });
+      expect(closeButton).toHaveClass("current-media-action", "current-media-action--overlay");
+      fireEvent.click(closeButton);
 
       // Lightbox should be closed
       expect(screen.queryByAltText("Output full size")).not.toBeInTheDocument();

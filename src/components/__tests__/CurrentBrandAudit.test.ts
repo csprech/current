@@ -2,6 +2,7 @@
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { parse } from "@babel/parser";
 import { describe, expect, it } from "vitest";
 
 const ROOT = process.cwd();
@@ -31,6 +32,100 @@ function isTextSource(path: string): boolean {
   const extension = path.slice(path.lastIndexOf("."));
   return TEXT_EXTENSIONS.has(extension);
 }
+
+type AstNode = {
+  type?: string;
+  start?: number | null;
+  end?: number | null;
+  loc?: { start: { line: number } } | null;
+  [key: string]: unknown;
+};
+
+function walkAst(value: unknown, visit: (node: AstNode) => void): void {
+  if (Array.isArray(value)) {
+    value.forEach((item) => walkAst(item, visit));
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  const node = value as AstNode;
+  if (typeof node.type !== "string") return;
+  visit(node);
+  Object.entries(node).forEach(([key, child]) => {
+    if (key !== "loc" && key !== "start" && key !== "end") walkAst(child, visit);
+  });
+}
+
+function jsxElementName(node: AstNode): string | null {
+  const opening = node.openingElement as AstNode | undefined;
+  const name = opening?.name as AstNode | undefined;
+  return name?.type === "JSXIdentifier" && typeof name.name === "string" ? name.name : null;
+}
+
+function containsSvg(value: unknown): boolean {
+  let found = false;
+  walkAst(value, (node) => {
+    if (node.type === "JSXElement" && jsxElementName(node) === "svg") found = true;
+  });
+  return found;
+}
+
+function hasVisibleNonIconContent(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(hasVisibleNonIconContent);
+  if (!value || typeof value !== "object") return false;
+  const node = value as AstNode;
+  if (node.type === "JSXText") return typeof node.value === "string" && node.value.trim().length > 0;
+  if (node.type === "JSXExpressionContainer") {
+    const expression = node.expression as AstNode | undefined;
+    return expression?.type !== "JSXEmptyExpression";
+  }
+  if (node.type === "JSXElement") {
+    if (jsxElementName(node) === "svg") return false;
+    return hasVisibleNonIconContent(node.children);
+  }
+  return false;
+}
+
+function findIconControlViolations(source: string, file = "fixture.tsx"): string[] {
+  const ast = parse(source, { sourceType: "module", plugins: ["typescript", "jsx"] });
+  const violations: string[] = [];
+
+  walkAst(ast, (node) => {
+    if (node.type !== "JSXElement" || jsxElementName(node) !== "button") return;
+    const opening = node.openingElement as AstNode;
+    const children = node.children;
+    if (!containsSvg(children) || hasVisibleNonIconContent(children)) return;
+
+    const attributes = (opening.attributes as AstNode[] | undefined) ?? [];
+    const isNamed = attributes.some((attribute) => {
+      const name = attribute.name as AstNode | undefined;
+      return attribute.type === "JSXAttribute" && name?.name === "aria-label";
+    });
+    const openingSource = source.slice(opening.start ?? 0, opening.end ?? 0);
+    const isSmall = UNDERSIZED_BUTTON.test(openingSource);
+    const usesCurrentTarget = CURRENT_ACTION_TARGET.test(openingSource);
+    if (isNamed && (!isSmall || usesCurrentTarget)) return;
+    violations.push(`${file}:${opening.loc?.start.line ?? 1}`);
+  });
+
+  return violations;
+}
+
+describe("icon control source scanner", () => {
+  it("keeps a self-closing button separate from the paired button that follows it", () => {
+    const source = `const view = <>
+  <button aria-label="Add" className="current-icon-button" />
+  <button className="current-icon-button"><svg /></button>
+</>`;
+
+    expect(findIconControlViolations(source)).toEqual(["fixture.tsx:3"]);
+  });
+
+  it("reports an icon-only button without an accessible name or title", () => {
+    const source = `<button className="current-icon-button"><svg /></button>`;
+
+    expect(findIconControlViolations(source)).toEqual(["fixture.tsx:1"]);
+  });
+});
 
 describe("Current brand source audit", () => {
   it("contains no retired visual or product identity references", () => {
@@ -62,44 +157,13 @@ describe("Current brand source audit", () => {
     expect(matches).toEqual([]);
   });
 
-  it("gives every explicitly small icon button a named Current action target", () => {
+  it("gives every icon-only button a name and every small icon button a Current action target", () => {
     const componentRoot = join(ROOT, "src/components");
     const violations = sourceFiles(componentRoot)
       .filter((path) => path.endsWith(".tsx") && !path.includes("/__tests__/"))
       .flatMap((path) => {
         const source = readFileSync(path, "utf8");
-        return Array.from(source.matchAll(/<button\b[\s\S]*?<\/button>/g)).flatMap((match) => {
-          const block = match[0];
-          const firstIcon = block.indexOf("<svg");
-          if (firstIcon < 0) return [];
-          const controlMarkup = block.slice(0, firstIcon);
-          if (!UNDERSIZED_BUTTON.test(controlMarkup)) return [];
-          const isNamed = /aria-label\s*=/.test(controlMarkup);
-          const usesCurrentTarget = CURRENT_ACTION_TARGET.test(controlMarkup);
-          if (isNamed && usesCurrentTarget) return [];
-          const line = source.slice(0, match.index).split("\n").length;
-          return [`${relative(ROOT, path)}:${line}`];
-        });
-      });
-
-    expect(violations).toEqual([]);
-  });
-
-  it("does not use title as the accessible name for icon controls", () => {
-    const componentRoot = join(ROOT, "src/components");
-    const violations = sourceFiles(componentRoot)
-      .filter((path) => path.endsWith(".tsx") && !path.includes("/__tests__/"))
-      .flatMap((path) => {
-        const source = readFileSync(path, "utf8");
-        return Array.from(source.matchAll(/<button\b[\s\S]*?<\/button>/g)).flatMap((match) => {
-          const block = match[0];
-          const firstIcon = block.indexOf("<svg");
-          if (firstIcon < 0) return [];
-          const controlMarkup = block.slice(0, firstIcon);
-          if (!/title\s*=/.test(controlMarkup) || /aria-label\s*=/.test(controlMarkup)) return [];
-          const line = source.slice(0, match.index).split("\n").length;
-          return [`${relative(ROOT, path)}:${line}`];
-        });
+        return findIconControlViolations(source, relative(ROOT, path));
       });
 
     expect(violations).toEqual([]);

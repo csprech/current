@@ -118,14 +118,15 @@ describe("GroupNode", () => {
     });
 
     it("should render delete button", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <GroupNode {...createNodeProps()} />
         </TestWrapper>
       );
 
-      const deleteButton = container.querySelector('button[title="Delete group"]');
-      expect(deleteButton).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Delete group" })).toHaveClass(
+        "current-media-action"
+      );
     });
 
     it("should return null when group not found", () => {
