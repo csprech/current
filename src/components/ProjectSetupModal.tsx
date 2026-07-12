@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { generateWorkflowId, useWorkflowStore } from "@/store/workflowStore";
 import { ProviderType, ProviderSettings, NodeDefaultsConfig, LLMProvider, LLMModelType } from "@/types";
 import { CanvasNavigationSettings, PanMode, ZoomMode, SelectionMode } from "@/types/canvas";
@@ -9,7 +9,7 @@ import { loadNodeDefaults, saveNodeDefaults, getLastProjectBaseDir, setLastProje
 import { ProviderModel } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
-import { CurrentSheet } from "@/components/current";
+import { CurrentSheet, InlineNotice } from "@/components/current";
 
 // LLM provider and model options (mirrored from LLMGenerateNode)
 const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
@@ -84,7 +84,7 @@ const getProviderIcon = (provider: ProviderType) => {
 interface ProjectSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (id: string, name: string, directoryPath: string) => void | boolean | Promise<void | boolean>;
+  onSave: (id: string, name: string, directoryPath: string) => boolean | Promise<boolean>;
   mode: "new" | "settings";
 }
 
@@ -185,10 +185,16 @@ export function ProjectSetupModal({
 
   // Canvas tab state
   const [localCanvasSettings, setLocalCanvasSettings] = useState<CanvasNavigationSettings>(canvasNavigationSettings);
+  const initializedModeRef = useRef<"new" | "settings" | null>(null);
 
   // Pre-fill when opening in settings mode
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) {
+      initializedModeRef.current = null;
+      return;
+    }
+    if (initializedModeRef.current === mode) return;
+    initializedModeRef.current = mode;
       // Reset to project tab when opening
       if (mode === "new") {
         setActiveTab("project");
@@ -232,7 +238,6 @@ export function ProjectSetupModal({
         .then((res) => res.json())
         .then((data: EnvStatusResponse) => setEnvStatus(data))
         .catch(() => setEnvStatus(null));
-    }
   }, [isOpen, mode, workflowName, saveDirectoryPath, useExternalImageStorage, providerSettings, canvasNavigationSettings]);
 
   const handleBrowse = async () => {
@@ -303,7 +308,15 @@ export function ProjectSetupModal({
       setUseExternalImageStorage(externalStorage);
       // Remember the base directory for next time
       setLastProjectBaseDir(directoryPath);
-      await onSave(id, name.trim(), fullProjectPath);
+      try {
+        const saved = await onSave(id, name.trim(), fullProjectPath);
+        if (!saved) {
+          setError("Failed to save project. Please try again.");
+        }
+      } catch (saveError) {
+        console.error("Failed to save project:", saveError);
+        setError("Failed to save project. Please try again.");
+      }
       setIsValidating(false);
     } catch (err) {
       setError(
@@ -502,7 +515,11 @@ export function ProjectSetupModal({
               </label>
             </div>
 
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && (
+              <InlineNotice tone="error" onDismiss={() => setError(null)}>
+                {error}
+              </InlineNotice>
+            )}
           </div>
         )}
 

@@ -596,6 +596,43 @@ describe("ProjectSetupModal", () => {
       await waitFor(() => expect(screen.getByText("Create")).toBeInTheDocument());
     });
 
+    it("preserves entered project context after a failed save and reuses it for retry", async () => {
+      let storeOverrides: Record<string, unknown> = {};
+      mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState(storeOverrides)));
+      const onSave = vi.fn()
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true);
+      const { rerender } = render(
+        <ProjectSetupModal isOpen onClose={vi.fn()} onSave={onSave} mode="new" />
+      );
+      fireEvent.change(screen.getByPlaceholderText("my-project"), {
+        target: { value: "Launch Film" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("/Users/username/projects/my-project"), {
+        target: { value: "/tmp/current" },
+      });
+
+      fireEvent.click(screen.getByText("Create"));
+      await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+      expect(await screen.findByRole("alert")).toHaveTextContent("Failed to save project. Please try again.");
+      storeOverrides = {
+        workflowName: "Launch Film",
+        workflowId: "mock-workflow-id",
+        saveDirectoryPath: "/tmp/current/Launch Film",
+      };
+      rerender(<ProjectSetupModal isOpen onClose={vi.fn()} onSave={onSave} mode="new" />);
+
+      expect(screen.getByPlaceholderText("my-project")).toHaveValue("Launch Film");
+      expect(screen.getByPlaceholderText("/Users/username/projects/my-project")).toHaveValue("/tmp/current");
+      fireEvent.click(screen.getByText("Create"));
+      await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
+      expect(onSave).toHaveBeenLastCalledWith(
+        "mock-workflow-id",
+        "Launch Film",
+        "/tmp/current/Launch Film"
+      );
+    });
+
     it("should show 'Validating...' while validating directory", async () => {
       let resolveValidation: ((value: unknown) => void) | undefined;
       mockFetch.mockImplementation((url: string) => {

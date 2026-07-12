@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectMenu } from "@/components/workspace/ProjectMenu";
 
@@ -12,17 +13,32 @@ vi.mock("@/store/workflowStore", () => ({
 }));
 
 vi.mock("@/components/ProjectSetupModal", () => ({
-  ProjectSetupModal: ({
+  ProjectSetupModal: function MockProjectSetupModal({
     isOpen,
     onSave,
   }: {
     isOpen: boolean;
-    onSave: (id: string, name: string, path: string) => void | Promise<void>;
-  }) => isOpen ? (
-    <button type="button" onClick={() => void onSave("new-project", "New Project", "/tmp/new-project")}>
-      Complete project setup
-    </button>
-  ) : null,
+    onSave: (id: string, name: string, path: string) => void | boolean | Promise<void | boolean>;
+  }) {
+    const [name, setName] = useState("New Project");
+    const [path, setPath] = useState("/tmp/new-project");
+    const [saveError, setSaveError] = useState<string | null>(null);
+    if (!isOpen) return null;
+    return (
+      <div role="dialog" aria-label="Project setup">
+        <label>Project name<input value={name} onChange={(event) => setName(event.target.value)} /></label>
+        <label>Project location<input value={path} onChange={(event) => setPath(event.target.value)} /></label>
+        {saveError && <div role="alert">{saveError}</div>}
+        <button type="button" onClick={async () => {
+          setSaveError(null);
+          const saved = await onSave("new-project", name, path);
+          if (saved === false) setSaveError("Failed to save project. Please try again.");
+        }}>
+          Complete project setup
+        </button>
+      </div>
+    );
+  },
 }));
 
 vi.mock("@/components/WorkflowBrowserModal", () => ({
@@ -130,8 +146,11 @@ describe("ProjectMenu version history integration", () => {
     expect(saveToFile).toHaveBeenCalledOnce();
   });
 
-  it("shows an inline error when the first project save returns false", async () => {
-    const saveToFile = vi.fn().mockResolvedValue(false);
+  it.each([
+    ["returns false", () => vi.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true)],
+    ["rejects", () => vi.fn().mockRejectedValueOnce(new Error("disk unavailable")).mockResolvedValueOnce(true)],
+  ])("keeps first-save context when saving %s and closes after a successful retry", async (_label, createSaveMock) => {
+    const saveToFile = createSaveMock();
     const setWorkflowMetadata = vi.fn();
     mockUseWorkflowStore.mockImplementation((selector) => selector(createState({
       workflowName: null,
@@ -143,12 +162,21 @@ describe("ProjectMenu version history integration", () => {
     render(<ProjectMenu />);
 
     fireEvent.click(screen.getByRole("button", { name: "Configure save location" }));
+    fireEvent.change(screen.getByLabelText("Project name"), { target: { value: "Launch Film" } });
+    fireEvent.change(screen.getByLabelText("Project location"), { target: { value: "/tmp/launch-film" } });
     fireEvent.click(screen.getByRole("button", { name: "Complete project setup" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Failed to save project. Please try again.");
-    expect(setWorkflowMetadata).toHaveBeenCalledWith("new-project", "New Project", "/tmp/new-project");
+    expect(screen.getByRole("dialog", { name: "Project setup" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Project name")).toHaveValue("Launch Film");
+    expect(screen.getByLabelText("Project location")).toHaveValue("/tmp/launch-film");
+    expect(setWorkflowMetadata).toHaveBeenCalledWith("new-project", "Launch Film", "/tmp/launch-film");
     expect(saveToFile).toHaveBeenCalledOnce();
-    expect(screen.queryByRole("button", { name: "Complete project setup" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Complete project setup" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Project setup" })).not.toBeInTheDocument());
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(saveToFile).toHaveBeenCalledTimes(2);
   });
 
   it("shows an inline error when a configured save rejects", async () => {
@@ -176,5 +204,21 @@ describe("ProjectMenu version history integration", () => {
     fireEvent.click(saveButton);
     await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
     expect(saveToFile).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears a stale open-folder error before a successful retry", async () => {
+    vi.spyOn(global, "fetch")
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) } as Response);
+    render(<ProjectMenu />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Project menu for Campaign Study" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Open project folder" }));
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Project menu for Campaign Study" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Open project folder" }));
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 });

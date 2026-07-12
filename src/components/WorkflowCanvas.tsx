@@ -2138,6 +2138,7 @@ export function WorkflowCanvas() {
           onSave={(id, name, directoryPath) => {
             setWorkflowMetadata(id, name, directoryPath);
             setShowNewProjectSetup(false);
+            return true;
           }}
           onClose={() => {
             setShowNewProjectSetup(false);

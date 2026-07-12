@@ -129,14 +129,19 @@ export function ProjectMenu() {
     setProjectModalMode(mode);
     setShowProjectModal(true);
   });
-  const attemptSave = async (): Promise<boolean> => {
+  const attemptSave = async (showHostRecovery = true): Promise<boolean> => {
+    setRecoveryError(null);
     try {
       const saved = await saveToFile();
-      setRecoveryError(saved ? null : "Failed to save project. Please try again.");
+      if (!saved && showHostRecovery) {
+        setRecoveryError("Failed to save project. Please try again.");
+      }
       return saved;
     } catch (error) {
       console.error("Failed to save project:", error);
-      setRecoveryError("Failed to save project. Please try again.");
+      if (showHostRecovery) {
+        setRecoveryError("Failed to save project. Please try again.");
+      }
       return false;
     }
   };
@@ -150,11 +155,13 @@ export function ProjectMenu() {
   };
   const handleProjectSave = async (id: string, name: string, path: string) => {
     setWorkflowMetadata(id, name, path);
-    setShowProjectModal(false);
-    return attemptSave();
+    const saved = await attemptSave(false);
+    if (saved) setShowProjectModal(false);
+    return saved;
   };
   const handleOpenDirectory = async () => {
     if (!saveDirectoryPath) return;
+    setRecoveryError(null);
     try {
       const response = await fetch("/api/open-directory", {
         method: "POST",
