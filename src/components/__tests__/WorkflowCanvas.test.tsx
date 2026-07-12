@@ -38,8 +38,18 @@ const mockSetViewport = vi.fn();
 
 vi.mock("@xyflow/react", async () => {
   const actual = await vi.importActual("@xyflow/react");
+  const ActualReactFlow = (actual as { ReactFlow: React.ComponentType<Record<string, unknown>> }).ReactFlow;
   return {
     ...actual,
+    ReactFlow: (props: Record<string, unknown>) => (
+      <div
+        data-testid="react-flow-contract"
+        data-delete-key-code={props.deleteKeyCode === null ? "disabled" : JSON.stringify(props.deleteKeyCode)}
+        data-elements-selectable={String(props.elementsSelectable)}
+      >
+        <ActualReactFlow {...props} />
+      </div>
+    ),
     useReactFlow: () => ({
       screenToFlowPosition: mockScreenToFlowPosition,
       getViewport: mockGetViewport,
@@ -287,6 +297,20 @@ describe("WorkflowCanvas", () => {
       fireEvent.keyDown(window, { key: "Enter", metaKey: true });
 
       expect(mockExecuteWorkflow).not.toHaveBeenCalled();
+    });
+
+    it("disables React Flow destructive keyboard and selection handling while active", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({
+        nodes: [createMockNode("selected", "prompt", { selected: true })],
+        showQuickstart: true,
+      })));
+
+      render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
+
+      expect(screen.getByTestId("react-flow-contract")).toHaveAttribute("data-delete-key-code", "disabled");
+      expect(screen.getByTestId("react-flow-contract")).toHaveAttribute("data-elements-selectable", "false");
+      fireEvent.keyDown(document, { key: "Delete" });
+      expect(mockOnNodesChange).not.toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ type: "remove" })]));
     });
 
     it("should not show welcome modal when canvas has nodes", () => {

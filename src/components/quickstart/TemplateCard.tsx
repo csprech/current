@@ -17,6 +17,7 @@ interface TemplateCardProps {
   isLoading?: boolean;
   onUseWorkflow: () => void;
   disabled?: boolean;
+  showCategory?: boolean;
 }
 
 const CATEGORY_LABELS: Record<TemplateCategory, string> = {
@@ -39,6 +40,7 @@ export function TemplateCard({
   isLoading = false,
   onUseWorkflow,
   disabled = false,
+  showCategory = true,
 }: TemplateCardProps) {
   return (
     <div
@@ -106,14 +108,14 @@ export function TemplateCard({
           <h3 className="text-sm font-medium text-neutral-200 truncate">
             {template.name}
           </h3>
-          <span
+          {showCategory && <span
             className={`
               inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0
               ${CATEGORY_COLORS[template.category]}
             `}
           >
             {CATEGORY_LABELS[template.category]}
-          </span>
+          </span>}
         </div>
 
         {/* Description */}

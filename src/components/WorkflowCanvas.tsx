@@ -2152,23 +2152,26 @@ export function WorkflowCanvas() {
         edgeTypes={edgeTypes}
         isValidConnection={isValidConnection}
         fitView
-        deleteKeyCode={["Backspace", "Delete"]}
-        multiSelectionKeyCode="Shift"
+        deleteKeyCode={showQuickstart ? null : ["Backspace", "Delete"]}
+        multiSelectionKeyCode={showQuickstart ? null : "Shift"}
         selectionOnDrag={
-          canvasNavigationSettings.selectionMode === "altDrag" || canvasNavigationSettings.selectionMode === "shiftDrag"
+          showQuickstart ? false
+            : canvasNavigationSettings.selectionMode === "altDrag" || canvasNavigationSettings.selectionMode === "shiftDrag"
             ? false
             : canvasNavigationSettings.panMode === "always"
             ? false
             : isMacOS && !isModalOpen
         }
         selectionKeyCode={
-          isModalOpen ? null
+          showQuickstart || isModalOpen ? null
             : canvasNavigationSettings.selectionMode === "altDrag" ? "Alt"
             : canvasNavigationSettings.selectionMode === "shiftDrag" ? "Shift"
             : "Shift"
         }
         panOnDrag={
-          tutorialActive
+          showQuickstart
+            ? false
+            : tutorialActive
             ? false
             : isModalOpen
             ? false
@@ -2182,12 +2185,14 @@ export function WorkflowCanvas() {
         nodeDragThreshold={5}
         nodeClickDistance={5}
         zoomOnScroll={tutorialActive ? false : false}
-        zoomOnPinch={tutorialActive ? false : !isModalOpen}
+        zoomOnPinch={showQuickstart || tutorialActive ? false : !isModalOpen}
         minZoom={0.1}
         maxZoom={4}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         panActivationKeyCode={
-          tutorialActive
+          showQuickstart
+            ? null
+            : tutorialActive
             ? null
             : isModalOpen
             ? null
@@ -2195,9 +2200,9 @@ export function WorkflowCanvas() {
             ? "Space"
             : null
         }
-        nodesDraggable={!isModalOpen}
-        nodesConnectable={!isModalOpen}
-        elementsSelectable={!isModalOpen}
+        nodesDraggable={!showQuickstart && !isModalOpen}
+        nodesConnectable={!showQuickstart && !isModalOpen}
+        elementsSelectable={!showQuickstart && !isModalOpen}
         className="bg-neutral-900"
         proOptions={{ hideAttribution: true }}
         defaultEdgeOptions={{

@@ -1215,7 +1215,17 @@ body {
 .current-launchpad__intro .current-identity { margin-bottom: 42px; }
 .current-launchpad__eyebrow { margin: 0 0 16px; color: var(--current-blue); font-size: 11px; font-weight: 720; letter-spacing: 0.12em; text-transform: uppercase; }
 .current-launchpad__intro h1 { max-width: 520px; margin: 0; color: #24252a; font-size: clamp(42px, 4vw, 64px); font-weight: 620; letter-spacing: -0.052em; line-height: 0.98; }
-.current-launchpad__intro > p:last-child { max-width: 460px; margin: 26px 0 0; color: #73747c; font-size: 15px; line-height: 1.55; }
+.current-launchpad__description { max-width: 460px; margin: 26px 0 0; color: #73747c; font-size: 15px; line-height: 1.55; }
+.current-launchpad__recents { margin-top: 38px; }
+.current-launchpad__recents h2 { margin: 0 0 9px; color: #777881; font-size: 10px; font-weight: 720; letter-spacing: 0.11em; text-transform: uppercase; }
+.current-launchpad__recents > div { display: grid; gap: 4px; }
+.current-launchpad__recents button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 12px; border: 0; border-radius: 10px; color: #3a3b42; background: transparent; text-align: left; }
+.current-launchpad__recents button:hover { background: rgba(255,255,255,0.72); }
+.current-launchpad__recents button:focus-visible { outline: none; box-shadow: var(--current-focus); }
+.current-launchpad__recents button strong,
+.current-launchpad__recents button small { display: block; }
+.current-launchpad__recents button strong { max-width: 300px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.current-launchpad__recents button small { margin-top: 2px; color: #8a8b93; font-size: 10px; }
 
 .current-launchpad__routes { display: grid; gap: 10px; }
 .current-launchpad__route {
@@ -1275,6 +1285,36 @@ body {
 .current-quickstart-view input:focus,
 .current-quickstart-view textarea:focus { border-color: var(--current-blue); box-shadow: var(--current-focus); }
 .current-template-card { border-color: var(--current-divider); background: rgba(255,255,255,0.74); }
+.current-template-explorer { min-height: 0; flex: 1; display: grid; grid-template-columns: 230px minmax(0, 1fr); overflow: hidden; }
+.current-template-explorer aside { padding: 20px; border-right: 1px solid var(--current-divider); background: rgba(244,245,247,0.74); }
+.current-template-explorer aside input { width: 100%; padding: 10px 11px; border: 1px solid var(--current-divider); border-radius: 10px; font-size: 12px; }
+.current-template-explorer aside > h3 { margin: 24px 0 9px; color: #7c7d85; font-size: 10px; font-weight: 720; letter-spacing: 0.1em; text-transform: uppercase; }
+.current-template-explorer__outcomes { display: grid; gap: 6px; }
+.current-template-explorer__outcomes button { display: block; padding: 10px; border: 1px solid transparent; border-radius: 10px; color: #55565e; background: transparent; text-align: left; }
+.current-template-explorer__outcomes button:hover { background: white; }
+.current-template-explorer__outcomes button[aria-pressed="true"] { color: var(--current-blue); border-color: color-mix(in srgb, var(--current-blue) 22%, transparent); background: color-mix(in srgb, var(--current-blue) 8%, white); }
+.current-template-explorer__outcomes strong,
+.current-template-explorer__outcomes span { display: block; }
+.current-template-explorer__outcomes strong { font-size: 12px; }
+.current-template-explorer__outcomes span { margin-top: 2px; color: #8b8c94; font-size: 9px; }
+.current-template-explorer__results { min-height: 0; overflow-y: auto; padding: 24px; }
+.current-template-explorer__results section + section { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--current-divider); }
+.current-template-explorer__results section > h3 { margin: 0 0 12px; color: #696a73; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.current-template-explorer__empty { padding: 80px 20px; color: #85868e; text-align: center; }
+
+.current-workflow-proposal { display: grid; gap: 18px; }
+.current-workflow-proposal__summary { padding: 20px; border: 1px solid color-mix(in srgb, var(--current-blue) 18%, var(--current-divider)); border-radius: 14px; background: linear-gradient(135deg, color-mix(in srgb, var(--current-blue) 7%, white), color-mix(in srgb, var(--current-aqua) 6%, white)); }
+.current-workflow-proposal__summary > span { color: var(--current-blue); font-size: 9px; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
+.current-workflow-proposal__summary h3 { margin: 7px 0 6px; color: #303139; font-size: 20px; }
+.current-workflow-proposal__summary p,
+.current-workflow-proposal li p { margin: 0; color: #73747c; font-size: 12px; line-height: 1.5; }
+.current-workflow-proposal ol { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.current-workflow-proposal li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 11px 12px; border: 1px solid var(--current-divider); border-radius: 11px; background: white; }
+.current-workflow-proposal li > span { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; color: white; background: var(--current-blue); font-size: 10px; font-weight: 700; }
+.current-workflow-proposal li strong { color: #37383f; font-size: 12px; }
+.current-workflow-proposal__connections { padding: 14px; border-radius: 11px; background: #f1f2f5; }
+.current-workflow-proposal__connections h4 { margin: 0 0 6px; color: #6f7078; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+.current-workflow-proposal__connections p { margin: 3px 0; color: #55565e; font-size: 11px; }
 
 .current-ftux { position: relative; min-height: 360px; color: #303139; }
 .current-ftux__progress { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 12px; padding: 2px 2px 18px; border-bottom: 1px solid var(--current-divider); }

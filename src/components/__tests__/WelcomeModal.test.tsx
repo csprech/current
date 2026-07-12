@@ -138,8 +138,8 @@ describe("WelcomeModal", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Template Explorer")).toBeInTheDocument();
-        expect(screen.getByText("Quick Start")).toBeInTheDocument();
+        expect(screen.getByText("Browse templates")).toBeInTheDocument();
+        expect(screen.getByText("Featured workflows")).toBeInTheDocument();
       });
     });
 
@@ -175,7 +175,7 @@ describe("WelcomeModal", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Template Explorer")).toBeInTheDocument();
+        expect(screen.getByText("Browse templates")).toBeInTheDocument();
       });
 
       // Click back
@@ -273,11 +273,11 @@ describe("WelcomeModal", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Template Explorer")).toBeInTheDocument();
+        expect(screen.getByText("Browse templates")).toBeInTheDocument();
       });
 
       // Verify templates view is showing - the actual workflow selection is tested in QuickstartTemplatesView tests
-      expect(screen.getByText("Quick Start")).toBeInTheDocument();
+      expect(screen.getByText("Featured workflows")).toBeInTheDocument();
     });
 
     it("should show prompt view when navigating to vibe", () => {
@@ -293,7 +293,7 @@ describe("WelcomeModal", () => {
       fireEvent.click(screen.getByText("Describe a workflow"));
 
       expect(screen.getByText("Describe a workflow")).toBeInTheDocument();
-      expect(screen.getByText("Generate Workflow")).toBeInTheDocument();
+      expect(screen.getByText("Review workflow")).toBeInTheDocument();
     });
   });
 });

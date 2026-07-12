@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { WorkflowFile } from "@/store/workflowStore";
+import { useCallback, useState } from "react";
+import { CurrentButton, InlineNotice } from "@/components/current";
+import type { WorkflowFile } from "@/store/workflowStore";
+import type { WorkflowProposal } from "@/types/quickstart";
 import { QuickstartBackButton } from "./QuickstartBackButton";
 
 interface PromptWorkflowViewProps {
@@ -9,182 +11,121 @@ interface PromptWorkflowViewProps {
   onWorkflowGenerated: (workflow: WorkflowFile) => void;
 }
 
-export function PromptWorkflowView({
-  onBack,
-  onWorkflowGenerated,
-}: PromptWorkflowViewProps) {
+export function PromptWorkflowView({ onBack, onWorkflowGenerated }: PromptWorkflowViewProps) {
   const [description, setDescription] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [proposal, setProposal] = useState<WorkflowProposal | null>(null);
+  const [phase, setPhase] = useState<"editing" | "proposing" | "review" | "building">("editing");
   const [error, setError] = useState<string | null>(null);
 
-  const handleGenerate = useCallback(async () => {
-    if (!description || description.trim().length < 3) {
-      setError("Please describe your workflow (at least 3 characters)");
-      return;
-    }
-
+  const requestProposal = useCallback(async () => {
+    const value = description.trim();
+    if (value.length < 3) return;
     setError(null);
-    setIsGenerating(true);
+    setPhase("proposing");
+    try {
+      const response = await fetch("/api/quickstart/propose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: value }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success || !result.proposal) {
+        throw new Error(result.error || "Failed to prepare workflow proposal");
+      }
+      setProposal(result.proposal as WorkflowProposal);
+      setPhase("review");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Failed to prepare workflow proposal");
+      setPhase("editing");
+    }
+  }, [description]);
 
+  const buildWorkflow = useCallback(async () => {
+    if (!proposal) return;
+    setError(null);
+    setPhase("building");
     try {
       const response = await fetch("/api/quickstart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          description: description.trim(),
-          contentLevel: "full",
-        }),
+        body: JSON.stringify({ description: description.trim(), contentLevel: "full" }),
       });
-
       const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to generate workflow");
+      if (!response.ok || !result.success || !result.workflow) {
+        throw new Error(result.error || "Failed to build workflow");
       }
-
-      if (result.workflow) {
-        onWorkflowGenerated(result.workflow);
-      }
-    } catch (err) {
-      console.error("Prompt workflow error:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to generate workflow"
-      );
-    } finally {
-      setIsGenerating(false);
+      onWorkflowGenerated(result.workflow as WorkflowFile);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Failed to build workflow");
+      setPhase("review");
     }
-  }, [description, onWorkflowGenerated]);
+  }, [description, onWorkflowGenerated, proposal]);
 
-  const canGenerate = description.trim().length >= 3 && !isGenerating;
+  const busy = phase === "proposing" || phase === "building";
 
   return (
     <div className="current-quickstart-view flex flex-col h-full">
-      {/* Header */}
       <div className="px-6 py-4 border-b border-neutral-700 flex items-center gap-4">
-        <QuickstartBackButton onClick={onBack} disabled={isGenerating} />
+        <QuickstartBackButton onClick={phase === "review" ? () => setPhase("editing") : onBack} disabled={busy} />
         <h2 className="text-lg font-semibold text-neutral-100">
-          Describe a workflow
+          {phase === "review" || phase === "building" ? "Review workflow" : "Describe a workflow"}
         </h2>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Description Input */}
-        <div className="space-y-2">
-          <label className="text-xs font-medium text-neutral-400">
-            Describe your workflow
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-              setError(null);
-            }}
-            placeholder="e.g., Create product photography with consistent lighting and style from reference images..."
-            disabled={isGenerating}
-            rows={5}
-            className={`
-              w-full px-4 py-3 rounded-lg border bg-neutral-900/50 text-sm text-neutral-100
-              placeholder:text-neutral-500 resize-none
-              focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
-              ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}
-              border-neutral-700 hover:border-neutral-600
-            `}
-          />
-          <p className="text-xs text-neutral-400">
-            Describe what you want your workflow to accomplish. Be specific
-            about inputs, outputs, and any transformations.
-          </p>
-          <p className="text-xs text-neutral-400">
-            Note: This feature currently only works with Gemini models.
-          </p>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
-            <svg
-              className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-            <div className="flex-1">
-              <p className="text-sm text-red-400">{error}</p>
-              <button
-                onClick={() => setError(null)}
-                className="text-xs text-red-400/70 hover:text-red-400 mt-1"
-              >
-                Dismiss
-              </button>
-            </div>
+      <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        {phase === "editing" || phase === "proposing" ? (
+          <div className="space-y-2">
+            <label htmlFor="workflow-description" className="text-xs font-medium text-neutral-400">Describe your workflow</label>
+            <textarea
+              id="workflow-description"
+              value={description}
+              onChange={(event) => { setDescription(event.target.value); setError(null); }}
+              placeholder="e.g., Create product photography with consistent lighting and style from reference images..."
+              disabled={busy}
+              rows={6}
+              className="w-full px-4 py-3 rounded-lg border bg-neutral-900/50 text-sm text-neutral-100 placeholder:text-neutral-500 resize-none border-neutral-700"
+            />
+            <p className="text-xs text-neutral-400">Describe the inputs, transformations, and outcome. Current will prepare a plan for review before changing your canvas.</p>
           </div>
-        )}
+        ) : proposal ? (
+          <div className="current-workflow-proposal">
+            <div className="current-workflow-proposal__summary">
+              <span>{proposal.estimatedComplexity}</span>
+              <h3>{proposal.name}</h3>
+              <p>{proposal.description}</p>
+            </div>
+            <ol aria-label="Proposed workflow nodes">
+              {proposal.nodes.map((node, index) => (
+                <li key={node.id}>
+                  <span>{index + 1}</span>
+                  <div><strong>{node.suggestedTitle}</strong><p>{node.purpose}</p></div>
+                </li>
+              ))}
+            </ol>
+            {proposal.connections.length > 0 && (
+              <div className="current-workflow-proposal__connections">
+                <h4>Flow</h4>
+                {proposal.connections.map((connection) => <p key={`${connection.from}-${connection.to}`}>{connection.description}</p>)}
+              </div>
+            )}
+            {proposal.warnings?.map((warning) => <InlineNotice key={warning} tone="warning">{warning}</InlineNotice>)}
+          </div>
+        ) : null}
+
+        {error && <InlineNotice tone="error">{error}</InlineNotice>}
       </div>
 
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-neutral-700 flex justify-end bg-neutral-800/50">
-        <button
-          onClick={handleGenerate}
-          disabled={!canGenerate}
-          className={`
-            flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all
-            ${
-              canGenerate
-                ? "bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-500/20"
-                : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
-            }
-          `}
-        >
-          {isGenerating ? (
-            <>
-              <svg
-                className="w-4 h-4 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <span>Generating...</span>
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
-                />
-              </svg>
-              <span>Generate Workflow</span>
-            </>
-          )}
-        </button>
+      <div className="px-6 py-4 border-t border-neutral-700 flex justify-end gap-2 bg-neutral-800/50">
+        {phase === "review" || phase === "building" ? (
+          <>
+            <CurrentButton variant="secondary" onClick={() => setPhase("editing")} disabled={busy}>Edit description</CurrentButton>
+            <CurrentButton variant="primary" onClick={buildWorkflow} disabled={busy}>{phase === "building" ? "Building…" : "Build workflow"}</CurrentButton>
+          </>
+        ) : (
+          <CurrentButton variant="primary" onClick={requestProposal} disabled={description.trim().length < 3 || busy}>
+            {phase === "proposing" ? "Preparing…" : "Review workflow"}
+          </CurrentButton>
+        )}
       </div>
     </div>
   );

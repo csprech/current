@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { CurrentMark } from "@/components/current";
+import { useCallback, useMemo, useState } from "react";
+import { CurrentMark, InlineNotice } from "@/components/current";
 import { PromptWorkflowView } from "@/components/quickstart/PromptWorkflowView";
 import { TemplateExplorerView } from "@/components/quickstart/TemplateExplorerView";
 import { WorkflowBrowserView } from "@/components/quickstart/WorkflowBrowserView";
 import type { WorkflowFile } from "@/store/workflowStore";
 import type { QuickstartView } from "@/types/quickstart";
+import type { WorkflowSaveConfig } from "@/types";
+import { loadSaveConfigs } from "@/store/utils/localStorage";
 
 export interface LaunchpadProps {
   onNewCanvas: () => void;
@@ -40,9 +42,45 @@ const routes = [
   },
 ] as const;
 
+function getRecentProjects(): WorkflowSaveConfig[] {
+  try {
+    return Object.values(loadSaveConfigs())
+      .filter((config): config is WorkflowSaveConfig => Boolean(
+        config && typeof config.workflowId === "string" && typeof config.name === "string" &&
+        typeof config.directoryPath === "string" && config.directoryPath && typeof config.lastSavedAt === "number",
+      ))
+      .sort((a, b) => (b.lastSavedAt ?? 0) - (a.lastSavedAt ?? 0))
+      .slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
+function formatLastOpened(timestamp: number): string {
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(timestamp);
+}
+
 export function Launchpad({ onNewCanvas, onWorkflowGenerated }: LaunchpadProps) {
   const [currentView, setCurrentView] = useState<QuickstartView>("initial");
+  const [recentError, setRecentError] = useState<string | null>(null);
+  const [openingRecent, setOpeningRecent] = useState<string | null>(null);
+  const recentProjects = useMemo(getRecentProjects, []);
   const handleBack = useCallback(() => setCurrentView("initial"), []);
+
+  const openRecentProject = useCallback(async (project: WorkflowSaveConfig) => {
+    setOpeningRecent(project.workflowId);
+    setRecentError(null);
+    try {
+      const response = await fetch(`/api/workflow?path=${encodeURIComponent(project.directoryPath)}&load=true`);
+      const result = await response.json();
+      if (!response.ok || !result.success || !result.workflow) throw new Error(result.error || "Failed to open recent project");
+      onWorkflowGenerated(result.workflow as WorkflowFile, project.directoryPath);
+    } catch (caught) {
+      setRecentError(caught instanceof Error ? caught.message : "Failed to open recent project");
+    } finally {
+      setOpeningRecent(null);
+    }
+  }, [onWorkflowGenerated]);
 
   return (
     <main className="current-launchpad" aria-label="Current launchpad">
@@ -53,10 +91,33 @@ export function Launchpad({ onNewCanvas, onWorkflowGenerated }: LaunchpadProps) 
             <CurrentMark showWordmark />
             <p className="current-launchpad__eyebrow">Creative workflows in motion</p>
             <h1>Where will your next idea flow?</h1>
-            <p>
+            <p className="current-launchpad__description">
               Build and orchestrate image, video, audio, text, and 3D work on one
               continuous canvas.
             </p>
+            {recentProjects.length > 0 && (
+              <section className="current-launchpad__recents" aria-labelledby="recent-projects-title">
+                <h2 id="recent-projects-title">Recent projects</h2>
+                <div>
+                  {recentProjects.map((project) => {
+                    const lastOpened = formatLastOpened(project.lastSavedAt!);
+                    return (
+                      <button
+                        key={project.workflowId}
+                        type="button"
+                        aria-label={`${project.name}, Last opened ${lastOpened}`}
+                        onClick={() => openRecentProject(project)}
+                        disabled={openingRecent !== null}
+                      >
+                        <span><strong>{project.name}</strong><small>Last opened {lastOpened}</small></span>
+                        <span aria-hidden="true">›</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {recentError && <InlineNotice tone="error">{recentError}</InlineNotice>}
+              </section>
+            )}
           </header>
 
           <div className="current-launchpad__routes" aria-label="Start a project">
