@@ -27,6 +27,16 @@ export interface NodeStatusInput {
   complete?: boolean;
 }
 
+export interface NodeStatusModifiers {
+  running?: boolean;
+  error?: string | null;
+  skipped?: boolean;
+  locked?: boolean;
+  disabled?: boolean;
+  complete?: boolean;
+  detail?: string;
+}
+
 export type PresentedHandleType = HandleType | "generic";
 
 const HANDLE_PRESENTATIONS: Record<PresentedHandleType, HandlePresentation> = {
@@ -127,6 +137,64 @@ export function deriveNodeStatus(
   if (input.skipped) return { state: "skipped", label: "Skipped", detail: "Missing optional input" };
   if (input.complete) return { state: "complete", label: "Complete" };
   return { state: "idle", label: "Ready" };
+}
+
+const COMPLETION_FIELDS = [
+  "outputImage", "outputVideo", "outputAudio", "outputText", "outputGlb", "output3dUrl",
+  "image", "video", "audio", "audioFile", "glbUrl", "capturedImage", "sourceImage",
+  "prompt", "template", "items", "images", "videos", "frames", "gridImages", "results",
+] as const;
+
+function deriveNodeDetail(record: Record<string, unknown>, state: CurrentNodeState): string | undefined {
+  if (state === "running" && typeof record.progress === "number") return `${Math.round(record.progress)}%`;
+  if (record.outputImage || record.image) return "Image available";
+  if (record.outputVideo || record.video) return "Video available";
+  if (record.outputAudio || record.audioFile) return "Audio available";
+  if (record.outputText) return "Text available";
+  if (Array.isArray(record.rules)) return `${record.rules.length} rule${record.rules.length === 1 ? "" : "s"}`;
+  if (Array.isArray(record.switches)) return `${record.switches.length} branch${record.switches.length === 1 ? "" : "es"}`;
+  if (typeof record.activeBranch === "string") return `Branch ${record.activeBranch}`;
+  if (record.dimensions && typeof record.dimensions === "object") {
+    const dimensions = record.dimensions as Record<string, unknown>;
+    if (typeof dimensions.width === "number" && typeof dimensions.height === "number") {
+      return `${dimensions.width} × ${dimensions.height}`;
+    }
+  }
+  if (typeof record.duration === "number") return `${record.duration.toFixed(1)} s`;
+  if (typeof record.model === "string") {
+    return typeof record.provider === "string" ? `${record.provider} · ${record.model}` : record.model;
+  }
+  return undefined;
+}
+
+/** Normalize the heterogeneous legacy node payloads without changing store types. */
+export function deriveNodeStatusFromData(
+  data: unknown,
+  modifiers: NodeStatusModifiers = {}
+): { state: CurrentNodeState; label: string; detail?: string } {
+  const record = data && typeof data === "object" ? data as Record<string, unknown> : {};
+  const status = typeof record.status === "string" ? record.status.toLowerCase() : "";
+  const dataError = typeof record.error === "string" && record.error.trim() ? record.error : null;
+  const running = modifiers.running ?? Boolean(
+    record.isLoading || record.isProcessing || status === "loading" || status === "running" || status === "processing"
+  );
+  const complete = modifiers.complete ?? Boolean(
+    status === "complete" || status === "completed" || status === "success" ||
+    COMPLETION_FIELDS.some((field) => {
+      const value = record[field];
+      return Array.isArray(value) ? value.length > 0 : Boolean(value);
+    })
+  );
+  const result = deriveNodeStatus({
+    error: modifiers.error ?? (status === "error" ? dataError || "Operation failed" : dataError),
+    running,
+    locked: modifiers.locked ?? Boolean(record.locked || record.isLocked || record.isInLockedGroup),
+    disabled: modifiers.disabled ?? Boolean(record.disabled || record.isDisabled),
+    skipped: modifiers.skipped ?? Boolean(record.skipped || status === "skipped"),
+    complete,
+  });
+  const detail = modifiers.detail ?? result.detail ?? deriveNodeDetail(record, result.state);
+  return detail ? { ...result, detail } : result;
 }
 
 export function normalizeHandleType(handleId?: string | null): PresentedHandleType {

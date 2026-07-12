@@ -67,6 +67,7 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
       <BaseNode
         id={id}
         selected={selected}
+        nodeData={nodeData}
         hasError={nodeData.status === "error"}
         fullBleed
         aspectFitMedia={nodeData.sourceImage}
@@ -129,9 +130,7 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
         ) : (
           <div className="w-full h-full min-h-[112px] bg-neutral-900/40 flex flex-col items-center justify-center rounded-lg">
             {nodeData.status === "error" ? (
-              <span className="text-[10px] text-red-400 text-center px-2">
-                {nodeData.error || "Error"}
-              </span>
+              null
             ) : nodeData.status === "loading" ? (
               <svg className="w-4 h-4 animate-spin text-neutral-400" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />

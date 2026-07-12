@@ -218,6 +218,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
     <BaseNode
       id={id}
       selected={selected}
+      nodeData={nodeData}
       hasError={!!nodeData.error}
       minWidth={300}
       minHeight={220}

@@ -5,6 +5,8 @@ import { Node, NodeResizer, OnResize, useReactFlow } from "@xyflow/react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { isPanningRef, isDraggingNodeRef } from "@/components/WorkflowCanvas";
 import { getMediaDimensions, calculateAspectFitSize } from "@/utils/nodeDimensions";
+import { NodeStatusFooter } from "./NodeStatusFooter";
+import { deriveNodeStatusFromData } from "./nodePresentation";
 
 const DEFAULT_NODE_DIMENSION = 300;
 
@@ -34,6 +36,11 @@ interface BaseNodeProps {
   stateDetail?: string;
   /** Visible status treatment supplied by specialized nodes. */
   statusFooter?: ReactNode;
+  /** Legacy node payload, normalized into Current's explicit semantic states. */
+  nodeData?: unknown;
+  isLocked?: boolean;
+  isDisabled?: boolean;
+  isSkipped?: boolean;
 }
 
 /**
@@ -81,6 +88,10 @@ export function BaseNode({
   stateLabel,
   stateDetail,
   statusFooter,
+  nodeData,
+  isLocked = false,
+  isDisabled = false,
+  isSkipped = false,
 }: BaseNodeProps) {
   const currentNodeIds = useWorkflowStore((state) => state.currentNodeIds);
   const setHoveredNodeId = useWorkflowStore((state) => state.setHoveredNodeId);
@@ -296,15 +307,27 @@ export function BaseNode({
 
   const hasExpandedSettings = settingsExpanded && settingsPanel;
   const isRunning = isCurrentlyExecuting || isExecuting;
-  const nodeState = hasError ? "error" : isRunning ? "running" : selected ? "selected" : "idle";
-  const accessibleStateLabel = stateLabel ?? (hasError ? "Node error" : isRunning ? "Running" : null);
-  const stateDescription = accessibleStateLabel ? (
+  const semanticStatus = deriveNodeStatusFromData(nodeData, {
+    running: isRunning ? true : undefined,
+    error: hasError ? (nodeData && typeof nodeData === "object" && typeof (nodeData as Record<string, unknown>).error === "string"
+      ? (nodeData as Record<string, unknown>).error as string
+      : "Operation failed") : undefined,
+    locked: isLocked ? true : undefined,
+    disabled: isDisabled ? true : undefined,
+    skipped: isSkipped ? true : undefined,
+  });
+  const presentedStatus = {
+    ...semanticStatus,
+    label: stateLabel ?? semanticStatus.label,
+    detail: stateDetail ?? semanticStatus.detail,
+  };
+  const nodeState = semanticStatus.state === "idle" && selected ? "selected" : semanticStatus.state;
+  const customStateDescription = statusFooter && (stateLabel || stateDetail) ? (
     <span className="sr-only">
-      <span>{accessibleStateLabel}</span>
+      {stateLabel && <span>{stateLabel}</span>}
       {stateDetail && <span>{stateDetail}</span>}
     </span>
   ) : null;
-
   const materialClassName = `current-node ${selected ? "current-node--selected" : ""}`;
 
   return (
@@ -349,11 +372,11 @@ export function BaseNode({
         }}
       >
         <div ref={contentRef} style={{ contain: "layout style" }} className={contentClassName ?? (fullBleed ? "flex-1 min-h-0 relative" : "px-3 pb-4 flex-1 min-h-0 overflow-visible flex flex-col")}>{children}</div>
-        {!hasExpandedSettings && stateDescription}
-        {!hasExpandedSettings && statusFooter}
+        {!hasExpandedSettings && customStateDescription}
+        {!hasExpandedSettings && (statusFooter ?? <NodeStatusFooter {...presentedStatus} />)}
       </div>
-      {hasExpandedSettings && stateDescription}
-      {hasExpandedSettings && statusFooter}
+      {hasExpandedSettings && customStateDescription}
+      {hasExpandedSettings && (statusFooter ?? <NodeStatusFooter {...presentedStatus} />)}
       {settingsPanel && (
         <div ref={settingsPanelRef}>
           {settingsPanel}

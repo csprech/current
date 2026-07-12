@@ -69,6 +69,13 @@ describe("LLMGenerateNode", () => {
   });
 
   describe("Basic Rendering", () => {
+    it("uses the Current chassis and exposes semantic state", () => {
+      const { container } = render(<TestWrapper><LLMGenerateNode {...createNodeProps()} /></TestWrapper>);
+      expect(container.querySelector(".iris-card")).not.toBeInTheDocument();
+      expect(screen.getByTestId("current-node")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Ready");
+    });
+
     it("should render text input handle on left", () => {
       const { container } = render(
         <TestWrapper>

@@ -30,9 +30,9 @@ describe("SettingsTabBar", () => {
     const primaryTab = screen.getByText("Nano Banana");
     const fallbackTab = screen.getByText("Flux Dev");
 
-    // Active tab should have bg-neutral-700 class
-    expect(primaryTab.className).toContain("bg-neutral-700");
-    expect(fallbackTab.className).not.toContain("bg-neutral-700");
+    expect(screen.getByRole("tablist")).toHaveClass("current-settings-tabs");
+    expect(primaryTab).toHaveAttribute("aria-selected", "true");
+    expect(fallbackTab).toHaveAttribute("aria-selected", "false");
   });
 
   it("calls onTabChange when clicking inactive tab", () => {

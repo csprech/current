@@ -92,6 +92,7 @@ export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
       <BaseNode
         id={id}
         selected={selected}
+        nodeData={nodeData}
         isExecuting={isRunning}
         contentClassName="flex-1 min-h-0 relative"
         className="min-w-[200px]"

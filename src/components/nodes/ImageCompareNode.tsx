@@ -68,6 +68,7 @@ export function ImageCompareNode({
     <BaseNode
       id={id}
       selected={selected}
+      nodeData={nodeData}
       className="min-w-[200px]"
     >
       {/* Two labeled image input handles */}

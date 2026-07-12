@@ -180,6 +180,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
       <BaseNode
         id={id}
         selected={selected}
+        nodeData={nodeData}
         className="min-w-[200px]"
       >
         <Handle

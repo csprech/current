@@ -350,6 +350,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
       <BaseNode
         id={id}
         selected={selected}
+        nodeData={nodeData}
         minWidth={500}
         minHeight={280}
       >
@@ -372,6 +373,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
       <BaseNode
         id={id}
         selected={selected}
+        nodeData={nodeData}
         minWidth={500}
         minHeight={280}
       >
@@ -408,6 +410,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
     <BaseNode
       id={id}
       selected={selected}
+      nodeData={nodeData}
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       minWidth={500}

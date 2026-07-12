@@ -159,12 +159,18 @@ export function GroupNode({ id, data, selected }: NodeProps<GroupNodeType>) {
         handleClassName="!w-3 !h-3 !bg-neutral-500/50 !border-neutral-400 hover:!bg-neutral-400"
       />
       <div
-        className="w-full h-full rounded-xl overflow-hidden"
+        className="current-node w-full h-full rounded-xl overflow-hidden"
+        data-testid="current-node"
+        data-state={group.locked ? "locked" : selected ? "selected" : "idle"}
+        data-selected={String(selected)}
         style={{
           backgroundColor: `${bgColor}60`,
           border: `1px solid ${bgColor}`,
         }}
       >
+        <span className="sr-only" role="status" aria-live="polite">
+          {group.locked ? "Locked" : "Ready"}
+        </span>
         {/* Header */}
         <div
           className="flex items-center gap-2 px-3 h-8 cursor-grab active:cursor-grabbing select-none"
@@ -201,7 +207,7 @@ export function GroupNode({ id, data, selected }: NodeProps<GroupNodeType>) {
               title="Change color"
             />
             {showColorPicker && (
-              <div className="absolute top-full right-0 mt-1 p-2 iris-glass rounded-lg shadow-xl grid grid-cols-4 gap-1.5 z-50">
+              <div className="current-popover !min-w-0 top-full right-0 mt-1 p-2 grid grid-cols-4 gap-1.5">
                 {COLOR_OPTIONS.map(({ color, label }) => (
                   <button
                     key={color}

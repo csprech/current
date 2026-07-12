@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { HandleType, NodeType } from "@/types";
 import {
   deriveNodeStatus,
+  deriveNodeStatusFromData,
   getHandlePresentation,
   getMinimapColor,
   getNodeRole,
@@ -65,5 +66,16 @@ describe("nodePresentation", () => {
     });
     expect(deriveNodeStatus({ complete: true })).toEqual({ state: "complete", label: "Complete" });
     expect(deriveNodeStatus({})).toEqual({ state: "idle", label: "Ready" });
+  });
+
+  it("normalizes legacy node data into explicit Current states", () => {
+    expect(deriveNodeStatusFromData({ status: "loading" })).toMatchObject({ state: "running" });
+    expect(deriveNodeStatusFromData({ status: "error", error: "Provider unavailable" })).toEqual({
+      state: "error", label: "Error", detail: "Provider unavailable",
+    });
+    expect(deriveNodeStatusFromData({ outputImage: "data:image/png;base64,x" })).toMatchObject({ state: "complete" });
+    expect(deriveNodeStatusFromData({}, { locked: true })).toMatchObject({ state: "locked" });
+    expect(deriveNodeStatusFromData({}, { disabled: true })).toMatchObject({ state: "disabled" });
+    expect(deriveNodeStatusFromData({}, { skipped: true })).toMatchObject({ state: "skipped" });
   });
 });

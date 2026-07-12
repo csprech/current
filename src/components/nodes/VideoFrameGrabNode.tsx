@@ -45,6 +45,7 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
     <BaseNode
       id={id}
       selected={selected}
+      nodeData={nodeData}
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       minWidth={320}

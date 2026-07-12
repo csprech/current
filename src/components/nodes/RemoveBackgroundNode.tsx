@@ -51,6 +51,7 @@ export function RemoveBackgroundNode({ id, data, selected }: NodeProps<RemoveBac
     <BaseNode
       id={id}
       selected={selected}
+      nodeData={nodeData}
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       minWidth={320}

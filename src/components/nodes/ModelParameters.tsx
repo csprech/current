@@ -244,7 +244,7 @@ function ModelParametersInner({
   }
 
   return (
-    <div className="shrink-0">
+    <div className="current-node-parameters shrink-0">
       {error ? (
         <span className="text-[9px] text-red-400">{error}</span>
       ) : isLoading ? (

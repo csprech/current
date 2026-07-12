@@ -570,6 +570,7 @@
 .current-node-status[data-state="complete"] .current-node-status__indicator { background: var(--current-success); }
 .current-node-status[data-state="skipped"] .current-node-status__indicator,
 .current-node-status[data-state="locked"] .current-node-status__indicator { background: var(--current-warning); }
+.current-node-status[data-state="disabled"] .current-node-status__indicator { background: var(--current-graphite); }
 .current-node-status[data-state="error"] .current-node-status__indicator { background: var(--current-danger); }
 .current-node-status button {
   padding: 0.25rem 0.45rem;
@@ -582,6 +583,41 @@
 }
 .current-node-status button:focus-visible { outline: none; box-shadow: var(--current-focus); }
 .current-node > .current-node-status:last-child { border-radius: 0 0 0.75rem 0.75rem; }
+
+.current-settings-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.125rem;
+  margin-bottom: 0.5rem;
+  padding: 0.125rem;
+  border: 1px solid var(--current-divider);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--current-canvas) 78%, transparent);
+}
+.current-settings-tabs__tab {
+  padding: 0.3rem 0.45rem;
+  border: 0;
+  border-radius: 0.375rem;
+  color: var(--current-graphite);
+  background: transparent;
+  font-size: 0.625rem;
+  cursor: pointer;
+}
+.current-settings-tabs__tab[aria-selected="true"] {
+  color: var(--current-inspector);
+  background: var(--current-paper);
+  box-shadow: 0 1px 3px rgb(37 38 43 / 10%);
+}
+.current-settings-tabs__tab:focus-visible { outline: none; box-shadow: var(--current-focus); }
+.current-node-parameters label { color: var(--current-graphite); }
+.current-node-parameters input,
+.current-node-parameters select {
+  color: var(--current-inspector);
+  background: var(--current-paper);
+  border-color: var(--current-divider);
+}
+.current-node-parameters input:focus-visible,
+.current-node-parameters select:focus-visible { outline: none; box-shadow: var(--current-focus); }
 
 .current-node-header {
   min-height: 1.75rem;

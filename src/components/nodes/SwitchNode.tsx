@@ -117,9 +117,9 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
     <BaseNode
       id={id}
       selected={selected}
+      nodeData={nodeData}
       minWidth={220}
       minHeight={minHeight}
-      className="bg-violet-950/80 border-violet-600"
     >
       {/* Input handle (left) */}
       {nodeData.inputType ? (

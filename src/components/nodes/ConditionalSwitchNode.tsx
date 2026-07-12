@@ -208,9 +208,9 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
     <BaseNode
       id={id}
       selected={selected}
+      nodeData={nodeData}
       minWidth={260}
       minHeight={minHeight}
-      className="bg-teal-950/80 border-teal-600"
     >
       {/* Clear button - floating absolute positioned */}
       {showClearButton && (

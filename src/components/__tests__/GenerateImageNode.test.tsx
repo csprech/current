@@ -151,6 +151,13 @@ describe("GenerateImageNode", () => {
   });
 
   describe("Basic Rendering", () => {
+    it("uses the Current chassis and exposes semantic state", () => {
+      const { container } = render(<TestWrapper><GenerateImageNode {...createNodeProps()} /></TestWrapper>);
+      expect(container.querySelector(".iris-card")).not.toBeInTheDocument();
+      expect(screen.getByTestId("current-node")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Ready");
+    });
+
     it("should render image and text input handles", () => {
       const { container } = render(
         <TestWrapper>

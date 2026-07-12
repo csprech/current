@@ -514,6 +514,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
     <BaseNode
       id={id}
       selected={selected}
+      nodeData={nodeData}
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       fullBleed
@@ -752,7 +753,6 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-white text-xs font-medium">Generation failed</span>
                 <span className="text-white/70 text-[10px]">See toast for details</span>
               </div>
             )}
@@ -854,9 +854,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                 />
               </svg>
             ) : nodeData.status === "error" ? (
-              <span className="text-[10px] text-red-400 text-center px-2">
-                {nodeData.error || "Failed"}
-              </span>
+              nodeData.error ? null : <span className="text-[10px] text-red-400">Failed</span>
             ) : (
               <span className="text-neutral-500 text-[10px]">
                 Run to generate

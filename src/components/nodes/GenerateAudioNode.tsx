@@ -254,6 +254,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
       <BaseNode
         id={id}
         selected={selected}
+        nodeData={nodeData}
         settingsExpanded={inlineParametersEnabled && isParamsExpanded}
         isExecuting={isRunning}
         hasError={nodeData.status === "error"}
@@ -446,20 +447,6 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          </div>
-        )}
-
-        {/* Status indicators */}
-        {nodeData.status === "loading" && (
-          <div className="flex items-center gap-2 mt-2">
-            <div className="animate-spin w-3 h-3 border-2 border-violet-500 border-t-transparent rounded-full" />
-            <span className="text-xs text-neutral-400">Generating audio...</span>
-          </div>
-        )}
-
-        {nodeData.status === "error" && nodeData.error && (
-          <div className="mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-400">
-            {nodeData.error}
           </div>
         )}
 

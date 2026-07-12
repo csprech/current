@@ -82,6 +82,13 @@ describe("ImageInputNode", () => {
   };
 
   describe("Basic Rendering", () => {
+    it("uses the Current chassis and exposes semantic state", () => {
+      const { container } = render(<TestWrapper><ImageInputNode {...defaultProps} /></TestWrapper>);
+      expect(container.querySelector(".iris-card")).not.toBeInTheDocument();
+      expect(screen.getByTestId("current-node")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Ready");
+    });
+
     it("should render drop zone when no image is set", () => {
       render(
         <TestWrapper>

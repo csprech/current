@@ -135,7 +135,7 @@ describe("BaseNode", () => {
 
       const nodeDiv = screen.getByTestId("current-node");
       expect(nodeDiv).toHaveAttribute("data-state", "error");
-      expect(screen.getByText("Node error")).toBeInTheDocument();
+      expect(screen.getByText("Error")).toBeInTheDocument();
     });
 
     it("renders an explicit state label, detail, and specialized footer", () => {
