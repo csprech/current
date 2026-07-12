@@ -17,6 +17,8 @@ const LEGACY_TERMS = [
 // their named Current variables; user-authored color values are data, not source chrome.
 const RETIRED_CATEGORY_ACCENTS = /(?:lime|violet|purple|pink|fuchsia|orange|yellow|green|emerald|amber|cyan|teal|rose)-(?:[1-9]00|50)/i;
 const RETIRED_HARDCODED_ACCENTS = /#bef264|rgb\(167,\s*139,\s*250\)|rgb\(251,\s*191,\s*36\)/i;
+const UNDERSIZED_BUTTON = /(?:^|\s)(?:w|h)-(?:[1-6])(?:\s|$)/;
+const CURRENT_ACTION_TARGET = /current-(?:icon-button|media-action|toolbar-action)/;
 
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
@@ -58,5 +60,48 @@ describe("Current brand source audit", () => {
       });
 
     expect(matches).toEqual([]);
+  });
+
+  it("gives every explicitly small icon button a named Current action target", () => {
+    const componentRoot = join(ROOT, "src/components");
+    const violations = sourceFiles(componentRoot)
+      .filter((path) => path.endsWith(".tsx") && !path.includes("/__tests__/"))
+      .flatMap((path) => {
+        const source = readFileSync(path, "utf8");
+        return Array.from(source.matchAll(/<button\b[\s\S]*?<\/button>/g)).flatMap((match) => {
+          const block = match[0];
+          const firstIcon = block.indexOf("<svg");
+          if (firstIcon < 0) return [];
+          const controlMarkup = block.slice(0, firstIcon);
+          if (!UNDERSIZED_BUTTON.test(controlMarkup)) return [];
+          const isNamed = /aria-label\s*=/.test(controlMarkup);
+          const usesCurrentTarget = CURRENT_ACTION_TARGET.test(controlMarkup);
+          if (isNamed && usesCurrentTarget) return [];
+          const line = source.slice(0, match.index).split("\n").length;
+          return [`${relative(ROOT, path)}:${line}`];
+        });
+      });
+
+    expect(violations).toEqual([]);
+  });
+
+  it("does not use title as the accessible name for icon controls", () => {
+    const componentRoot = join(ROOT, "src/components");
+    const violations = sourceFiles(componentRoot)
+      .filter((path) => path.endsWith(".tsx") && !path.includes("/__tests__/"))
+      .flatMap((path) => {
+        const source = readFileSync(path, "utf8");
+        return Array.from(source.matchAll(/<button\b[\s\S]*?<\/button>/g)).flatMap((match) => {
+          const block = match[0];
+          const firstIcon = block.indexOf("<svg");
+          if (firstIcon < 0) return [];
+          const controlMarkup = block.slice(0, firstIcon);
+          if (!/title\s*=/.test(controlMarkup) || /aria-label\s*=/.test(controlMarkup)) return [];
+          const line = source.slice(0, match.index).split("\n").length;
+          return [`${relative(ROOT, path)}:${line}`];
+        });
+      });
+
+    expect(violations).toEqual([]);
   });
 });

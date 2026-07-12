@@ -153,7 +153,7 @@ function HistorySidebar({
           <button
             onClick={onClose}
             aria-label="Close image history"
-            className="w-5 h-5 rounded hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
+            className="current-toolbar-action"
             title="Close"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -309,8 +309,10 @@ export function GlobalImageHistory({ embedded = false }: { embedded?: boolean })
       <button
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={`Open image history, ${history.length} ${history.length === 1 ? "image" : "images"}`}
+        aria-expanded={isOpen}
         className={`
-          relative w-8 h-8 rounded-lg flex items-center justify-center
+          current-icon-button relative rounded-lg
           bg-neutral-800 hover:bg-neutral-700 border border-neutral-600
           text-neutral-400 hover:text-neutral-100
           shadow-lg transition-colors

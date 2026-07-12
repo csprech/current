@@ -148,7 +148,8 @@ export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
             )}
             <button
               onClick={handleDownload}
-              className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white text-xs rounded transition-colors flex items-center gap-1"
+              aria-label="Download output"
+              className="current-media-action current-media-action--overlay absolute top-2 right-2"
               title="Download"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

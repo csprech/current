@@ -209,6 +209,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
             </span>
             <button
               onClick={handleExtractToInputNodes}
+              aria-label="Extract each gallery item as an input node"
               className="nodrag nopan flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
               title="Extract each item as an input node"
             >
@@ -289,7 +290,8 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
               {/* Close button */}
               <button
                 onClick={closeLightbox}
-                className="absolute top-4 right-4 w-8 h-8 bg-white/10 hover:bg-white/20 rounded text-white text-sm transition-colors flex items-center justify-center"
+                aria-label="Close gallery preview"
+                className="current-media-action current-media-action--overlay absolute top-4 right-4"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -322,6 +324,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
               {lightboxIndex > 0 && (
                 <button
                   onClick={() => navigateLightbox("prev")}
+                  aria-label="Previous gallery item"
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors flex items-center justify-center"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -334,6 +337,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
               {lightboxIndex < displayMedia.length - 1 && (
                 <button
                   onClick={() => navigateLightbox("next")}
+                  aria-label="Next gallery item"
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors flex items-center justify-center"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -501,7 +501,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                         e.stopPropagation();
                         commentNavigation.onPrevious();
                       }}
-                      className="nodrag nopan w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
+                      className="current-toolbar-action nodrag nopan"
                       title="Previous comment"
                       aria-label="Previous comment"
                     >
@@ -517,7 +517,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                         e.stopPropagation();
                         commentNavigation.onNext();
                       }}
-                      className="nodrag nopan w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
+                      className="current-toolbar-action nodrag nopan"
                       title="Next comment"
                       aria-label="Next comment"
                     >

@@ -172,7 +172,8 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
           />
           <button
             onClick={() => updateNodeData(id, { outputVideo: null, status: "idle" })}
-            className="absolute top-1 right-1 w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
+            aria-label="Clear eased video"
+            className="current-media-action current-media-action--overlay absolute top-1 right-1"
             title="Clear video"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

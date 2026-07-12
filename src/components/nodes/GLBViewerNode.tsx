@@ -433,8 +433,10 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
                 </span>
                 <button
                   onClick={() => setAutoRotate(!autoRotate)}
+                  aria-label={autoRotate ? "Stop auto-rotate" : "Start auto-rotate"}
+                  aria-pressed={autoRotate}
                   title={autoRotate ? "Stop auto-rotate" : "Auto-rotate"}
-                  className={`p-0.5 rounded transition-colors ${
+                  className={`current-media-action ${
                     autoRotate
                       ? "text-[var(--current-blue)] bg-[color-mix(in_srgb,var(--current-blue)_10%,transparent)]"
                       : "text-neutral-500 hover:text-neutral-300"
@@ -449,6 +451,7 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
               <div className="flex items-center gap-1 shrink-0 pointer-events-auto">
                 <button
                   onClick={handleCapture}
+                  aria-label="Capture current 3D view as image"
                   title="Capture current view as image"
                   className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium text-neutral-300 hover:text-neutral-100 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors"
                 >
@@ -460,8 +463,9 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
                 </button>
                 <button
                   onClick={handleRemove}
+                  aria-label="Remove 3D model"
                   title="Remove model"
-                  className="p-0.5 text-neutral-500 hover:text-red-400 rounded transition-colors"
+                  className="current-media-action text-neutral-500 hover:text-red-400"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

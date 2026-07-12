@@ -157,7 +157,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
           <button
             onClick={() => downloadMedia(nodeData.video!, "video")}
             aria-label="Download video"
-            className="absolute top-2 right-10 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all flex items-center justify-center"
+            className="current-media-action current-media-action--overlay absolute top-2 right-10"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -166,7 +166,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
           <button
             onClick={handleRemove}
             aria-label="Remove video"
-            className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-red-600/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 focus:ring-1 focus:ring-red-400 transition-all flex items-center justify-center"
+            className="current-media-action current-media-action--overlay absolute top-2 right-1"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

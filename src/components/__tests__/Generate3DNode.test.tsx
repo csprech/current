@@ -182,6 +182,18 @@ describe("Generate3DNode", () => {
       expect(screen.getByText("Connect to 3D Viewer")).toBeInTheDocument();
     });
 
+    it("should expose the clear action as a named Current media control", () => {
+      render(
+        <TestWrapper>
+          <Generate3DNode {...createNodeProps({ output3dUrl: "https://example.com/model.glb" })} />
+        </TestWrapper>
+      );
+
+      expect(screen.getByRole("button", { name: "Clear 3D model" })).toHaveClass(
+        "current-media-action"
+      );
+    });
+
     it("should show error message when status is error", () => {
       render(
         <TestWrapper>

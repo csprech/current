@@ -2317,6 +2317,7 @@ export function WorkflowCanvas() {
                       ? "text-blue-400 border-blue-600/60 hover:text-blue-200"
                       : "text-neutral-500 border-neutral-600 hover:text-neutral-200"
                   }`}
+                  aria-label={hasFallback ? `Change fallback model, currently ${fallbackName}` : "Set fallback model"}
                   title={hasFallback ? `Fallback: ${fallbackName}` : "Set fallback model (runs if primary fails)"}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

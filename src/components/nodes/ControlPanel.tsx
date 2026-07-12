@@ -1005,6 +1005,7 @@ function EaseCurveControls({ node }: { node: Node }) {
                 key={name}
                 role="menuitem"
                 onClick={() => handleSelectEasing(name)}
+                aria-label={`Use ${name} easing preset`}
                 className="nodrag nopan p-1 bg-neutral-900 hover:bg-neutral-700 rounded flex flex-col items-center gap-1 transition-colors"
                 title={name}
               >
@@ -1104,7 +1105,8 @@ function ConditionalSwitchControls({ node }: { node: Node }) {
             {nodeData.rules.length > 1 && (
               <button
                 onClick={() => handleDelete(rule.id)}
-                className="nodrag nopan text-neutral-500 hover:text-red-400"
+                aria-label={`Delete ${rule.label || `rule ${index + 1}`}`}
+                className="current-media-action nodrag nopan text-neutral-500 hover:text-red-400"
                 title="Delete rule"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

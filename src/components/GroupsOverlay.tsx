@@ -348,7 +348,8 @@ function GroupControls({ groupId, zoom }: GroupControlsProps) {
             <div className="relative">
               <button
                 onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-                className="w-6 h-6 rounded-md flex flex-col items-center justify-center gap-[2px] hover:bg-white/20 transition-colors"
+                aria-label="Group options"
+                className="current-icon-button flex-col gap-[2px] hover:bg-white/20"
                 title="Group options"
               >
                 <div className="w-[3px] h-[3px] rounded-full bg-white/70" />
@@ -384,15 +385,16 @@ function GroupControls({ groupId, zoom }: GroupControlsProps) {
                             <button
                               key={color}
                               onClick={() => handleColorChange(color)}
-                              className={`absolute w-6 h-6 rounded-full border-2 transition-[transform,border-color] duration-150 hover:scale-125 ${
+                              aria-label={`Set group color to ${label}`}
+                              className={`current-media-action absolute rounded-full border-2 transition-[transform,border-color] duration-150 hover:scale-125 ${
                                 group.color === color
                                   ? "border-white"
                                   : "border-transparent hover:border-white/50"
                               }`}
                               style={{
                                 backgroundColor: PICKER_PREVIEW_COLORS[color],
-                                left: finalX - 12,
-                                top: finalY - 12,
+                                left: finalX - 16,
+                                top: finalY - 16,
                                 animation: `colorFanIn-${index} 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
                                 animationDelay: `${index * 0.025}s`,
                                 opacity: 0,
@@ -403,14 +405,14 @@ function GroupControls({ groupId, zoom }: GroupControlsProps) {
                                 @keyframes colorFanIn-${index} {
                                   0% {
                                     opacity: 0;
-                                    left: -12px;
-                                    top: -12px;
+                                    left: -16px;
+                                    top: -16px;
                                     transform: scale(0.3);
                                   }
                                   100% {
                                     opacity: 1;
-                                    left: ${finalX - 12}px;
-                                    top: ${finalY - 12}px;
+                                    left: ${finalX - 16}px;
+                                    top: ${finalY - 16}px;
                                     transform: scale(1);
                                   }
                                 }

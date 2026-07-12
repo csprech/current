@@ -88,6 +88,7 @@ function AssetCell({
       draggable={isImage && !!dataUrl}
       onDragStart={(e) => dataUrl && onDragStart(e, asset, dataUrl)}
       onClick={() => dataUrl && onOpen(asset, dataUrl)}
+      aria-label={`Open asset ${asset.filename}`}
       className="relative aspect-square rounded-md overflow-hidden border border-neutral-700 hover:border-blue-500 bg-neutral-900 transition-colors group"
       title={`${asset.filename}\n${formatSize(asset.size)}${isImage ? "\nDrag onto canvas" : ""}`}
     >
@@ -280,7 +281,7 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
                 <button
                   onClick={() => setIsOpen(false)}
                   aria-label="Close asset library"
-                  className="w-5 h-5 rounded hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
+                  className="current-toolbar-action"
                   title="Close"
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

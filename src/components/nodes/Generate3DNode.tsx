@@ -395,6 +395,7 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
                   }
                 }}
                 className="nodrag nopan text-[10px] text-neutral-400 hover:text-[var(--current-blue)] truncate max-w-full cursor-pointer transition-colors flex items-center gap-1"
+                aria-label={`Open ${nodeData.savedFilename} in file explorer`}
                 title={`Open in explorer: ${nodeData.savedFilePath}`}
               >
                 <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -429,7 +430,8 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
             <div className="absolute top-1 right-1">
               <button
                 onClick={handleClear3D}
-                className="w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
+                aria-label="Clear 3D model"
+                className="current-media-action current-media-action--overlay"
                 title="Clear 3D model"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

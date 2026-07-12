@@ -790,7 +790,8 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
             <div className="absolute top-1 right-1 flex items-center gap-0.5">
               <button
                 onClick={() => downloadMedia(nodeData.outputVideo!, "video").catch(() => {})}
-                className="w-5 h-5 bg-neutral-900/80 hover:bg-neutral-700 rounded flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
+                aria-label="Download video"
+                className="current-media-action current-media-action--overlay"
                 title="Download video"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -799,7 +800,8 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
               </button>
               <button
                 onClick={handleClearVideo}
-                className="w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
+                aria-label="Clear video"
+                className="current-media-action current-media-action--overlay"
                 title="Clear video"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -814,7 +816,8 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
                 <button
                   onClick={handleCarouselPrevious}
                   disabled={isLoadingCarouselVideo}
-                  className="w-5 h-5 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white/70 hover:text-neutral-100 transition-colors"
+                  aria-label="Previous video"
+                  className="current-media-action current-media-action--overlay"
                   title="Previous video"
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -827,7 +830,8 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
                 <button
                   onClick={handleCarouselNext}
                   disabled={isLoadingCarouselVideo}
-                  className="w-5 h-5 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white/70 hover:text-neutral-100 transition-colors"
+                  aria-label="Next video"
+                  className="current-media-action current-media-action--overlay"
                   title="Next video"
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

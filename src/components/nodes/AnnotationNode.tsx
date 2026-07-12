@@ -154,7 +154,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
               downloadMedia(displayImage!, "image");
             }}
             aria-label="Download image"
-            className="absolute top-2 right-10 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white transition-opacity flex items-center justify-center"
+            className="current-media-action current-media-action--overlay absolute top-2 right-10"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -165,7 +165,8 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
               e.stopPropagation();
               handleRemove();
             }}
-            className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+            aria-label="Remove annotations"
+            className="current-media-action current-media-action--overlay absolute top-2 right-1"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

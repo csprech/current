@@ -202,7 +202,8 @@ export function GroupNode({ id, data, selected }: NodeProps<GroupNodeType>) {
           <div className="relative" ref={colorPickerRef}>
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
-              className="w-5 h-5 rounded border border-white/30 hover:border-white/60 transition-colors"
+              aria-label="Change group color"
+              className="current-icon-button border border-white/30 hover:border-white/60"
               style={{ backgroundColor: bgColor }}
               title="Change color"
             />
@@ -212,7 +213,8 @@ export function GroupNode({ id, data, selected }: NodeProps<GroupNodeType>) {
                   <button
                     key={color}
                     onClick={() => handleColorChange(color)}
-                    className={`w-6 h-6 rounded border-2 transition-all ${
+                    aria-label={`Set group color to ${label}`}
+                    className={`current-icon-button rounded border-2 transition-all ${
                       group.color === color
                         ? "border-white scale-110"
                         : "border-transparent hover:border-white/50"

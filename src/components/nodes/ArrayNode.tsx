@@ -262,6 +262,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
               type="button"
               onClick={handleAutoRouteToPrompts}
               disabled={previewItems.length === 0}
+              aria-label="Auto-route to prompts"
               className="nodrag nopan shrink-0 py-1 px-1.5 bg-neutral-800 rounded-md text-neutral-400 hover:text-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Auto-route to Prompts"
             >

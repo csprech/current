@@ -221,6 +221,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         <div className="absolute top-2 right-2 z-10">
           <button
             onClick={handleClear}
+            aria-label="Clear evaluation"
             className="nodrag nopan p-0.5 rounded transition-all duration-200 ease-in-out flex items-center overflow-hidden group pr-2 text-neutral-500 hover:text-neutral-200 border border-neutral-600 bg-neutral-800/90"
             title="Clear evaluation"
           >
@@ -284,11 +285,12 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
             </div>
 
             {/* Reorder buttons */}
-            <div className="flex flex-col gap-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-0.5 opacity-75 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
               <button
-                className="text-neutral-400 hover:text-neutral-100 disabled:opacity-30 disabled:hover:text-neutral-400"
+                className="current-media-action text-neutral-400 hover:text-neutral-100 disabled:opacity-30 disabled:hover:text-neutral-400"
                 onClick={() => handleMoveUp(index)}
                 disabled={index === 0}
+                aria-label={`Move ${rule.label || `rule ${index + 1}`} up`}
                 title="Move up"
               >
                 <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
@@ -296,9 +298,10 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
                 </svg>
               </button>
               <button
-                className="text-neutral-400 hover:text-neutral-100 disabled:opacity-30 disabled:hover:text-neutral-400"
+                className="current-media-action text-neutral-400 hover:text-neutral-100 disabled:opacity-30 disabled:hover:text-neutral-400"
                 onClick={() => handleMoveDown(index)}
                 disabled={index === nodeData.rules.length - 1}
+                aria-label={`Move ${rule.label || `rule ${index + 1}`} down`}
                 title="Move down"
               >
                 <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
@@ -357,8 +360,9 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
             {/* Delete button (hidden if only one rule) */}
             {nodeData.rules.length > 1 && (
               <button
-                className="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-red-400 transition-opacity flex-shrink-0"
+                className="current-media-action opacity-75 group-hover:opacity-100 focus-visible:opacity-100 text-neutral-400 hover:text-red-400 flex-shrink-0"
                 onClick={() => handleDelete(rule.id)}
+                aria-label={`Delete ${rule.label || `rule ${index + 1}`}`}
                 title="Delete rule"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

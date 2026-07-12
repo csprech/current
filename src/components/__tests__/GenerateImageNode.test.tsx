@@ -365,8 +365,15 @@ describe("GenerateImageNode", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTitle("Previous image")).toBeInTheDocument();
-      expect(screen.getByTitle("Next image")).toBeInTheDocument();
+      const downloadButton = screen.getByRole("button", { name: "Download image" });
+      const clearButton = screen.getByRole("button", { name: "Clear image" });
+      const previousButton = screen.getByRole("button", { name: "Previous image" });
+      const nextButton = screen.getByRole("button", { name: "Next image" });
+
+      expect(downloadButton).toHaveClass("current-media-action");
+      expect(clearButton).toHaveClass("current-media-action");
+      expect(previousButton).toHaveClass("current-media-action");
+      expect(nextButton).toHaveClass("current-media-action");
     });
 
     it("should show current position in carousel", () => {

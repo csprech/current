@@ -143,6 +143,7 @@ export function TemplateCard({
           <button
             onClick={onUseWorkflow}
             disabled={disabled || isLoading}
+            aria-label={isLoading ? "Loading workflow" : "Use workflow"}
             className="px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
           >
             {isLoading ? (

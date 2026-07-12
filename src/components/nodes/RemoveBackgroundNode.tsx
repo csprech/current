@@ -90,7 +90,8 @@ export function RemoveBackgroundNode({ id, data, selected }: NodeProps<RemoveBac
               />
               <button
                 onClick={() => updateNodeData(id, { outputImage: null, status: "idle", progress: 0 })}
-                className="absolute top-1 right-1 w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-neutral-100 transition-colors"
+                aria-label="Clear background removal result"
+                className="current-media-action current-media-action--overlay absolute top-1 right-1"
                 title="Clear result"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

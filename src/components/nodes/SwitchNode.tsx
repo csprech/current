@@ -229,8 +229,9 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
                 {/* Delete button (hidden if only one switch) */}
                 {nodeData.switches.length > 1 && (
                   <button
-                    className="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-red-400 transition-opacity"
+                    className="current-media-action opacity-75 group-hover:opacity-100 focus-visible:opacity-100 text-neutral-400 hover:text-red-400"
                     onClick={() => handleDelete(sw.id)}
+                    aria-label={`Delete ${sw.name || `switch ${index + 1}`}`}
                     title="Delete switch"
                   >
                     <svg
