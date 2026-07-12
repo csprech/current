@@ -12,6 +12,7 @@ export interface CurrentSheetProps {
   children: ReactNode;
   width?: "compact" | "standard" | "wide";
   returnFocusRef?: RefObject<HTMLElement | null>;
+  initialFocusRef?: RefObject<HTMLElement | null>;
 }
 
 interface CurrentSheetSurfaceProps extends CurrentSheetProps {
@@ -27,6 +28,7 @@ interface ModalEntry {
   backdrop: HTMLElement | null;
   onClose: () => void;
   returnFocus: () => HTMLElement | null;
+  initialFocus: () => HTMLElement | null;
 }
 
 const modalStack: ModalEntry[] = [];
@@ -48,8 +50,9 @@ function getFocusableElements(dialog: HTMLElement) {
 
 function focusModal(entry: ModalEntry) {
   if (!entry.dialog) return;
+  const requestedControl = entry.initialFocus();
   const firstControl = getFocusableElements(entry.dialog)[0];
-  (firstControl ?? entry.dialog).focus();
+  (requestedControl ?? firstControl ?? entry.dialog).focus();
 }
 
 function restoreInert(element: HTMLElement, wasInert: boolean) {
@@ -147,6 +150,7 @@ export function CurrentSheetSurface({
   children,
   width = "standard",
   returnFocusRef,
+  initialFocusRef,
   role,
   describedBy,
   className = "",
@@ -165,10 +169,12 @@ export function CurrentSheetSurface({
       backdrop: null,
       onClose,
       returnFocus: () => returnFocusRef?.current ?? null,
+      initialFocus: () => initialFocusRef?.current ?? null,
     };
   }
   entryRef.current.onClose = onClose;
   entryRef.current.returnFocus = () => returnFocusRef?.current ?? null;
+  entryRef.current.initialFocus = () => initialFocusRef?.current ?? null;
 
   useEffect(() => {
     setPortalTarget(document.body);
@@ -197,6 +203,7 @@ export function CurrentSheetSurface({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={describedBy}
+        data-surface="sheet"
         data-width={width}
         className={`current-sheet ${className}`.trim()}
       >

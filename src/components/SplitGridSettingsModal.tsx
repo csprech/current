@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { SplitGridNodeData, AspectRatio, Resolution, ModelType } from "@/types";
+import { CurrentButton, CurrentSheet } from "@/components/current";
 
 interface SplitGridSettingsModalProps {
   nodeId: string;
@@ -178,22 +178,9 @@ export function SplitGridSettingsModal({
     addNode, updateNodeData, onConnect, addEdgeWithType, onClose
   ]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      onClose();
-    }
-  };
-
-  return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm">
-      <div
-        className="iris-glass rounded-lg p-6 w-[600px] shadow-xl"
-        onKeyDown={handleKeyDown}
-      >
-        <h2 className="text-lg font-semibold text-neutral-100 mb-4">
-          Split Grid Settings
-        </h2>
-
+  return (
+    <CurrentSheet open title="Split Grid Settings" onClose={onClose} width="wide">
+      <div className="current-split-grid-settings">
         <div className="space-y-4">
           {/* Layout selector with visual preview */}
           <div>
@@ -355,21 +342,10 @@ export function SplitGridSettingsModal({
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-100 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleCreate}
-            className="px-4 py-2 text-sm bg-neutral-100 text-white rounded hover:bg-neutral-300 transition-colors"
-          >
-            Create {targetCount} Generate Sets
-          </button>
+          <CurrentButton variant="secondary" onClick={onClose}>Cancel</CurrentButton>
+          <CurrentButton variant="primary" onClick={handleCreate}>Create {targetCount} Generate Sets</CurrentButton>
         </div>
       </div>
-    </div>,
-    document.body
+    </CurrentSheet>
   );
 }

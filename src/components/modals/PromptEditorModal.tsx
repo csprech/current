@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { CurrentAlert, CurrentButton } from '@/components/current';
+import { FocusWorkspace } from '@/components/workspace/FocusWorkspace';
 
 const FONT_SIZE_STORAGE_KEY = 'prompt-editor-font-size';
 const DEFAULT_FONT_SIZE = 14;
@@ -59,23 +61,6 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
     }
   }, [hasUnsavedChanges, onClose]);
 
-  // Handle Escape key to close
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleAttemptClose();
-      }
-    };
-
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-    }
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, handleAttemptClose]);
-
   const handleSubmit = useCallback(() => {
     onSubmit(prompt);
     onClose();
@@ -85,45 +70,22 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
     setFontSize(parseInt(e.target.value, 10));
   }, []);
 
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      // Only close if clicking the backdrop itself, not the dialog content
-      if (e.target === e.currentTarget) {
-        handleAttemptClose();
-      }
-    },
-    [handleAttemptClose]
-  );
-
   const handleDismissConfirmation = useCallback(() => {
     setShowConfirmation(false);
   }, []);
 
-  const handleConfirmationBackdropClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      // Only dismiss if clicking the backdrop itself, not the confirmation dialog
-      if (e.target === e.currentTarget) {
-        handleDismissConfirmation();
-      }
-    },
-    [handleDismissConfirmation]
-  );
-
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm"
-      onClick={handleBackdropClick}
-    >
-      <div className="relative iris-glass rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col mx-4">
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4">
-          <h2 className="text-xl font-semibold text-neutral-100">
-            Edit Prompt
-          </h2>
-        </div>
-
+    <>
+      <FocusWorkspace
+        title="Edit Prompt"
+        onBack={handleAttemptClose}
+        onEscape={handleAttemptClose}
+        secondaryActions={<CurrentButton variant="secondary" onClick={handleAttemptClose}>Cancel</CurrentButton>}
+        primaryAction={<CurrentButton variant="primary" onClick={handleSubmit}>Submit</CurrentButton>}
+      >
+      <div className="h-full flex flex-col py-5">
         {/* Box containing toolbar and textarea */}
         <div className="mx-6 flex-1 flex flex-col border border-neutral-700 rounded bg-neutral-900/30 overflow-hidden mb-4">
           {/* Toolbar - header of the box */}
@@ -153,71 +115,18 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
           />
         </div>
 
-        {/* Footer with buttons */}
-        <div className="flex justify-end gap-3 px-6 pb-6">
-          <button
-            onClick={handleAttemptClose}
-            className="px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-blue-400"
-          >
-            Submit
-          </button>
-        </div>
-
-        {/* Confirmation overlay */}
-        {showConfirmation && (
-          <div
-            className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg"
-            onClick={handleConfirmationBackdropClick}
-          >
-            <div className="relative iris-glass rounded-lg p-6 mx-4 max-w-sm shadow-xl">
-              {/* Close button */}
-              <button
-                onClick={handleDismissConfirmation}
-                className="absolute top-3 right-3 text-neutral-400 hover:text-neutral-200 transition-colors focus:outline-none"
-                aria-label="Close"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-
-              <p className="text-neutral-100 text-center mb-6">
-                You have unsaved changes
-              </p>
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500"
-                >
-                  Discard
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-blue-400"
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+      </FocusWorkspace>
+      <CurrentAlert
+        open={showConfirmation}
+        title="You have unsaved changes"
+        description="Discard your edits and return to the canvas?"
+        cancelLabel="Keep editing"
+        confirmLabel="Discard"
+        danger
+        onCancel={handleDismissConfirmation}
+        onConfirm={onClose}
+      />
+    </>
   );
 };

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { PredictedCostResult, CostBreakdownItem, formatCost } from "@/utils/costCalculator";
 import { ProviderType } from "@/types/providers";
+import { CurrentAlert, CurrentSheet } from "@/components/current";
 
 interface CostDialogProps {
   predictedCost: PredictedCostResult;
@@ -93,21 +94,15 @@ function ExternalLinkIcon() {
 
 export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogProps) {
   const resetIncurredCost = useWorkflowStore((state) => state.resetIncurredCost);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  const [showResetAlert, setShowResetAlert] = useState(false);
 
   const handleReset = () => {
-    if (confirm("Reset incurred cost to $0.00?")) {
-      resetIncurredCost();
-    }
+    setShowResetAlert(true);
+  };
+
+  const confirmReset = () => {
+    resetIncurredCost();
+    setShowResetAlert(false);
   };
 
   // Separate Gemini (reliable pricing) from external providers (unreliable pricing)
@@ -134,22 +129,8 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
   const hasExternal = externalItems.length > 0;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm">
-      <div className="iris-glass rounded-lg p-6 w-[400px] shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-neutral-100">
-            Workflow Costs
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 text-neutral-400 hover:text-neutral-200 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
+    <>
+      <CurrentSheet open title="Workflow Costs" onClose={onClose} width="compact">
         <div className="space-y-4">
           {/* Gemini Cost Section - prices are reliable */}
           {hasGemini && (
@@ -251,6 +232,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
             {incurredCost > 0 && (
               <button
                 onClick={handleReset}
+                aria-label="Reset cost"
                 className="mt-3 text-xs text-neutral-400 hover:text-red-400 transition-colors"
               >
                 Reset to $0.00
@@ -263,7 +245,17 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
             <p>Gemini pricing: $0.039-$0.24/image. External providers not tracked.</p>
           </div>
         </div>
-      </div>
-    </div>
+      </CurrentSheet>
+      <CurrentAlert
+        open={showResetAlert}
+        title="Reset incurred cost?"
+        description="This clears the tracked spend for this workflow. It cannot be undone."
+        cancelLabel="Keep cost"
+        confirmLabel="Reset cost"
+        danger
+        onCancel={() => setShowResetAlert(false)}
+        onConfirm={confirmReset}
+      />
+    </>
   );
 }

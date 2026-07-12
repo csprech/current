@@ -49,7 +49,7 @@ describe("WorkflowBrowserModal", () => {
 
   it("should call onClose when backdrop is clicked", () => {
     const onClose = vi.fn();
-    const { container } = render(
+    render(
       <WorkflowBrowserModal
         isOpen={true}
         onClose={onClose}
@@ -57,8 +57,7 @@ describe("WorkflowBrowserModal", () => {
       />
     );
 
-    // Click the backdrop (outermost fixed div)
-    const backdrop = container.querySelector(".fixed.inset-0");
+    const backdrop = document.querySelector(".current-sheet-backdrop");
     fireEvent.click(backdrop!);
 
     expect(onClose).toHaveBeenCalled();

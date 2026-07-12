@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { useShallow } from "zustand/shallow";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowVersion } from "@/app/api/workflow/versions/route";
+import { CurrentButton, CurrentSheet } from "@/components/current";
 
 function formatWhen(ts: number): string {
   const diff = Date.now() - ts;
@@ -38,7 +38,6 @@ export function WorkflowVersionHistory() {
   const [loading, setLoading] = useState(false);
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -49,27 +48,6 @@ export function WorkflowVersionHistory() {
   useEffect(() => {
     if (isOpen) refresh();
   }, [isOpen, refresh]);
-
-  // Close on outside click / Escape
-  useEffect(() => {
-    if (!isOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(e.target as Node) &&
-        !triggerRef.current?.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsOpen(false);
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [isOpen]);
 
   const handleRestore = useCallback(
     async (id: string) => {
@@ -84,34 +62,28 @@ export function WorkflowVersionHistory() {
   // Only meaningful once a project has a save location
   if (!saveDirectoryPath || !workflowName) return null;
 
-  const rect = triggerRef.current?.getBoundingClientRect();
-
   return (
     <>
       <button
         ref={triggerRef}
         onClick={() => setIsOpen((v) => !v)}
-        className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-        title="Version history"
+        aria-label="Version history"
+        className="current-icon-button"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </button>
 
-      {isOpen &&
-        rect &&
-        createPortal(
-          <div
-            ref={panelRef}
-            className="fixed w-72 max-h-[380px] iris-glass rounded-lg shadow-2xl z-[300] flex flex-col"
-            style={{ top: rect.bottom + 6, left: Math.max(8, rect.right - 288) }}
-          >
-            <div className="px-3 py-2 border-b border-neutral-700 flex items-center justify-between shrink-0">
-              <span className="text-xs font-medium text-neutral-200">Version History</span>
-              <span className="text-[10px] text-neutral-500">last {versions.length} saves</span>
-            </div>
-
+      <CurrentSheet
+        open={isOpen}
+        title="Version History"
+        onClose={() => setIsOpen(false)}
+        width="standard"
+        returnFocusRef={triggerRef}
+      >
+          <div className="max-h-[62vh] flex flex-col">
+            <p className="text-[10px] text-neutral-500 mb-2">Last {versions.length} saves</p>
             <div className="flex-1 overflow-y-auto py-1">
               {loading && <p className="text-xs text-neutral-500 text-center py-6">Loading…</p>}
               {!loading && versions.length === 0 && (
@@ -129,13 +101,13 @@ export function WorkflowVersionHistory() {
                       <p className="text-[11px] text-neutral-300">{formatWhen(v.timestamp)}</p>
                       <p className="text-[10px] text-neutral-500">{formatSize(v.size)}</p>
                     </div>
-                    <button
+                    <CurrentButton
                       onClick={() => handleRestore(v.id)}
                       disabled={restoringId !== null}
-                      className="text-[11px] px-2 py-1 rounded bg-neutral-700 text-neutral-300 hover:bg-blue-600 hover:text-neutral-100 disabled:opacity-50 transition-colors shrink-0"
+                      variant="secondary"
                     >
                       {restoringId === v.id ? "Restoring…" : "Restore"}
-                    </button>
+                    </CurrentButton>
                   </div>
                 ))}
             </div>
@@ -143,9 +115,8 @@ export function WorkflowVersionHistory() {
             <div className="px-3 py-1.5 border-t border-neutral-700 bg-neutral-900/50 shrink-0">
               <span className="text-[10px] text-neutral-500">Restoring keeps your current state until you save again</span>
             </div>
-          </div>,
-          document.body
-        )}
+          </div>
+      </CurrentSheet>
     </>
   );
 }

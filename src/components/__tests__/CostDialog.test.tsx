@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { CostDialog } from "@/components/CostDialog";
 import { PredictedCostResult } from "@/utils/costCalculator";
 
@@ -141,6 +141,17 @@ describe("CostDialog", () => {
   });
 
   describe("Basic Rendering", () => {
+    it("requires explicit confirmation for cost reset", () => {
+      render(
+        <CostDialog predictedCost={createGeminiOnlyCost()} incurredCost={12} onClose={vi.fn()} />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Reset cost" }));
+      expect(screen.getByRole("alertdialog", { name: "Reset incurred cost?" })).toBeInTheDocument();
+      expect(mockResetIncurredCost).not.toHaveBeenCalled();
+      expect(mockConfirm).not.toHaveBeenCalled();
+    });
+
     it("should render dialog with title", () => {
       render(
         <CostDialog
@@ -154,7 +165,7 @@ describe("CostDialog", () => {
     });
 
     it("should render close button", () => {
-      const { container } = render(
+      render(
         <CostDialog
           predictedCost={createGeminiOnlyCost()}
           incurredCost={0}
@@ -162,8 +173,7 @@ describe("CostDialog", () => {
         />
       );
 
-      const closeButton = container.querySelector("button");
-      expect(closeButton).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Close Workflow Costs" })).toBeInTheDocument();
     });
 
     it("should render Incurred Cost section", () => {
@@ -532,12 +542,11 @@ describe("CostDialog", () => {
 
       fireEvent.click(screen.getByText("Reset to $0.00"));
 
-      expect(mockConfirm).toHaveBeenCalledWith("Reset incurred cost to $0.00?");
+      expect(screen.getByRole("alertdialog", { name: "Reset incurred cost?" })).toBeInTheDocument();
+      expect(mockConfirm).not.toHaveBeenCalled();
     });
 
     it("should call resetIncurredCost when confirmed", () => {
-      mockConfirm.mockReturnValue(true);
-
       render(
         <CostDialog
           predictedCost={createGeminiOnlyCost()}
@@ -547,13 +556,12 @@ describe("CostDialog", () => {
       );
 
       fireEvent.click(screen.getByText("Reset to $0.00"));
+      fireEvent.click(within(screen.getByRole("alertdialog", { name: "Reset incurred cost?" })).getByRole("button", { name: "Reset cost" }));
 
       expect(mockResetIncurredCost).toHaveBeenCalled();
     });
 
     it("should not call resetIncurredCost when cancelled", () => {
-      mockConfirm.mockReturnValue(false);
-
       render(
         <CostDialog
           predictedCost={createGeminiOnlyCost()}
@@ -563,6 +571,7 @@ describe("CostDialog", () => {
       );
 
       fireEvent.click(screen.getByText("Reset to $0.00"));
+      fireEvent.click(screen.getByRole("button", { name: "Keep cost" }));
 
       expect(mockResetIncurredCost).not.toHaveBeenCalled();
     });
@@ -572,7 +581,7 @@ describe("CostDialog", () => {
     it("should call onClose when close button is clicked", () => {
       const onClose = vi.fn();
 
-      const { container } = render(
+      render(
         <CostDialog
           predictedCost={createGeminiOnlyCost()}
           incurredCost={0}
@@ -580,8 +589,7 @@ describe("CostDialog", () => {
         />
       );
 
-      const closeButton = container.querySelector("button");
-      fireEvent.click(closeButton!);
+      fireEvent.click(screen.getByRole("button", { name: "Close Workflow Costs" }));
 
       expect(onClose).toHaveBeenCalled();
     });
@@ -597,7 +605,7 @@ describe("CostDialog", () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: "Escape" });
+      fireEvent.keyDown(document, { key: "Escape" });
 
       expect(onClose).toHaveBeenCalled();
     });

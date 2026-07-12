@@ -433,9 +433,7 @@ describe("SplitGridSettingsModal", () => {
         />
       );
 
-      // The modal renders via createPortal to document.body, so use document.querySelector
-      const modal = document.querySelector(".iris-glass.rounded-lg");
-      fireEvent.keyDown(modal!, { key: "Escape" });
+      fireEvent.keyDown(document, { key: "Escape" });
 
       expect(onClose).toHaveBeenCalled();
     });

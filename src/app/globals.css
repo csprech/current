@@ -1131,6 +1131,36 @@ body {
 .current-add-palette__footer { flex-wrap: wrap; }
 .current-add-palette__footer span { margin-left: auto; color: #918e99; font-size: 10px; }
 
+/* Focused creative editors */
+.current-focus-workspace {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: grid;
+  grid-template-rows: 58px minmax(0, 1fr) auto;
+  color: #f4f4f6;
+  background: var(--current-inspector);
+}
+
+.current-focus-workspace__bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--current-divider) 24%, transparent);
+  background: color-mix(in srgb, var(--current-inspector) 92%, black);
+}
+
+.current-focus-workspace__leading,
+.current-focus-workspace__toolbar,
+.current-focus-workspace__actions { display: flex; align-items: center; gap: 10px; }
+.current-focus-workspace__actions { justify-content: flex-end; }
+.current-focus-workspace__leading h1 { margin: 0; font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+.current-focus-workspace__divider { width: 1px; height: 20px; background: color-mix(in srgb, var(--current-divider) 28%, transparent); }
+.current-focus-workspace__content { min-height: 0; overflow: hidden; }
+.current-focus-workspace__footer { border-top: 1px solid color-mix(in srgb, var(--current-divider) 24%, transparent); }
+
 @media (prefers-reduced-motion: reduce) {
   .current-add-palette__backdrop { backdrop-filter: none; }
 }

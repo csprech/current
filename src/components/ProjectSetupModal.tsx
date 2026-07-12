@@ -9,6 +9,7 @@ import { loadNodeDefaults, saveNodeDefaults, getLastProjectBaseDir, setLastProje
 import { ProviderModel } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
+import { CurrentSheet } from "@/components/current";
 
 // LLM provider and model options (mirrored from LLMGenerateNode)
 const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
@@ -360,9 +361,6 @@ export function ProjectSetupModal({
     if (e.key === "Enter" && !isValidating && !isBrowsing) {
       handleSave();
     }
-    if (e.key === "Escape") {
-      onClose();
-    }
   };
 
   const updateLocalProvider = (
@@ -382,37 +380,13 @@ export function ProjectSetupModal({
 
   if (!isOpen) return null;
 
-  return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/25 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      onWheelCapture={(e) => e.stopPropagation()}
-    >
-      <div
-        className="iris-glass rounded-xl w-[520px] shadow-2xl overflow-clip flex flex-col max-h-[80vh]"
-        onKeyDown={handleKeyDown}
-      >
-        <div className="px-8 pt-8 pb-0 shrink-0">
-          <div className="flex items-center gap-2 mb-5">
-            <svg viewBox="0 0 40 40" className="w-6 h-6" aria-hidden="true">
-              <defs>
-                <linearGradient id="irisMarkSetup" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7b6cf6" />
-                  <stop offset="0.35" stopColor="#35c9e6" />
-                  <stop offset="0.7" stopColor="#35d39a" />
-                  <stop offset="1" stopColor="#f77a8e" />
-                </linearGradient>
-              </defs>
-              <circle cx="20" cy="20" r="18" fill="url(#irisMarkSetup)" />
-              <circle cx="20" cy="20" r="7" fill="#171717" />
-            </svg>
-            <h2 className="text-xl font-medium text-neutral-100">
-              {mode === "new" ? "New Project" : "Project Settings"}
-            </h2>
-          </div>
+  const sheetTitle = mode === "new" ? "New Project" : "Project Settings";
 
+  return (
+    <>
+      <CurrentSheet open={isOpen} title={sheetTitle} onClose={onClose} width="wide">
+      <div className="current-project-setup flex flex-col max-h-[72vh]" onKeyDown={handleKeyDown}>
+        <div className="px-8 pt-8 pb-0 shrink-0">
           {/* Tab Bar */}
           <div className="flex gap-1.5 p-1 bg-neutral-900/50 rounded-lg">
           <button
@@ -1251,6 +1225,7 @@ export function ProjectSetupModal({
           </button>
         </div>
       </div>
+      </CurrentSheet>
 
       {/* Model Selection Dialogs */}
       {showImageModelDialog && (
@@ -1295,6 +1270,6 @@ export function ProjectSetupModal({
           initialCapabilityFilter="video"
         />
       )}
-    </div>
+    </>
   );
 }

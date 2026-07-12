@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { createPortal } from "react-dom";
 import { useWorkflowStore, useProviderApiKeys } from "@/store/workflowStore";
 import { deduplicatedFetch, clearFetchCache } from "@/utils/deduplicatedFetch";
 import { useReactFlow } from "@xyflow/react";
 import { ProviderType, RecentModel } from "@/types";
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
+import { CurrentSheet } from "@/components/current";
 
 // localStorage cache for models (persists across dev server restarts)
 const MODELS_CACHE_KEY = "node-banana-models-cache";
@@ -362,33 +362,6 @@ export function ModelSearchDialog({
     [screenToFlowPosition, addNode, onClose, onModelSelected, trackModelUsage]
   );
 
-  // Handle escape key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
-  // Handle backdrop click
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
   // Get provider badge color
   const getProviderBadgeColor = (provider: ProviderType) => {
     switch (provider) {
@@ -572,36 +545,8 @@ export function ModelSearchDialog({
   if (!isOpen) return null;
 
   const dialogContent = (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/25 backdrop-blur-sm"
-      onClick={handleBackdropClick}
-    >
-      <div className="relative iris-glass rounded-lg shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col mx-4">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-700">
-          <h2 className="text-lg font-semibold text-neutral-100">
-            {title}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
+    <CurrentSheet open={isOpen} title={title} onClose={onClose} width="wide" initialFocusRef={searchInputRef}>
+      <div className="max-h-[72vh] flex flex-col">
         {/* Filter Bar */}
         <div className="px-6 py-4 border-b border-neutral-700">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -1048,9 +993,8 @@ export function ModelSearchDialog({
           </div>
         )}
       </div>
-    </div>
+    </CurrentSheet>
   );
 
-  // Use portal to render outside React Flow stacking context
-  return createPortal(dialogContent, document.body);
+  return dialogContent;
 }

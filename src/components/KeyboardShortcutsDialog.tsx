@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { CurrentButton, CurrentSheet } from "@/components/current";
 
 interface ShortcutItem {
   keys: string[];
@@ -73,38 +73,9 @@ interface KeyboardShortcutsDialogProps {
 }
 
 export function KeyboardShortcutsDialog({ isOpen, onClose }: KeyboardShortcutsDialogProps) {
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm">
-      <div className="iris-glass rounded-lg w-[520px] max-h-[80vh] shadow-xl flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-700">
-          <h2 className="text-base font-semibold text-neutral-100">
-            Keyboard Shortcuts
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700 rounded transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
+    <CurrentSheet open={isOpen} title="Keyboard Shortcuts" onClose={onClose} width="wide">
+      <div className="max-h-[68vh] flex flex-col overflow-hidden">
         {/* Content */}
         <div className="overflow-y-auto px-5 py-4 space-y-5">
           {shortcutGroups.map((group) => (
@@ -140,15 +111,9 @@ export function KeyboardShortcutsDialog({ isOpen, onClose }: KeyboardShortcutsDi
 
         {/* Footer */}
         <div className="px-5 py-3 border-t border-neutral-700 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-3 py-1.5 text-xs font-medium text-neutral-300 hover:text-neutral-100 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors"
-          >
-            Close
-          </button>
+          <CurrentButton variant="secondary" onClick={onClose}>Close</CurrentButton>
         </div>
       </div>
-    </div>
+    </CurrentSheet>
   );
 }
-

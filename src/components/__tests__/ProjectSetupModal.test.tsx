@@ -93,6 +93,14 @@ describe("ProjectSetupModal", () => {
   });
 
   describe("Visibility", () => {
+    it("uses a Current sheet for project settings", () => {
+      render(
+        <ProjectSetupModal isOpen mode="settings" onSave={vi.fn()} onClose={vi.fn()} />
+      );
+
+      expect(screen.getByRole("dialog", { name: "Project Settings" })).toHaveAttribute("data-surface", "sheet");
+    });
+
     it("should not render when isOpen is false", () => {
       render(
         <ProjectSetupModal
@@ -884,7 +892,7 @@ describe("ProjectSetupModal", () => {
     it("should close modal when Escape is pressed", () => {
       const onClose = vi.fn();
 
-      const { container } = render(
+      render(
         <ProjectSetupModal
           isOpen={true}
           onClose={onClose}
@@ -893,8 +901,7 @@ describe("ProjectSetupModal", () => {
         />
       );
 
-      const modalDiv = container.querySelector(".iris-glass");
-      fireEvent.keyDown(modalDiv!, { key: "Escape" });
+      fireEvent.keyDown(document, { key: "Escape" });
 
       expect(onClose).toHaveBeenCalled();
     });
@@ -918,7 +925,7 @@ describe("ProjectSetupModal", () => {
 
       const onSave = vi.fn();
 
-      const { container } = render(
+      render(
         <ProjectSetupModal
           isOpen={true}
           onClose={vi.fn()}
@@ -935,8 +942,7 @@ describe("ProjectSetupModal", () => {
         target: { value: "/path/to/project" },
       });
 
-      const modalDiv = container.querySelector(".iris-glass");
-      fireEvent.keyDown(modalDiv!, { key: "Enter" });
+      fireEvent.keyDown(screen.getByPlaceholderText("my-project"), { key: "Enter" });
 
       await waitFor(() => {
         expect(onSave).toHaveBeenCalled();

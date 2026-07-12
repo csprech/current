@@ -557,15 +557,13 @@ describe("ModelSearchDialog", () => {
     it("should call onClose when close button is clicked", async () => {
       const onClose = vi.fn();
 
-      const { container } = render(
+      render(
         <TestWrapper>
           <ModelSearchDialog isOpen={true} onClose={onClose} />
         </TestWrapper>
       );
 
-      // Find close button in the header (first button after title)
-      const headerCloseButton = container.querySelector("button.p-1\\.5");
-      fireEvent.click(headerCloseButton!);
+      fireEvent.click(screen.getByRole("button", { name: "Close Browse Models" }));
 
       expect(onClose).toHaveBeenCalled();
     });
@@ -579,7 +577,7 @@ describe("ModelSearchDialog", () => {
         </TestWrapper>
       );
 
-      fireEvent.keyDown(window, { key: "Escape" });
+      fireEvent.keyDown(document, { key: "Escape" });
 
       expect(onClose).toHaveBeenCalled();
     });
@@ -587,14 +585,13 @@ describe("ModelSearchDialog", () => {
     it("should call onClose when backdrop is clicked", async () => {
       const onClose = vi.fn();
 
-      const { container } = render(
+      render(
         <TestWrapper>
           <ModelSearchDialog isOpen={true} onClose={onClose} />
         </TestWrapper>
       );
 
-      // Click on the backdrop (the outer div with bg-black/25)
-      const backdrop = container.querySelector(".bg-black\\/25");
+      const backdrop = document.querySelector(".current-sheet-backdrop");
       fireEvent.click(backdrop!);
 
       expect(onClose).toHaveBeenCalled();

@@ -131,6 +131,13 @@ describe("AnnotationModal", () => {
   });
 
   describe("Visibility", () => {
+    it("uses a focused workspace for annotation", () => {
+      render(<AnnotationModal />);
+
+      expect(screen.getByRole("main", { name: "Annotate" })).toHaveAttribute("data-surface", "focus");
+      expect(screen.getByRole("button", { name: "Back to canvas" })).toBeInTheDocument();
+    });
+
     it("should not render when isModalOpen is false", () => {
       mockAnnotationStore = createMockAnnotationStore({ isModalOpen: false });
 
@@ -418,7 +425,7 @@ describe("AnnotationModal", () => {
     it("should call closeModal when Escape is pressed with no text editing", () => {
       render(<AnnotationModal />);
 
-      fireEvent.keyDown(window, { key: "Escape" });
+      fireEvent.keyDown(document, { key: "Escape" });
 
       expect(mockCloseModal).toHaveBeenCalled();
     });

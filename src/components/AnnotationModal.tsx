@@ -14,6 +14,7 @@ import {
   ToolType,
 } from "@/types";
 import Konva from "konva";
+import { FocusWorkspace } from "@/components/workspace/FocusWorkspace";
 
 const COLORS = [
   "#ef4444",
@@ -67,6 +68,16 @@ export function AnnotationModal() {
   const textInputCreatedAt = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const handleFocusEscape = useCallback(() => {
+    if (editingTextId) {
+      setEditingTextId(null);
+      setTextInputPosition(null);
+      setPendingTextPosition(null);
+    } else {
+      closeModal();
+    }
+  }, [editingTextId, closeModal]);
+
   useEffect(() => {
     if (sourceImage) {
       const img = new window.Image();
@@ -110,15 +121,6 @@ export function AnnotationModal() {
           deleteAnnotation(selectedShapeId);
         }
       }
-      if (e.key === "Escape") {
-        if (editingTextId) {
-          setEditingTextId(null);
-          setTextInputPosition(null);
-          setPendingTextPosition(null);
-        } else {
-          closeModal();
-        }
-      }
       if (e.ctrlKey || e.metaKey) {
         if (e.key === "z") {
           e.preventDefault();
@@ -132,7 +134,7 @@ export function AnnotationModal() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isModalOpen, selectedShapeId, editingTextId, deleteAnnotation, closeModal, undo, redo]);
+  }, [isModalOpen, selectedShapeId, editingTextId, deleteAnnotation, undo, redo]);
 
   const getRelativePointerPosition = useCallback(() => {
     const stage = stageRef.current;
@@ -409,7 +411,8 @@ export function AnnotationModal() {
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] bg-neutral-950 flex flex-col">
+    <FocusWorkspace title="Annotate" onBack={closeModal} onEscape={handleFocusEscape}>
+    <div className="h-full bg-neutral-950 flex flex-col">
       {/* Top Bar */}
       <div className="h-14 bg-neutral-900 flex items-center justify-between px-4 border-b border-neutral-800">
         <div className="flex items-center gap-1.5">
@@ -624,5 +627,6 @@ export function AnnotationModal() {
         />
       )}
     </div>
+    </FocusWorkspace>
   );
 }

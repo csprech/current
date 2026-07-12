@@ -219,7 +219,7 @@ describe("PromptEditorModal", () => {
   });
 
   describe("Unsaved Changes Confirmation Dialog", () => {
-    it("should show Discard and Submit buttons in confirmation dialog", () => {
+    it("should show discard and keep-editing actions in the confirmation dialog", () => {
       render(
         <PromptEditorModal
           isOpen={true}
@@ -236,9 +236,7 @@ describe("PromptEditorModal", () => {
 
       expect(screen.getByText("You have unsaved changes")).toBeInTheDocument();
       expect(screen.getByText("Discard")).toBeInTheDocument();
-      // Submit button is in both the main form and the confirmation dialog
-      const submitButtons = screen.getAllByText("Submit");
-      expect(submitButtons.length).toBe(2);
+      expect(screen.getByText("Keep editing")).toBeInTheDocument();
     });
 
     it("should close without saving when Discard is clicked", () => {
@@ -264,7 +262,7 @@ describe("PromptEditorModal", () => {
       expect(onClose).toHaveBeenCalled();
     });
 
-    it("should save and close when Submit is clicked in confirmation dialog", () => {
+    it("should keep the editor and its changes when Keep editing is clicked", () => {
       const onSubmit = vi.fn();
       const onClose = vi.fn();
 
@@ -282,15 +280,14 @@ describe("PromptEditorModal", () => {
 
       fireEvent.click(screen.getByText("Cancel"));
 
-      // Click the Submit button in the confirmation dialog
-      const submitButtons = screen.getAllByText("Submit");
-      fireEvent.click(submitButtons[1]); // Second Submit button is in the confirmation dialog
+      fireEvent.click(screen.getByText("Keep editing"));
 
-      expect(onSubmit).toHaveBeenCalledWith("Changed");
-      expect(onClose).toHaveBeenCalled();
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(onClose).not.toHaveBeenCalled();
+      expect(screen.getByPlaceholderText("Describe what to generate...")).toHaveValue("Changed");
     });
 
-    it("should dismiss confirmation dialog when close button is clicked", () => {
+    it("should dismiss confirmation dialog when Keep editing is clicked", () => {
       render(
         <PromptEditorModal
           isOpen={true}
@@ -307,15 +304,13 @@ describe("PromptEditorModal", () => {
 
       expect(screen.getByText("You have unsaved changes")).toBeInTheDocument();
 
-      // Click the X button to close the confirmation
-      const closeButton = screen.getByLabelText("Close");
-      fireEvent.click(closeButton);
+      fireEvent.click(screen.getByText("Keep editing"));
 
       expect(screen.queryByText("You have unsaved changes")).not.toBeInTheDocument();
     });
 
     it("should dismiss confirmation dialog when clicking outside of it", async () => {
-      const { container } = render(
+      render(
         <PromptEditorModal
           isOpen={true}
           initialPrompt="Original"
@@ -331,8 +326,7 @@ describe("PromptEditorModal", () => {
 
       expect(screen.getByText("You have unsaved changes")).toBeInTheDocument();
 
-      // Click on the confirmation backdrop
-      const confirmationBackdrop = container.querySelector(".absolute.inset-0.flex.items-center.justify-center.bg-black\\/60");
+      const confirmationBackdrop = document.querySelector(".current-sheet-backdrop");
       fireEvent.click(confirmationBackdrop!);
 
       await waitFor(() => {
@@ -355,7 +349,7 @@ describe("PromptEditorModal", () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: "Escape" });
+      fireEvent.keyDown(document, { key: "Escape" });
 
       expect(onSubmit).not.toHaveBeenCalled();
       expect(onClose).toHaveBeenCalled();
@@ -376,18 +370,18 @@ describe("PromptEditorModal", () => {
       const textarea = screen.getByPlaceholderText("Describe what to generate...");
       fireEvent.change(textarea, { target: { value: "Changed prompt" } });
 
-      fireEvent.keyDown(window, { key: "Escape" });
+      fireEvent.keyDown(document, { key: "Escape" });
 
       expect(screen.getByText("You have unsaved changes")).toBeInTheDocument();
       expect(onClose).not.toHaveBeenCalled();
     });
   });
 
-  describe("Backdrop Click", () => {
-    it("should close modal when backdrop is clicked and no changes", () => {
+  describe("Canvas Return", () => {
+    it("should close when Back to canvas is clicked and there are no changes", () => {
       const onClose = vi.fn();
 
-      const { container } = render(
+      render(
         <PromptEditorModal
           isOpen={true}
           initialPrompt="Original prompt"
@@ -396,17 +390,15 @@ describe("PromptEditorModal", () => {
         />
       );
 
-      // Click on the backdrop (outer div with bg-black/50)
-      const backdrop = container.querySelector(".fixed.inset-0");
-      fireEvent.click(backdrop!);
+      fireEvent.click(screen.getByRole("button", { name: "Back to canvas" }));
 
       expect(onClose).toHaveBeenCalled();
     });
 
-    it("should show confirmation when backdrop is clicked with unsaved changes", () => {
+    it("should show confirmation when returning with unsaved changes", () => {
       const onClose = vi.fn();
 
-      const { container } = render(
+      render(
         <PromptEditorModal
           isOpen={true}
           initialPrompt="Original"
@@ -418,8 +410,7 @@ describe("PromptEditorModal", () => {
       const textarea = screen.getByPlaceholderText("Describe what to generate...");
       fireEvent.change(textarea, { target: { value: "Changed" } });
 
-      const backdrop = container.querySelector(".fixed.inset-0");
-      fireEvent.click(backdrop!);
+      fireEvent.click(screen.getByRole("button", { name: "Back to canvas" }));
 
       expect(screen.getByText("You have unsaved changes")).toBeInTheDocument();
       expect(onClose).not.toHaveBeenCalled();

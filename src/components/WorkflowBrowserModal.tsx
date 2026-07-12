@@ -2,6 +2,7 @@
 
 import { WorkflowFile } from "@/store/workflowStore";
 import { WorkflowBrowserView } from "./quickstart/WorkflowBrowserView";
+import { CurrentSheet } from "@/components/current";
 
 interface WorkflowBrowserModalProps {
   isOpen: boolean;
@@ -14,26 +15,14 @@ export function WorkflowBrowserModal({
   onClose,
   onWorkflowLoaded,
 }: WorkflowBrowserModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/25 backdrop-blur-sm"
-      onWheelCapture={(e) => e.stopPropagation()}
-      onClick={onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="workflow-browser-title"
-        className="w-full max-w-2xl mx-4 iris-glass rounded-xl shadow-2xl overflow-clip max-h-[85vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <CurrentSheet open={isOpen} title="Open Workflow" onClose={onClose} width="wide">
+      <div className="max-h-[72vh] overflow-hidden" onWheelCapture={(event) => event.stopPropagation()}>
         <WorkflowBrowserView
           onWorkflowLoaded={onWorkflowLoaded}
           onClose={onClose}
         />
       </div>
-    </div>
+    </CurrentSheet>
   );
 }

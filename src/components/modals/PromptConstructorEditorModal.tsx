@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { AvailableVariable } from "@/types";
 import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
+import { CurrentAlert, CurrentButton } from "@/components/current";
+import { FocusWorkspace } from "@/components/workspace/FocusWorkspace";
 
 const FONT_SIZE_STORAGE_KEY = "prompt-constructor-editor-font-size";
 const DEFAULT_FONT_SIZE = 14;
@@ -100,25 +102,10 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
     }
   }, [hasUnsavedChanges, onClose]);
 
-  // Escape key: close autocomplete first, then modal
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (showAutocomplete) {
-          closeAutocomplete();
-        } else {
-          handleAttemptClose();
-        }
-      }
-    };
-
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, handleAttemptClose, showAutocomplete, closeAutocomplete]);
+  const handleFocusEscape = useCallback(() => {
+    if (showAutocomplete) closeAutocomplete();
+    else handleAttemptClose();
+  }, [showAutocomplete, closeAutocomplete, handleAttemptClose]);
 
   const handleSubmit = useCallback(() => {
     onSubmit(template);
@@ -129,27 +116,9 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
     setFontSize(parseInt(e.target.value, 10));
   }, []);
 
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) {
-        handleAttemptClose();
-      }
-    },
-    [handleAttemptClose]
-  );
-
   const handleDismissConfirmation = useCallback(() => {
     setShowConfirmation(false);
   }, []);
-
-  const handleConfirmationBackdropClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) {
-        handleDismissConfirmation();
-      }
-    },
-    [handleDismissConfirmation]
-  );
 
   // Insert @varName at cursor when clicking a variable pill
   const handleVariablePillClick = useCallback(
@@ -174,14 +143,16 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm"
-      onClick={handleBackdropClick}
-    >
-      <div className="relative iris-glass rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col mx-4">
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4 flex items-center gap-3">
-          <h2 className="text-xl font-semibold text-neutral-100">Edit Prompt Constructor</h2>
+    <>
+      <FocusWorkspace
+        title="Edit Prompt Constructor"
+        onBack={handleAttemptClose}
+        onEscape={handleFocusEscape}
+        secondaryActions={<CurrentButton variant="secondary" onClick={handleAttemptClose}>Cancel</CurrentButton>}
+        primaryAction={<CurrentButton variant="primary" onClick={handleSubmit}>Submit</CurrentButton>}
+      >
+      <div className="h-full flex flex-col py-5">
+        <div className="px-6 pb-4 flex items-center gap-3">
           {unresolvedVars.length > 0 && (
             <span className="px-2 py-0.5 bg-amber-900/30 border border-amber-700/50 rounded text-[11px] text-amber-400">
               Unresolved: {unresolvedVars.map((v) => `@${v}`).join(", ")}
@@ -282,63 +253,18 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
           </div>
         )}
 
-        {/* Footer with buttons */}
-        <div className="flex justify-end gap-3 px-6 pb-6">
-          <button
-            onClick={handleAttemptClose}
-            className="px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-blue-400"
-          >
-            Submit
-          </button>
-        </div>
-
-        {/* Confirmation overlay */}
-        {showConfirmation && (
-          <div
-            className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg"
-            onClick={handleConfirmationBackdropClick}
-          >
-            <div className="relative iris-glass rounded-lg p-6 mx-4 max-w-sm shadow-xl">
-              <button
-                onClick={handleDismissConfirmation}
-                className="absolute top-3 right-3 text-neutral-400 hover:text-neutral-200 transition-colors focus:outline-none"
-                aria-label="Close"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-
-              <p className="text-neutral-100 text-center mb-6">You have unsaved changes</p>
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500"
-                >
-                  Discard
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-blue-400"
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+      </FocusWorkspace>
+      <CurrentAlert
+        open={showConfirmation}
+        title="You have unsaved changes"
+        description="Discard your constructor edits and return to the canvas?"
+        cancelLabel="Keep editing"
+        confirmLabel="Discard"
+        danger
+        onCancel={handleDismissConfirmation}
+        onConfirm={onClose}
+      />
+    </>
   );
 };
