@@ -5,6 +5,7 @@ import { WorkflowFile } from "@/store/workflowStore";
 import { QuickstartBackButton } from "./QuickstartBackButton";
 import {
   getWorkflowsDirectory,
+  markWorkflowOpened,
   setWorkflowsDirectory,
 } from "@/store/utils/localStorage";
 
@@ -125,7 +126,9 @@ export function WorkflowBrowserView({
         return;
       }
 
-      onWorkflowLoaded(loadResult.workflow as WorkflowFile, dirPath);
+      const workflow = loadResult.workflow as WorkflowFile;
+      markWorkflowOpened({ workflowId: workflow.id, directoryPath: dirPath });
+      onWorkflowLoaded(workflow, dirPath);
       onClose?.();
     } catch {
       setLoadingWorkflow(null);
@@ -149,10 +152,12 @@ export function WorkflowBrowserView({
           return;
         }
 
-        onWorkflowLoaded(
-          result.workflow as WorkflowFile,
-          entry.directoryPath
-        );
+        const workflow = result.workflow as WorkflowFile;
+        markWorkflowOpened({
+          workflowId: workflow.id,
+          directoryPath: entry.directoryPath,
+        });
+        onWorkflowLoaded(workflow, entry.directoryPath);
         onClose?.();
       } catch {
         setError("Failed to load workflow");

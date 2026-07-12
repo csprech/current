@@ -1,9 +1,21 @@
 import type { WorkflowFile } from "@/store/workflowStore";
 import type { NodeGroup, WorkflowProposal } from "@/types";
 import { repairWorkflowJSON, validateWorkflowJSON } from "./validation";
+import { getNodeConnectionCapabilities } from "@/lib/workflow/nodeCapabilities";
+
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([, entry]) => entry !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => [key, canonicalize(entry)]),
+  );
+}
 
 function stableId(proposal: WorkflowProposal): string {
-  const input = `${proposal.name}|${proposal.nodes.map((node) => `${node.id}:${node.type}`).join("|")}|${proposal.connections.map((edge) => `${edge.from}:${edge.to}:${edge.type}`).join("|")}`;
+  const input = JSON.stringify(canonicalize(proposal));
   let hash = 2166136261;
   for (let index = 0; index < input.length; index += 1) {
     hash ^= input.charCodeAt(index);
@@ -19,6 +31,30 @@ export function proposalToWorkflow(proposal: WorkflowProposal): WorkflowFile {
   }
   if (proposal.connections.some((connection) => !nodeIds.has(connection.from) || !nodeIds.has(connection.to))) {
     throw new Error("Invalid workflow proposal: connection references an unknown node");
+  }
+  const nodesById = new Map(proposal.nodes.map((node) => [node.id, node]));
+  for (const connection of proposal.connections) {
+    const source = nodesById.get(connection.from)!;
+    const target = nodesById.get(connection.to)!;
+    if (!getNodeConnectionCapabilities(source.type).outputs.includes(connection.type)) {
+      throw new Error(`Invalid workflow proposal: ${source.type} cannot output ${connection.type}`);
+    }
+    if (!getNodeConnectionCapabilities(target.type).inputs.includes(connection.type)) {
+      throw new Error(`Invalid workflow proposal: ${target.type} cannot accept input ${connection.type}`);
+    }
+  }
+
+  const groupedNodeIds = new Set<string>();
+  for (const group of proposal.groups ?? []) {
+    if (!group.name.trim()) throw new Error("Invalid workflow proposal: group name cannot be empty");
+    if (group.nodeIds.length === 0) throw new Error(`Invalid workflow proposal: group ${group.name} cannot be empty`);
+    const membership = new Set(group.nodeIds);
+    if (membership.size !== group.nodeIds.length) throw new Error(`Invalid workflow proposal: group ${group.name} contains duplicate nodes`);
+    for (const nodeId of membership) {
+      if (!nodeIds.has(nodeId)) throw new Error(`Invalid workflow proposal: group ${group.name} references unknown node ${nodeId}`);
+      if (groupedNodeIds.has(nodeId)) throw new Error(`Invalid workflow proposal: node ${nodeId} belongs to multiple groups`);
+      groupedNodeIds.add(nodeId);
+    }
   }
 
   const workflow = repairWorkflowJSON({

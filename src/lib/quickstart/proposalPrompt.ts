@@ -54,7 +54,7 @@ Purpose: Display final generated images
 - Use when: Marking the final result(s) of a workflow
 
 ## Connection Rules
-1. **Type matching**: "image" → "image", "text" → "text", "reference" → "reference"
+1. **Type matching**: Connections must use matching typed handles: "image", "text", "audio", "video", "3d", "easeCurve", or "reference"
 2. **nanoBanana REQUIRES**: At least one image AND one text connection
 3. **Multiple images**: nanoBanana can accept multiple image inputs for multi-reference generation
 

@@ -75,7 +75,10 @@ export function Launchpad({ onNewCanvas, onWorkflowGenerated }: LaunchpadProps) 
       const response = await fetch(`/api/workflow?path=${encodeURIComponent(project.directoryPath)}&load=true`);
       const result = await response.json();
       if (!response.ok || !result.success || !result.workflow) throw new Error(result.error || "Failed to open recent project");
-      markWorkflowOpened(project.workflowId);
+      markWorkflowOpened({
+        workflowId: project.workflowId,
+        directoryPath: project.directoryPath,
+      });
       onWorkflowGenerated(result.workflow as WorkflowFile, project.directoryPath);
     } catch (caught) {
       setRecentError(caught instanceof Error ? caught.message : "Failed to open recent project");

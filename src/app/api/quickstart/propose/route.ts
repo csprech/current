@@ -75,7 +75,7 @@ function validateProposalShape(data: unknown): string | null {
     return "Proposal must have a connections array";
   }
 
-  const validConnectionTypes = ["image", "text", "reference"];
+  const validConnectionTypes = ["image", "text", "audio", "video", "3d", "easeCurve", "reference"];
   const nodeIds = new Set(
     (proposal.nodes as Array<{ id: string }>).map((n) => n.id)
   );
@@ -92,7 +92,7 @@ function validateProposalShape(data: unknown): string | null {
       return `connections[${i}] must have a 'to' (string)`;
     }
     if (!conn.type || !validConnectionTypes.includes(conn.type as string)) {
-      return `connections[${i}] must have a valid type (image, text, reference)`;
+      return `connections[${i}] must have a valid type (${validConnectionTypes.join(", ")})`;
     }
     if (!conn.description || typeof conn.description !== "string") {
       return `connections[${i}] must have a description (string)`;

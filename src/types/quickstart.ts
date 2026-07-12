@@ -59,7 +59,7 @@ export interface ProposedConnection {
   /** Target node ID */
   to: string;
   /** Connection type */
-  type: "image" | "text" | "reference";
+  type: "image" | "text" | "audio" | "video" | "3d" | "easeCurve" | "reference";
   /** Human-readable description of data flow */
   description: string;
 }

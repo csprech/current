@@ -70,7 +70,15 @@ export const saveSaveConfig = (config: WorkflowSaveConfig): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
 };
 
-export const markWorkflowOpened = (workflowId: string, openedAt: number = Date.now()): void => {
+export interface WorkflowOpenedIdentity {
+  workflowId?: string;
+  directoryPath?: string;
+}
+
+export const markWorkflowOpened = (
+  identity: WorkflowOpenedIdentity,
+  openedAt: number = Date.now()
+): void => {
   if (typeof window === "undefined") return;
   let configs: Record<string, WorkflowSaveConfig>;
   try {
@@ -78,8 +86,18 @@ export const markWorkflowOpened = (workflowId: string, openedAt: number = Date.n
   } catch {
     return;
   }
-  const config = configs[workflowId];
-  if (!config) return;
+  const matchedEntry =
+    (identity.workflowId && configs[identity.workflowId]
+      ? ([identity.workflowId, configs[identity.workflowId]] as const)
+      : undefined) ??
+    Object.entries(configs).find(
+      ([, config]) =>
+        identity.directoryPath !== undefined &&
+        config.directoryPath === identity.directoryPath
+    );
+
+  if (!matchedEntry) return;
+  const [workflowId, config] = matchedEntry;
   configs[workflowId] = { ...config, lastOpenedAt: openedAt };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
 };
