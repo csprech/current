@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { CurrentButton, InlineNotice } from "@/components/current";
 import type { WorkflowFile } from "@/store/workflowStore";
 import type { WorkflowProposal } from "@/types/quickstart";
+import { proposalToWorkflow } from "@/lib/quickstart/proposalToWorkflow";
 import { QuickstartBackButton } from "./QuickstartBackButton";
 
 interface PromptWorkflowViewProps {
@@ -40,26 +41,17 @@ export function PromptWorkflowView({ onBack, onWorkflowGenerated }: PromptWorkfl
     }
   }, [description]);
 
-  const buildWorkflow = useCallback(async () => {
+  const buildWorkflow = useCallback(() => {
     if (!proposal) return;
     setError(null);
     setPhase("building");
     try {
-      const response = await fetch("/api/quickstart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description: description.trim(), contentLevel: "full" }),
-      });
-      const result = await response.json();
-      if (!response.ok || !result.success || !result.workflow) {
-        throw new Error(result.error || "Failed to build workflow");
-      }
-      onWorkflowGenerated(result.workflow as WorkflowFile);
+      onWorkflowGenerated(proposalToWorkflow(proposal));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Failed to build workflow");
       setPhase("review");
     }
-  }, [description, onWorkflowGenerated, proposal]);
+  }, [onWorkflowGenerated, proposal]);
 
   const busy = phase === "proposing" || phase === "building";
 

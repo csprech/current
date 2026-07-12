@@ -25,6 +25,8 @@ export interface WorkflowSaveConfig {
   directoryPath: string;
   generationsPath: string | null;
   lastSavedAt: number | null;
+  /** Last successful project open. Optional for backward compatibility with existing configs. */
+  lastOpenedAt?: number;
   useExternalImageStorage?: boolean;  // Whether to store images as files vs embedded base64
 }
 

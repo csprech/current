@@ -8,7 +8,7 @@ import { WorkflowBrowserView } from "@/components/quickstart/WorkflowBrowserView
 import type { WorkflowFile } from "@/store/workflowStore";
 import type { QuickstartView } from "@/types/quickstart";
 import type { WorkflowSaveConfig } from "@/types";
-import { loadSaveConfigs } from "@/store/utils/localStorage";
+import { loadSaveConfigs, markWorkflowOpened } from "@/store/utils/localStorage";
 
 export interface LaunchpadProps {
   onNewCanvas: () => void;
@@ -47,9 +47,10 @@ function getRecentProjects(): WorkflowSaveConfig[] {
     return Object.values(loadSaveConfigs())
       .filter((config): config is WorkflowSaveConfig => Boolean(
         config && typeof config.workflowId === "string" && typeof config.name === "string" &&
-        typeof config.directoryPath === "string" && config.directoryPath && typeof config.lastSavedAt === "number",
+        typeof config.directoryPath === "string" && config.directoryPath &&
+        (typeof config.lastOpenedAt === "number" || typeof config.lastSavedAt === "number"),
       ))
-      .sort((a, b) => (b.lastSavedAt ?? 0) - (a.lastSavedAt ?? 0))
+      .sort((a, b) => (b.lastOpenedAt ?? b.lastSavedAt ?? 0) - (a.lastOpenedAt ?? a.lastSavedAt ?? 0))
       .slice(0, 4);
   } catch {
     return [];
@@ -74,6 +75,7 @@ export function Launchpad({ onNewCanvas, onWorkflowGenerated }: LaunchpadProps) 
       const response = await fetch(`/api/workflow?path=${encodeURIComponent(project.directoryPath)}&load=true`);
       const result = await response.json();
       if (!response.ok || !result.success || !result.workflow) throw new Error(result.error || "Failed to open recent project");
+      markWorkflowOpened(project.workflowId);
       onWorkflowGenerated(result.workflow as WorkflowFile, project.directoryPath);
     } catch (caught) {
       setRecentError(caught instanceof Error ? caught.message : "Failed to open recent project");
@@ -100,16 +102,19 @@ export function Launchpad({ onNewCanvas, onWorkflowGenerated }: LaunchpadProps) 
                 <h2 id="recent-projects-title">Recent projects</h2>
                 <div>
                   {recentProjects.map((project) => {
-                    const lastOpened = formatLastOpened(project.lastSavedAt!);
+                    const hasOpenedAt = typeof project.lastOpenedAt === "number";
+                    const recentTimestamp = project.lastOpenedAt ?? project.lastSavedAt!;
+                    const recentLabel = hasOpenedAt ? "Last opened" : "Last saved";
+                    const formattedTimestamp = formatLastOpened(recentTimestamp);
                     return (
                       <button
                         key={project.workflowId}
                         type="button"
-                        aria-label={`${project.name}, Last opened ${lastOpened}`}
+                        aria-label={`${project.name}, ${recentLabel} ${formattedTimestamp}`}
                         onClick={() => openRecentProject(project)}
                         disabled={openingRecent !== null}
                       >
-                        <span><strong>{project.name}</strong><small>Last opened {lastOpened}</small></span>
+                        <span><strong>{project.name}</strong><small>{recentLabel} {formattedTimestamp}</small></span>
                         <span aria-hidden="true">›</span>
                       </button>
                     );

@@ -70,6 +70,20 @@ export const saveSaveConfig = (config: WorkflowSaveConfig): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
 };
 
+export const markWorkflowOpened = (workflowId: string, openedAt: number = Date.now()): void => {
+  if (typeof window === "undefined") return;
+  let configs: Record<string, WorkflowSaveConfig>;
+  try {
+    configs = loadSaveConfigs();
+  } catch {
+    return;
+  }
+  const config = configs[workflowId];
+  if (!config) return;
+  configs[workflowId] = { ...config, lastOpenedAt: openedAt };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
+};
+
 // Cost data helpers
 export const loadWorkflowCostData = (workflowId: string): WorkflowCostData | null => {
   if (typeof window === "undefined") return null;

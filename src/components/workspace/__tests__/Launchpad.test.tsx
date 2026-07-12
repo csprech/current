@@ -66,23 +66,47 @@ describe("Launchpad", () => {
 
     render(<Launchpad {...props} />);
 
-    const recentButtons = screen.getAllByRole("button", { name: /project, Last opened/ });
+    const recentButtons = screen.getAllByRole("button", { name: /project, Last saved/ });
     expect(recentButtons[0]).toHaveAccessibleName(/Newest project/);
     expect(recentButtons[1]).toHaveAccessibleName(/Older project/);
+  });
+
+  it("prefers last-opened metadata and falls back to legacy last-saved timestamps", () => {
+    localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
+      savedLater: { workflowId: "savedLater", name: "Saved later", directoryPath: "/work/saved", generationsPath: null, lastSavedAt: 500 },
+      openedLater: { workflowId: "openedLater", name: "Opened later", directoryPath: "/work/opened", generationsPath: null, lastSavedAt: 100, lastOpenedAt: 900 },
+      malformed: { workflowId: "malformed", name: "Malformed", directoryPath: 42, lastSavedAt: "yesterday" },
+    }));
+
+    render(<Launchpad {...props} />);
+
+    const buttons = screen.getAllByRole("button", { name: /Last (opened|saved)/ });
+    expect(buttons[0]).toHaveAccessibleName(/Opened later/);
+    expect(buttons[1]).toHaveAccessibleName(/Saved later/);
+    expect(screen.queryByText("Malformed")).not.toBeInTheDocument();
   });
 
   it("opens a selected recent project through the existing workflow load endpoint", async () => {
     const workflow = { id: "recent", version: 1, name: "Recent project", edgeStyle: "curved", nodes: [], edges: [] };
     localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
-      recent: { workflowId: "recent", name: "Recent project", directoryPath: "/work/recent", generationsPath: null, lastSavedAt: 200 },
+      recent: { workflowId: "recent", name: "Recent project", directoryPath: "/work/recent", generationsPath: null, lastSavedAt: 100 },
+      other: { workflowId: "other", name: "Other project", directoryPath: "/work/other", generationsPath: "/work/other/generations", lastSavedAt: 200 },
     }));
     vi.mocked(global.fetch).mockResolvedValue({ ok: true, json: async () => ({ success: true, workflow }) } as Response);
 
-    render(<Launchpad {...props} />);
-    fireEvent.click(screen.getByRole("button", { name: /Recent project, Last opened/ }));
+    const view = render(<Launchpad {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: /Recent project, Last saved/ }));
 
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/workflow?path=%2Fwork%2Frecent&load=true"));
     await waitFor(() => expect(props.onWorkflowGenerated).toHaveBeenCalledWith(workflow, "/work/recent"));
+    const persisted = JSON.parse(localStorage.getItem("node-banana-workflow-configs")!);
+    expect(persisted.recent.lastOpenedAt).toEqual(expect.any(Number));
+    expect(persisted.recent).toEqual(expect.objectContaining({ name: "Recent project", directoryPath: "/work/recent", lastSavedAt: 100 }));
+    expect(persisted.other).toEqual(expect.objectContaining({ name: "Other project", generationsPath: "/work/other/generations" }));
+    view.unmount();
+    render(<Launchpad {...props} />);
+    const refreshed = screen.getAllByRole("button", { name: /Last (opened|saved)/ });
+    expect(refreshed[0]).toHaveAccessibleName(/Recent project, Last opened/);
   });
 
   it("safely ignores malformed recent-project storage", () => {
