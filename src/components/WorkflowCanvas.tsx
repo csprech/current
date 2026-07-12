@@ -85,6 +85,7 @@ import { useFTUXStore } from "@/store/ftuxStore";
 import { recordRecentNode } from "@/components/workspace/nodeCatalog";
 import { WorkspacePanelHost } from "@/components/workspace/WorkspacePanelHost";
 import { OutputsWorkspace } from "@/components/workspace/OutputsWorkspace";
+import { InlineNotice } from "@/components/current";
 
 const nodeTypes: NodeTypes = {
   imageInput: ImageInputNode,
@@ -365,6 +366,7 @@ export function WorkflowCanvas() {
   const [dropType, setDropType] = useState<"image" | "audio" | "workflow" | "node" | null>(null);
   const [connectionDrop, setConnectionDrop] = useState<ConnectionDropState | null>(null);
   const [isSplitting, setIsSplitting] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
   const [isBuildingWorkflow, setIsBuildingWorkflow] = useState(false);
   const [showNewProjectSetup, setShowNewProjectSetup] = useState(false);
   const [expandingNode, setExpandingNode] = useState<{ id: string; type: string } | null>(null);
@@ -1044,6 +1046,7 @@ export function WorkflowCanvas() {
   // Handle the splitGrid action - uses automated grid detection
   const handleSplitGridAction = useCallback(
     async (sourceNodeId: string, flowPosition: { x: number; y: number }) => {
+      setRecoveryError(null);
       const sourceNode = getNodeById(sourceNodeId);
       if (!sourceNode) return;
 
@@ -1058,7 +1061,7 @@ export function WorkflowCanvas() {
       }
 
       if (!sourceImage) {
-        alert("No image available to split. Generate or load an image first.");
+        setRecoveryError("No image available to split. Generate or load an image first.");
         return;
       }
 
@@ -1069,7 +1072,7 @@ export function WorkflowCanvas() {
         const { grid, images } = await detectAndSplitGrid(sourceImage);
 
         if (images.length === 0) {
-          alert("Could not detect grid in image.");
+          setRecoveryError("Could not detect grid in image.");
           setIsSplitting(false);
           return;
         }
@@ -1116,7 +1119,7 @@ export function WorkflowCanvas() {
 
       } catch (error) {
         console.error("[SplitGrid] Error:", error);
-        alert("Failed to split image grid: " + (error instanceof Error ? error.message : "Unknown error"));
+        setRecoveryError("Failed to split image grid: " + (error instanceof Error ? error.message : "Unknown error"));
       } finally {
         setIsSplitting(false);
       }
@@ -1989,12 +1992,13 @@ export function WorkflowCanvas() {
           try {
             const workflow = JSON.parse(e.target?.result as string) as WorkflowFile;
             if (workflow.version && workflow.nodes && workflow.edges) {
+              setRecoveryError(null);
               await loadWorkflow(workflow);
             } else {
-              alert("Invalid workflow file format");
+              setRecoveryError("This workflow file could not be opened.");
             }
           } catch {
-            alert("Failed to parse workflow file");
+            setRecoveryError("This workflow file could not be opened.");
           }
         };
         reader.readAsText(file);
@@ -2075,6 +2079,15 @@ export function WorkflowCanvas() {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      {recoveryError && (
+        <InlineNotice
+          tone="error"
+          onDismiss={() => setRecoveryError(null)}
+          className="absolute left-1/2 top-3 z-[60] w-[min(32rem,calc(100%-2rem))] -translate-x-1/2"
+        >
+          {recoveryError}
+        </InlineNotice>
+      )}
       {/* Drop overlay indicator */}
       {isDragOver && (
         <div className="absolute inset-0 bg-blue-500/10 z-50 pointer-events-none flex items-center justify-center">

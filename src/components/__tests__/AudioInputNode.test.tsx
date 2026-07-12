@@ -117,6 +117,14 @@ const createNodeProps = (data: Partial<AudioInputNodeData> = {}) => ({
   type: "audioInput" as const,
   data: createNodeData(data),
   selected: false,
+  dragging: false,
+  zIndex: 0,
+  selectable: true,
+  deletable: true,
+  draggable: true,
+  isConnectable: true,
+  positionAbsoluteX: 0,
+  positionAbsoluteY: 0,
 });
 
 describe("AudioInputNode", () => {
@@ -184,9 +192,10 @@ describe("AudioInputNode", () => {
       const file = new File(["content"], "test.txt", { type: "text/plain" });
       fireEvent.change(fileInput, { target: { files: [file] } });
 
-      expect(window.alert).toHaveBeenCalledWith(
-        expect.stringContaining("Unsupported format")
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Unsupported format. Use MP3, WAV, OGG, AAC, or other audio formats."
       );
+      expect(window.alert).not.toHaveBeenCalled();
     });
 
     it("should reject files larger than 50MB", () => {
@@ -200,9 +209,10 @@ describe("AudioInputNode", () => {
       Object.defineProperty(file, "size", { value: 51 * 1024 * 1024 });
       fireEvent.change(fileInput, { target: { files: [file] } });
 
-      expect(window.alert).toHaveBeenCalledWith(
-        expect.stringContaining("50MB")
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Audio file too large. Maximum size is 50MB."
       );
+      expect(window.alert).not.toHaveBeenCalled();
     });
 
     it("should accept valid audio files and use FileReader", () => {

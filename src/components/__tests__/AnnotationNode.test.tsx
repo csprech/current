@@ -108,6 +108,14 @@ describe("AnnotationNode", () => {
     type: "annotation" as const,
     data: createNodeData(data),
     selected: false,
+    dragging: false,
+    zIndex: 0,
+    selectable: true,
+    deletable: true,
+    draggable: true,
+    isConnectable: true,
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
   });
 
   describe("Basic Rendering", () => {
@@ -431,7 +439,8 @@ describe("AnnotationNode", () => {
 
       fireEvent.change(fileInput);
 
-      expect(mockAlert).toHaveBeenCalledWith("Unsupported format. Use PNG, JPG, or WebP.");
+      expect(screen.getByRole("alert")).toHaveTextContent("Unsupported format. Use PNG, JPG, or WebP.");
+      expect(mockAlert).not.toHaveBeenCalled();
       expect(mockUpdateNodeData).not.toHaveBeenCalled();
     });
 
@@ -449,7 +458,8 @@ describe("AnnotationNode", () => {
 
       fireEvent.change(fileInput);
 
-      expect(mockAlert).toHaveBeenCalledWith("Image too large. Maximum size is 10MB.");
+      expect(screen.getByRole("alert")).toHaveTextContent("Image too large. Maximum size is 10MB.");
+      expect(mockAlert).not.toHaveBeenCalled();
       expect(mockUpdateNodeData).not.toHaveBeenCalled();
     });
   });

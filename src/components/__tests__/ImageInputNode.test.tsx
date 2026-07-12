@@ -75,6 +75,7 @@ describe("ImageInputNode", () => {
     positionAbsoluteY: 0,
     zIndex: 0,
     dragging: false,
+    draggable: true,
     deletable: true,
     selectable: true,
     parentId: undefined,
@@ -232,7 +233,8 @@ describe("ImageInputNode", () => {
 
       fireEvent.change(fileInput);
 
-      expect(mockAlert).toHaveBeenCalledWith("Unsupported format. Use PNG, JPG, or WebP.");
+      expect(screen.getByRole("alert")).toHaveTextContent("Unsupported format. Use PNG, JPG, or WebP.");
+      expect(mockAlert).not.toHaveBeenCalled();
       expect(mockUpdateNodeData).not.toHaveBeenCalled();
     });
 
@@ -252,7 +254,8 @@ describe("ImageInputNode", () => {
 
       fireEvent.change(fileInput);
 
-      expect(mockAlert).toHaveBeenCalledWith("Image too large. Maximum size is 10MB.");
+      expect(screen.getByRole("alert")).toHaveTextContent("Image too large. Maximum size is 10MB.");
+      expect(mockAlert).not.toHaveBeenCalled();
       expect(mockUpdateNodeData).not.toHaveBeenCalled();
     });
 

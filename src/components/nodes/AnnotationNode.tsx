@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { CurrentHandle as Handle } from "./CurrentHandle";
 import { Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
@@ -11,6 +11,7 @@ import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { InlineNotice } from "@/components/current";
 
 type AnnotationNodeType = Node<AnnotationNodeData, "annotation">;
 
@@ -20,19 +21,21 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const showLabels = useShowHandleLabels(selected);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      setValidationError(null);
 
       if (!file.type.match(/^image\/(png|jpeg|webp)$/)) {
-        alert("Unsupported format. Use PNG, JPG, or WebP.");
+        setValidationError("Unsupported format. Use PNG, JPG, or WebP.");
         return;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        alert("Image too large. Maximum size is 10MB.");
+        setValidationError("Image too large. Maximum size is 10MB.");
         return;
       }
 
@@ -78,7 +81,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
   const handleEdit = useCallback(() => {
     const imageToEdit = nodeData.sourceImage || nodeData.outputImage;
     if (!imageToEdit) {
-      alert("No image available. Connect an image or load one manually.");
+      setValidationError("No image available. Connect an image or load one manually.");
       return;
     }
     openModal(id, imageToEdit, nodeData.annotations);
@@ -113,6 +116,12 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {validationError && (
+        <InlineNotice tone="error" onDismiss={() => setValidationError(null)} className="absolute left-2 right-2 top-2 z-20">
+          {validationError}
+        </InlineNotice>
+      )}
 
       <Handle
         type="target"

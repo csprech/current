@@ -404,6 +404,27 @@ describe("WorkflowCanvas", () => {
     });
   });
 
+  describe("Inline recovery", () => {
+    it("reports workflow import failure without a browser alert", async () => {
+      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+      render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
+      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const invalidWorkflow = new File(["not-json"], "broken.json", { type: "application/json" });
+
+      fireEvent.drop(root, {
+        dataTransfer: {
+          types: ["Files"],
+          items: [{ kind: "file", type: "application/json" }],
+          files: [invalidWorkflow],
+          getData: vi.fn(() => ""),
+        },
+      });
+
+      expect(await screen.findByRole("alert")).toHaveTextContent("This workflow file could not be opened.");
+      expect(alertSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Node Types Registration", () => {
     it("should register all required node types for the canvas", () => {
       // We verify the canvas renders with the node types object defined

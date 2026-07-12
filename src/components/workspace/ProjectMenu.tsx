@@ -11,6 +11,7 @@ import { WorkflowBrowserModal } from "@/components/WorkflowBrowserModal";
 import { WorkflowVersionHistory } from "@/components/WorkflowVersionHistory";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { shareableFilename } from "@/utils/shareableWorkflow";
+import { CurrentAlert, InlineNotice } from "@/components/current";
 
 function SaveIcon() {
   return (
@@ -58,6 +59,8 @@ export function ProjectMenu() {
   const [projectModalMode, setProjectModalMode] = useState<"new" | "settings">("new");
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showWorkflowBrowser, setShowWorkflowBrowser] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
+  const [showRevertAlert, setShowRevertAlert] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuItemsRef = useRef<HTMLDivElement>(null);
@@ -140,7 +143,7 @@ export function ProjectMenu() {
     setTimeout(() => {
       saveToFile().catch((error) => {
         console.error("Failed to save project:", error);
-        alert("Failed to save project. Please try again.");
+        setRecoveryError("Failed to save project. Please try again.");
       });
     }, 50);
   };
@@ -155,11 +158,11 @@ export function ProjectMenu() {
       const result = await response.json();
       if (!response.ok || !result.success) {
         console.error("Failed to open directory:", result.error);
-        alert(`Failed to open project folder: ${result.error || "Unknown error"}`);
+        setRecoveryError(`Failed to open project folder: ${result.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Failed to open directory:", error);
-      alert("Failed to open project folder. Please try again.");
+      setRecoveryError("Failed to open project folder. Please try again.");
     }
   };
   const handleExportShareable = () => {
@@ -173,9 +176,7 @@ export function ProjectMenu() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
-  const handleRevert = useCallback(() => {
-    if (window.confirm("Are you sure? This will restore your previous workflow.")) revertToSnapshot();
-  }, [revertToSnapshot]);
+  const handleRevert = useCallback(() => setShowRevertAlert(true), []);
 
   return (
     <>
@@ -221,6 +222,15 @@ export function ProjectMenu() {
           </div>
         </div>
       </div>
+      {recoveryError && (
+        <InlineNotice
+          tone="error"
+          onDismiss={() => setRecoveryError(null)}
+          className="fixed left-1/2 top-16 z-[100] w-[min(32rem,calc(100%-2rem))] -translate-x-1/2"
+        >
+          {recoveryError}
+        </InlineNotice>
+      )}
       <ProjectSetupModal
         isOpen={showProjectModal}
         onClose={() => setShowProjectModal(false)}
@@ -238,6 +248,20 @@ export function ProjectMenu() {
       <KeyboardShortcutsDialog
         isOpen={shortcutsDialogOpen}
         onClose={() => setShortcutsDialogOpen(false)}
+      />
+      <CurrentAlert
+        open={showRevertAlert}
+        title="Revert AI changes?"
+        description="This will restore the workflow from before the last AI change."
+        cancelLabel="Keep changes"
+        confirmLabel="Revert changes"
+        danger
+        returnFocusRef={triggerRef}
+        onCancel={() => setShowRevertAlert(false)}
+        onConfirm={() => {
+          revertToSnapshot();
+          setShowRevertAlert(false);
+        }}
       />
     </>
   );

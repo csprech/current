@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { CurrentHandle as Handle } from "./CurrentHandle";
 import { Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
@@ -10,6 +10,7 @@ import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { InlineNotice } from "@/components/current";
 
 type VideoInputNodeType = Node<VideoInputNodeData, "videoInput">;
 
@@ -22,6 +23,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const showLabels = useShowHandleLabels(selected);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Use blob URL for efficient playback of large base64 videos
   const playbackUrl = useVideoBlobUrl(nodeData.video ?? null);
@@ -30,14 +32,15 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      setValidationError(null);
 
       if (!ACCEPTED_MIME_TYPES.includes(file.type)) {
-        alert("Unsupported format. Use MP4, WebM, or QuickTime video files.");
+        setValidationError("Unsupported format. Use MP4, WebM, or QuickTime video files.");
         return;
       }
 
       if (file.size > MAX_FILE_SIZE) {
-        alert("Video file too large. Maximum size is 200MB.");
+        setValidationError("Video file too large. Maximum size is 200MB.");
         return;
       }
 
@@ -131,6 +134,12 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {validationError && (
+        <InlineNotice tone="error" onDismiss={() => setValidationError(null)} className="absolute left-2 right-2 top-2 z-20">
+          {validationError}
+        </InlineNotice>
+      )}
 
       {nodeData.video ? (
         <div className="relative group w-full h-full overflow-clip rounded-lg">

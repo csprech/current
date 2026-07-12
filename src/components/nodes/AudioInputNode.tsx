@@ -11,6 +11,7 @@ import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { InlineNotice } from "@/components/current";
 
 type AudioInputNodeType = Node<AudioInputNodeData, "audioInput">;
 
@@ -21,6 +22,7 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
   const showLabels = useShowHandleLabels(selected);
 
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Convert base64 data URL to Blob for the hook
   useEffect(() => {
@@ -54,14 +56,15 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      setValidationError(null);
 
       if (!file.type.match(/^audio\//)) {
-        alert("Unsupported format. Use MP3, WAV, OGG, AAC, or other audio formats.");
+        setValidationError("Unsupported format. Use MP3, WAV, OGG, AAC, or other audio formats.");
         return;
       }
 
       if (file.size > 50 * 1024 * 1024) {
-        alert("Audio file too large. Maximum size is 50MB.");
+        setValidationError("Audio file too large. Maximum size is 50MB.");
         return;
       }
 
@@ -147,6 +150,12 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {validationError && (
+        <InlineNotice tone="error" onDismiss={() => setValidationError(null)} className="absolute left-2 right-2 top-2 z-20">
+          {validationError}
+        </InlineNotice>
+      )}
 
       {nodeData.audioFile ? (
         <div className="relative group flex-1 flex flex-col min-h-0 gap-2">

@@ -27,7 +27,7 @@ vi.mock("@/components/CostIndicator", () => ({
   CostIndicator: () => null,
 }));
 
-function createState() {
+function createState(overrides: Record<string, unknown> = {}) {
   return {
     workflowName: "Campaign Study",
     workflowId: "campaign-study",
@@ -46,6 +46,7 @@ function createState() {
     setShowQuickstart: vi.fn(),
     listWorkflowVersions: mockListWorkflowVersions,
     restoreWorkflowVersion: mockRestoreWorkflowVersion,
+    ...overrides,
   };
 }
 
@@ -74,5 +75,37 @@ describe("ProjectMenu version history integration", () => {
     await waitFor(() => {
       expect(mockRestoreWorkflowVersion).toHaveBeenCalledWith("1720000000000");
     });
+  });
+
+  it("asks before reverting AI changes without using browser confirm", () => {
+    const revertToSnapshot = vi.fn();
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    mockUseWorkflowStore.mockImplementation((selector) => selector(createState({
+      previousWorkflowSnapshot: { nodes: [], edges: [] },
+      revertToSnapshot,
+    })));
+    render(<ProjectMenu />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Project menu for Campaign Study" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Revert AI changes" }));
+
+    expect(screen.getByRole("alertdialog", { name: "Revert AI changes?" })).toBeInTheDocument();
+    expect(confirmSpy).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Revert changes" }));
+    expect(revertToSnapshot).toHaveBeenCalledOnce();
+  });
+
+  it("shows and dismisses an inline open-folder error", async () => {
+    vi.spyOn(global, "fetch").mockRejectedValueOnce(new Error("offline"));
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    render(<ProjectMenu />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Project menu for Campaign Study" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Open project folder" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Failed to open project folder. Please try again.");
+    expect(alertSpy).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss notice" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });
