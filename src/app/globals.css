@@ -831,6 +831,9 @@ body {
   backdrop-filter: blur(3px);
 }
 
+.current-add-palette__backdrop.is-dragging { pointer-events: none; }
+.current-add-palette__backdrop.is-dragging .current-add-palette { pointer-events: auto; }
+
 .current-add-palette {
   width: min(680px, calc(100vw - 32px));
   max-height: min(650px, calc(100vh - 130px));

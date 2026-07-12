@@ -22,12 +22,16 @@ vi.mock("@/components/workspace/CurrentCommandBar", () => ({
 vi.mock("@/components/workspace/AddPalette", () => ({
   AddPalette: ({ open }: { open: boolean }) => open ? <div role="dialog" aria-label="Add node">Palette</div> : null,
 }));
+vi.mock("@/components/workspace/WorkspaceModelSearchDialog", () => ({
+  WorkspaceModelSearchDialog: () => <div data-testid="global-model-search-host" />,
+}));
 
 describe("Current workspace page", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("owns one Add Palette and opens it directly from Add", () => {
     render(<Home />);
+    expect(screen.getAllByTestId("global-model-search-host")).toHaveLength(1);
     expect(screen.queryByRole("dialog", { name: "Add node" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Add node" }));
     expect(screen.getAllByRole("dialog", { name: "Add node" })).toHaveLength(1);

@@ -109,12 +109,55 @@ describe("AddPalette", () => {
     await waitFor(() => expect(opener).toHaveFocus());
   });
 
+  it("closes from the backdrop when no drag is active", () => {
+    const onClose = vi.fn();
+    render(<AddPalette open onClose={onClose} />);
+    fireEvent.mouseDown(document.querySelector(".current-add-palette__backdrop")!);
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
   it("preserves drag creation without adding immediately", () => {
     const dataTransfer = { setData: vi.fn(), effectAllowed: "" };
     render(<AddPalette open onClose={vi.fn()} />);
     fireEvent.dragStart(screen.getByRole("button", { name: "Prompt" }), { dataTransfer });
     expect(dataTransfer.setData).toHaveBeenCalledWith("application/node-type", "prompt");
     expect(mockAddNode).not.toHaveBeenCalled();
+  });
+
+  it("lets a palette drag reach the canvas and restores backdrop behavior after dragend", () => {
+    const data = new Map<string, string>();
+    const dataTransfer = {
+      types: ["application/node-type"], items: [], files: [], dropEffect: "copy", effectAllowed: "",
+      setData: vi.fn((type: string, value: string) => data.set(type, value)),
+      getData: vi.fn((type: string) => data.get(type) || ""),
+    };
+    render(
+      <>
+        <div data-testid="canvas-drop-target" onDragOver={(event) => event.preventDefault()} onDrop={(event) => {
+          event.preventDefault();
+          mockAddNode(event.dataTransfer.getData("application/node-type"), { x: 20, y: 30 });
+        }} />
+        <AddPalette open onClose={vi.fn()} />
+      </>
+    );
+    const prompt = screen.getByRole("button", { name: "Prompt" });
+    fireEvent.dragStart(prompt, { dataTransfer });
+    expect(document.querySelector(".current-add-palette__backdrop")).toHaveClass("is-dragging");
+    fireEvent.dragOver(screen.getByTestId("canvas-drop-target"), { dataTransfer });
+    fireEvent.drop(screen.getByTestId("canvas-drop-target"), { dataTransfer });
+    expect(mockAddNode).toHaveBeenCalledWith("prompt", { x: 20, y: 30 });
+    fireEvent.dragEnd(prompt, { dataTransfer });
+    expect(document.querySelector(".current-add-palette__backdrop")).not.toHaveClass("is-dragging");
+  });
+
+  it("does not record a cancelled drag", () => {
+    const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "none" };
+    render(<AddPalette open onClose={vi.fn()} />);
+    const prompt = screen.getByRole("button", { name: "Prompt" });
+    fireEvent.dragStart(prompt, { dataTransfer });
+    fireEvent.dragEnd(prompt, { dataTransfer });
+    expect(sessionStorage.getItem("current:add-palette-recents")).toBeNull();
+    expect(screen.getByRole("dialog", { name: "Add node" })).toBeInTheDocument();
   });
 
   it("supports result keyboard navigation and Escape", () => {

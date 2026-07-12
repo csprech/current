@@ -85,6 +85,7 @@ import { createPortal } from "react-dom";
 import { useAnnotationStore } from "@/store/annotationStore";
 import { TutorialOverlay } from "./onboarding/TutorialOverlay";
 import { useFTUXStore } from "@/store/ftuxStore";
+import { recordRecentNode } from "@/components/workspace/nodeCatalog";
 
 const nodeTypes: NodeTypes = {
   imageInput: ImageInputNode,
@@ -1923,6 +1924,7 @@ export function WorkflowCanvas() {
           y: event.clientY,
         });
         addNode(nodeType, position);
+        recordRecentNode(nodeType);
         return;
       }
 

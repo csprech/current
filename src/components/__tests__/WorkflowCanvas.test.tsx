@@ -427,6 +427,7 @@ describe("WorkflowCanvas", () => {
     });
 
     it("should call addNode when node type is dropped on canvas", () => {
+      sessionStorage.clear();
       render(
         <TestWrapper>
           <WorkflowCanvas />
@@ -452,6 +453,7 @@ describe("WorkflowCanvas", () => {
       });
 
       expect(mockAddNode).toHaveBeenCalledWith("prompt", expect.any(Object));
+      expect(JSON.parse(sessionStorage.getItem("current:add-palette-recents")!)).toEqual(["prompt"]);
     });
   });
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { CurrentCommandBar } from "@/components/workspace/CurrentCommandBar";
 import { AddPalette } from "@/components/workspace/AddPalette";
+import { WorkspaceModelSearchDialog } from "@/components/workspace/WorkspaceModelSearchDialog";
 import { WorkflowCanvas } from "@/components/WorkflowCanvas";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { FTUXModal } from "@/components/onboarding/FTUXModal";
@@ -69,6 +70,7 @@ export default function Home() {
         <CurrentCommandBar onAddNode={() => setAddPaletteOpen(true)} />
         <WorkflowCanvas />
         <AddPalette open={addPaletteOpen} onClose={() => setAddPaletteOpen(false)} />
+        <WorkspaceModelSearchDialog />
         {showFTUX && (
           <FTUXModal
             onComplete={handleFTUXComplete}

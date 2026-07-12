@@ -9,28 +9,13 @@ import {
   NODE_CATALOG,
   NODE_CATALOG_BY_TYPE,
   matchesNodeCatalogItem,
+  readRecentNodes,
+  recordRecentNode,
   type NodeCatalogCategory,
   type NodeCatalogItem,
 } from "./nodeCatalog";
 
 const CATEGORIES = ["All", "Input", "Generate", "Process", "Route", "Output"] as const;
-const RECENTS_KEY = "current:add-palette-recents";
-const RECENTS_LIMIT = 5;
-
-function readRecents(): NodeType[] {
-  try {
-    const value = JSON.parse(sessionStorage.getItem(RECENTS_KEY) || "[]");
-    return Array.isArray(value) ? value.filter((type): type is NodeType => NODE_CATALOG_BY_TYPE.has(type)) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveRecent(type: NodeType) {
-  const next = [type, ...readRecents().filter((recent) => recent !== type)].slice(0, RECENTS_LIMIT);
-  sessionStorage.setItem(RECENTS_KEY, JSON.stringify(next));
-}
-
 function paneCenter() {
   const rect = document.querySelector(".react-flow")?.getBoundingClientRect();
   return rect
@@ -55,6 +40,7 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("All");
   const [activeIndex, setActiveIndex] = useState(0);
   const [recents, setRecents] = useState<NodeType[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -62,7 +48,8 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
     setQuery("");
     setCategory("All");
     setActiveIndex(0);
-    setRecents(readRecents());
+    setRecents(readRecentNodes());
+    setIsDragging(false);
     requestAnimationFrame(() => searchRef.current?.focus());
   }, [open]);
 
@@ -76,6 +63,7 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       event.preventDefault();
+      setIsDragging(false);
       close();
     };
     document.addEventListener("keydown", handleEscape);
@@ -92,7 +80,7 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
 
   const createNode = useCallback((type: NodeType) => {
     addNode(type, screenToFlowPosition(paneCenter()));
-    saveRecent(type);
+    recordRecentNode(type);
     close();
   }, [addNode, close, screenToFlowPosition]);
 
@@ -125,7 +113,7 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
   })).filter((group) => group.items.length > 0);
 
   return createPortal(
-    <div className="current-add-palette__backdrop" onMouseDown={(event) => event.target === event.currentTarget && close()}>
+    <div className={`current-add-palette__backdrop${isDragging ? " is-dragging" : ""}`} onMouseDown={(event) => event.target === event.currentTarget && close()}>
       <section className="current-add-palette" role="dialog" aria-modal="true" aria-label="Add node">
         <header className="current-add-palette__header">
           <div>
@@ -160,7 +148,15 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
           {!query && category === "All" && recentItems.length > 0 && (
             <div className="current-add-palette__group" role="group" aria-label="Recent">
               <h3>Recent</h3>
-              {recentItems.map((item) => <PaletteResult key={`recent-${item.type}`} item={item} onCreate={createNode} />)}
+              {recentItems.map((item) => (
+                <PaletteResult
+                  key={`recent-${item.type}`}
+                  item={item}
+                  onCreate={createNode}
+                  onDragStateChange={setIsDragging}
+                  onSuccessfulDrag={close}
+                />
+              ))}
             </div>
           )}
           {grouped.map((group) => (
@@ -173,6 +169,8 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
                   active={results[activeIndex]?.type === item.type}
                   onCreate={createNode}
                   onHover={() => setActiveIndex(results.indexOf(item))}
+                  onDragStateChange={setIsDragging}
+                  onSuccessfulDrag={close}
                 />
               ))}
             </div>
@@ -192,11 +190,13 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
   );
 }
 
-function PaletteResult({ item, active, onCreate, onHover }: {
+function PaletteResult({ item, active, onCreate, onHover, onDragStateChange, onSuccessfulDrag }: {
   item: NodeCatalogItem;
   active?: boolean;
   onCreate: (type: NodeType) => void;
   onHover?: () => void;
+  onDragStateChange?: (dragging: boolean) => void;
+  onSuccessfulDrag?: () => void;
 }) {
   return <div role="listitem">
     <button
@@ -211,6 +211,11 @@ function PaletteResult({ item, active, onCreate, onHover }: {
       onDragStart={(event) => {
         event.dataTransfer.setData("application/node-type", item.type);
         event.dataTransfer.effectAllowed = "copy";
+        onDragStateChange?.(true);
+      }}
+      onDragEnd={(event) => {
+        onDragStateChange?.(false);
+        if (event.dataTransfer.dropEffect !== "none") onSuccessfulDrag?.();
       }}
     >
       <span>{item.label}</span>

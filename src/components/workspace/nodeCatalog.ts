@@ -39,6 +39,25 @@ export const NODE_CATALOG = [
 
 export const NODE_CATALOG_BY_TYPE = new Map(NODE_CATALOG.map((item) => [item.type, item]));
 
+export const CURRENT_ADD_PALETTE_RECENTS_KEY = "current:add-palette-recents";
+const RECENTS_LIMIT = 5;
+
+export function readRecentNodes(): NodeType[] {
+  if (typeof sessionStorage === "undefined") return [];
+  try {
+    const value = JSON.parse(sessionStorage.getItem(CURRENT_ADD_PALETTE_RECENTS_KEY) || "[]");
+    return Array.isArray(value) ? value.filter((type): type is NodeType => NODE_CATALOG_BY_TYPE.has(type)) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function recordRecentNode(type: NodeType) {
+  if (typeof sessionStorage === "undefined" || !NODE_CATALOG_BY_TYPE.has(type)) return;
+  const next = [type, ...readRecentNodes().filter((recent) => recent !== type)].slice(0, RECENTS_LIMIT);
+  sessionStorage.setItem(CURRENT_ADD_PALETTE_RECENTS_KEY, JSON.stringify(next));
+}
+
 function normalize(value: string) {
   return value.toLocaleLowerCase().trim().replace(/\s+/g, " ");
 }
