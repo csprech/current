@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CurrentMark, InlineNotice } from "@/components/current";
 import { PromptWorkflowView } from "@/components/quickstart/PromptWorkflowView";
 import { TemplateExplorerView } from "@/components/quickstart/TemplateExplorerView";
@@ -65,8 +65,12 @@ export function Launchpad({ onNewCanvas, onWorkflowGenerated }: LaunchpadProps) 
   const [currentView, setCurrentView] = useState<QuickstartView>("initial");
   const [recentError, setRecentError] = useState<string | null>(null);
   const [openingRecent, setOpeningRecent] = useState<string | null>(null);
-  const recentProjects = useMemo(getRecentProjects, []);
+  const [recentProjects, setRecentProjects] = useState<WorkflowSaveConfig[]>([]);
   const handleBack = useCallback(() => setCurrentView("initial"), []);
+
+  useEffect(() => {
+    setRecentProjects(getRecentProjects());
+  }, []);
 
   const openRecentProject = useCallback(async (project: WorkflowSaveConfig) => {
     setOpeningRecent(project.workflowId);

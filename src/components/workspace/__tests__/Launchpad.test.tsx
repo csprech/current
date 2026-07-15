@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Launchpad } from "@/components/workspace/Launchpad";
 
@@ -70,6 +71,16 @@ describe("Launchpad", () => {
     const recentButtons = screen.getAllByRole("button", { name: /project, Last saved/ });
     expect(recentButtons[0]).toHaveAccessibleName(/Newest project/);
     expect(recentButtons[1]).toHaveAccessibleName(/Older project/);
+  });
+
+  it("keeps the server launchpad free of browser-only recent projects", () => {
+    localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
+      recent: { workflowId: "recent", name: "Recent project", directoryPath: "/work/recent", generationsPath: null, lastSavedAt: 100 },
+    }));
+
+    const markup = renderToString(<Launchpad {...props} />);
+
+    expect(markup).not.toContain("Recent projects");
   });
 
   it("prefers last-opened metadata and falls back to legacy last-saved timestamps", () => {

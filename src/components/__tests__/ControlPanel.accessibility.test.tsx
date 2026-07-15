@@ -94,4 +94,19 @@ describe("ControlPanel easing presets semantics", () => {
     expect(screen.queryByRole("group", { name: "Easing presets" })).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
   });
+
+  it("uses the inspector's primary action and field treatments for image generation", () => {
+    state.nodes = [{
+      id: "image-1",
+      type: "nanoBanana",
+      selected: true,
+      data: { model: "nano-banana-pro", aspectRatio: "1:1", resolution: "1K" },
+    }];
+
+    render(<ControlPanel onClose={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: "Browse" })).toHaveClass("current-inspector__browse");
+    expect(screen.getByRole("button", { name: "Run" })).toHaveClass("current-inspector__run");
+    expect(screen.getByLabelText("Aspect Ratio")).toHaveClass("current-inspector__field");
+  });
 });

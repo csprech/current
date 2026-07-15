@@ -348,9 +348,9 @@ function GenerateImageControls({ node }: { node: Node }) {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-3 current-inspector__controls">
         {/* Model name + provider with link — sits directly under title divider */}
-        <div className="border-t border-neutral-700 pt-3">
+        <div className="current-inspector__model">
           <div className="flex items-start gap-2">
             <div className="flex-1 min-w-0">
               <div className="text-sm text-neutral-100 truncate">
@@ -382,7 +382,7 @@ function GenerateImageControls({ node }: { node: Node }) {
             </div>
             <button
               onClick={() => setIsBrowseDialogOpen(true)}
-              className="nodrag nopan shrink-0 px-3 py-1.5 text-xs bg-neutral-700 hover:bg-neutral-600 border border-neutral-600 rounded text-neutral-300 transition-colors"
+              className="current-inspector__browse nodrag nopan shrink-0"
             >
               Browse
             </button>
@@ -393,11 +393,12 @@ function GenerateImageControls({ node }: { node: Node }) {
         {isGeminiProvider && (
           <>
             <div>
-              <label className="block text-xs font-medium text-neutral-300 mb-1">Aspect Ratio</label>
+              <label htmlFor={`aspect-ratio-${node.id}`} className="block text-xs font-medium text-neutral-300 mb-1">Aspect Ratio</label>
               <select
+                id={`aspect-ratio-${node.id}`}
                 value={nodeData.aspectRatio || "1:1"}
                 onChange={handleAspectRatioChange}
-                className="nodrag nopan w-full px-2 py-1 text-xs bg-neutral-700 border border-neutral-600 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="current-inspector__field nodrag nopan w-full"
               >
                 {aspectRatios.map(ar => (
                   <option key={ar} value={ar}>{ar}</option>
@@ -407,11 +408,12 @@ function GenerateImageControls({ node }: { node: Node }) {
 
             {supportsResolution && (
               <div>
-                <label className="block text-xs font-medium text-neutral-300 mb-1">Resolution</label>
+                <label htmlFor={`resolution-${node.id}`} className="block text-xs font-medium text-neutral-300 mb-1">Resolution</label>
                 <select
+                  id={`resolution-${node.id}`}
                   value={nodeData.resolution || "1K"}
                   onChange={handleResolutionChange}
-                  className="nodrag nopan w-full px-2 py-1 text-xs bg-neutral-700 border border-neutral-600 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="current-inspector__field nodrag nopan w-full"
                 >
                   {resolutions.map(res => (
                     <option key={res} value={res}>{res}</option>
@@ -427,7 +429,7 @@ function GenerateImageControls({ node }: { node: Node }) {
                   id={`google-search-${node.id}`}
                   checked={nodeData.useGoogleSearch || false}
                   onChange={handleGoogleSearchToggle}
-                  className="nodrag nopan w-3 h-3 text-blue-600 bg-neutral-700 border-neutral-600 rounded focus:ring-blue-500"
+                  className="current-inspector__checkbox nodrag nopan w-3 h-3"
                 />
                 <label htmlFor={`google-search-${node.id}`} className="ml-2 text-xs text-neutral-300">
                   Google Search
@@ -442,7 +444,7 @@ function GenerateImageControls({ node }: { node: Node }) {
                   id={`image-search-${node.id}`}
                   checked={nodeData.useImageSearch || false}
                   onChange={handleImageSearchToggle}
-                  className="nodrag nopan w-3 h-3 text-blue-600 bg-neutral-700 border-neutral-600 rounded focus:ring-blue-500"
+                  className="current-inspector__checkbox nodrag nopan w-3 h-3"
                 />
                 <label htmlFor={`image-search-${node.id}`} className="ml-2 text-xs text-neutral-300">
                   Image Search
@@ -463,11 +465,11 @@ function GenerateImageControls({ node }: { node: Node }) {
         )}
       </div>
 
-      <div className="flex justify-end">
+      <div className="current-inspector__actions">
         <button
           onClick={() => regenerateNode(node.id)}
           disabled={isRunning}
-          className="nodrag nopan inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-neutral-700 hover:bg-neutral-600 border border-neutral-600 rounded text-neutral-300 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+          className="current-inspector__run nodrag nopan"
         >
           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
           {isRunning ? "Running..." : "Run"}
