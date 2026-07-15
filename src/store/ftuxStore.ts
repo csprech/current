@@ -83,8 +83,8 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "add-image",
-    message: "Click the Image button to add an image node.",
-    highlightSelector: '[data-tutorial="image-button"]',
+    message: "Click Add Node, then choose Image Input from the palette.",
+    highlightSelector: '[data-tutorial="add-node-button"]',
     requiredAction: "add-image-node",
     completed: false,
   },
@@ -132,8 +132,8 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "add-prompt-node",
-    message: "Click the Prompt button to add a prompt node.",
-    highlightSelector: '[data-tutorial="prompt-button"]',
+    message: "Click Add Node again, then choose Prompt from the palette.",
+    highlightSelector: '[data-tutorial="add-node-button"]',
     position: "top-center",
     requiredAction: "add-prompt-node",
     completed: false,

@@ -166,6 +166,7 @@ describe("CurrentCommandBar", () => {
     fireEvent.click(add);
     expect(onAddNode).toHaveBeenCalledOnce();
     expect(add).toHaveAttribute("data-tutorial", "add-node-button");
+    expect(add.querySelector("svg")).toHaveAttribute("stroke-width", "1.6");
   });
 
   it("opens the requested workspace panel", () => {
