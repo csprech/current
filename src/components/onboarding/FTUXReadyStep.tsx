@@ -1,5 +1,7 @@
 "use client";
 
+import { CurrentButton } from "@/components/current";
+
 interface FTUXReadyStepProps {
   onStartTutorial: () => void;
   onComplete: () => void;
@@ -16,20 +18,20 @@ export function FTUXReadyStep({ onStartTutorial, onComplete }: FTUXReadyStepProp
       </p>
 
       <div className="flex gap-3">
-        <button
-          type="button"
+        <CurrentButton
+          variant="quiet"
           onClick={onComplete}
-          className="px-5 py-2.5 text-sm text-neutral-400 hover:text-neutral-100 transition-colors"
+          className="px-5 py-2.5 text-sm"
         >
           Skip
-        </button>
-        <button
-          type="button"
+        </CurrentButton>
+        <CurrentButton
+          variant="primary"
           onClick={onStartTutorial}
-          className="px-5 py-2.5 text-sm bg-white text-neutral-900 rounded-lg hover:bg-neutral-200 transition-colors font-medium"
+          className="px-5 py-2.5 text-sm"
         >
           Start tutorial
-        </button>
+        </CurrentButton>
       </div>
     </div>
   );

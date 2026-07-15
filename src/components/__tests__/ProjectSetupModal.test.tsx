@@ -253,7 +253,7 @@ describe("ProjectSetupModal", () => {
         />
       );
 
-      expect(screen.getByText("Create")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Create" })).toHaveAttribute("data-variant", "primary");
     });
 
     it("should render project name and directory inputs", () => {

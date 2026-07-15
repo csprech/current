@@ -9,7 +9,7 @@ import { loadNodeDefaults, saveNodeDefaults, getLastProjectBaseDir, setLastProje
 import { ProviderModel } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
-import { CurrentSheet, InlineNotice } from "@/components/current";
+import { CurrentButton, CurrentSheet, InlineNotice } from "@/components/current";
 
 // LLM provider and model options (mirrored from LLMGenerateNode)
 const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
@@ -468,14 +468,14 @@ export function ProjectSetupModal({
                   placeholder="/Users/username/projects/my-project"
                   className="flex-1 px-3 py-2 bg-neutral-900 border border-neutral-600 rounded-lg text-neutral-100 text-sm focus:outline-none focus:border-neutral-500"
                 />
-                <button
-                  type="button"
+                <CurrentButton
+                  variant="secondary"
                   onClick={handleBrowse}
                   disabled={isBrowsing}
-                  className="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:bg-neutral-700 disabled:opacity-50 text-neutral-200 text-sm rounded-lg transition-colors"
+                  className="px-3 py-2 text-sm"
                 >
                   {isBrowsing ? "..." : "Browse"}
-                </button>
+                </CurrentButton>
               </div>
               <p className="text-xs text-neutral-400 mt-1">
                 Workflow files and images will be saved here. Subfolders for inputs and generations will be auto-created.
@@ -1231,22 +1231,24 @@ export function ProjectSetupModal({
 
         {/* Fixed footer */}
         <div className="flex justify-end gap-2 px-8 py-5 border-t border-neutral-700/50 shrink-0">
-          <button
+          <CurrentButton
+            variant="quiet"
             onClick={onClose}
-            className="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-100 transition-colors"
+            className="px-4 py-2 text-sm"
           >
             Cancel
-          </button>
-          <button
+          </CurrentButton>
+          <CurrentButton
+            variant="primary"
             onClick={handleSave}
             disabled={activeTab === "project" && (isValidating || isBrowsing)}
-            className="px-4 py-2 text-sm bg-white text-neutral-900 rounded-lg hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm"
           >
             {activeTab === "project"
               ? (isValidating ? "Validating..." : mode === "new" ? "Create" : "Save")
               : "Save"
             }
-          </button>
+          </CurrentButton>
         </div>
       </div>
       </CurrentSheet>
