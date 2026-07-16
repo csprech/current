@@ -46,4 +46,10 @@ describe("NodeStatusFooter", () => {
     expect(liveRegion).not.toHaveTextContent("128 characters");
     expect(screen.getByText("128 characters")).not.toHaveAttribute("aria-live");
   });
+
+  it("keeps the status footer available as a node drag surface", () => {
+    render(<NodeStatusFooter state="complete" label="Complete" detail="128 characters" />);
+
+    expect(screen.getByRole("status").closest(".current-node-status")).not.toHaveClass("nodrag");
+  });
 });

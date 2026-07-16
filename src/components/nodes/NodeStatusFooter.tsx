@@ -17,7 +17,7 @@ interface NodeStatusFooterProps {
 export function NodeStatusFooter({ state, label, detail, action }: NodeStatusFooterProps) {
   return (
     <div
-      className="current-node-status nodrag nopan"
+      className="current-node-status nopan"
       data-state={state}
     >
       <span className="current-node-status__indicator" aria-hidden="true" />
@@ -26,7 +26,7 @@ export function NodeStatusFooter({ state, label, detail, action }: NodeStatusFoo
         {detail && <span>{detail}</span>}
       </span>
       {action && (
-        <button type="button" onClick={action.onClick}>
+        <button type="button" className="nodrag nopan" onClick={action.onClick}>
           {action.label}
         </button>
       )}
