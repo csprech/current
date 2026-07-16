@@ -106,4 +106,13 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-inspector__field,[\s\S]*?background:\s*#223247/);
     expect(css).toMatch(/\.current-inspector__browse\s*\{[\s\S]*?background:\s*#26384e/);
   });
+
+  it("keeps group action icons legible in both appearances", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/\.current-selection-toolbar \.current-toolbar-action\s*\{[\s\S]*?color:\s*var\(--current-graphite\)/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-selection-toolbar\.current-transient-surface\s*\{[\s\S]*?background:\s*#1d2a3b/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-selection-toolbar \.current-toolbar-action\s*\{[\s\S]*?color:\s*#e7edf5/);
+    expect(css).toMatch(/\.current-selection-toolbar__separator\s*\{[\s\S]*?background:\s*var\(--current-divider\)/);
+  });
 });

@@ -221,7 +221,7 @@ export function MultiSelectToolbar() {
     <div
       role="toolbar"
       aria-label="Selection actions"
-      className="fixed z-[100] flex items-center gap-1 current-transient-surface current-floating-toolbar rounded-lg shadow-xl p-1"
+      className="current-selection-toolbar fixed z-[100] flex items-center gap-1 current-transient-surface current-floating-toolbar rounded-lg shadow-xl p-1"
       style={{
         left: toolbarPosition.x,
         top: toolbarPosition.y,
@@ -260,7 +260,7 @@ export function MultiSelectToolbar() {
       </button>
 
       {/* Separator */}
-      <div className="w-px h-4 bg-neutral-600 mx-0.5" />
+      <div className="current-selection-toolbar__separator w-px h-4 mx-0.5" />
 
       {/* Group/Ungroup buttons */}
       {someInGroup ? (
@@ -288,7 +288,7 @@ export function MultiSelectToolbar() {
       )}
 
       {/* Separator */}
-      <div className="w-px h-4 bg-neutral-600 mx-0.5" />
+      <div className="current-selection-toolbar__separator w-px h-4 mx-0.5" />
 
       {/* Download images button */}
       <button

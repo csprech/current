@@ -1007,6 +1007,20 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
   color: var(--current-danger);
   background: color-mix(in srgb, var(--current-danger) 9%, var(--current-paper));
 }
+.current-selection-toolbar .current-toolbar-action { color: var(--current-graphite); }
+.current-selection-toolbar__separator { background: var(--current-divider); }
+:root[data-appearance="dark"] .current-selection-toolbar.current-transient-surface {
+  color: #e7edf5;
+  background: #1d2a3b;
+  border-color: #2f435b;
+  box-shadow: 0 12px 32px -12px rgb(0 0 0 / 48%);
+}
+:root[data-appearance="dark"] .current-selection-toolbar .current-toolbar-action { color: #e7edf5; }
+:root[data-appearance="dark"] .current-selection-toolbar .current-toolbar-action:hover:not(:disabled) {
+  color: #fff;
+  background: #344b66;
+}
+:root[data-appearance="dark"] .current-selection-toolbar__separator { background: #415a76; }
 
 .current-toast { min-width: min(24rem, calc(100vw - 3rem)); }
 .current-toast--info { border-color: color-mix(in srgb, var(--current-blue) 35%, var(--current-divider)); }
