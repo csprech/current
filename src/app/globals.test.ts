@@ -37,4 +37,33 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow\s*\{[\s\S]*?#111113/);
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-media-action,[\s\S]*?background:\s*#3a3a3c/);
   });
+
+  it("uses navy dark surfaces without a top-edge node highlight", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const darkNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node\s*\{([^}]*)\}/)?.[1];
+    const darkHoverNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node:hover\s*\{([^}]*)\}/)?.[1];
+    const darkRunningNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node\[data-state="running"\]\s*\{([^}]*)\}/)?.[1];
+    const darkErrorNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node\[data-state="error"\]\s*\{([^}]*)\}/)?.[1];
+    const darkSelectedClassNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node--selected[\s\S]*?\{([^}]*)\}/)?.[1];
+    const darkSelectedDataNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node\[data-selected="true"\][\s\S]*?\{([^}]*)\}/)?.[1];
+    const darkRunningKeyframes = css.match(/@keyframes current-node-breathe\s*\{([\s\S]*?)^\}/m)?.[1];
+    const whiteInsetHighlight = /inset\s+0\s+0\.5px\s+0\s+(?:rgba?\(\s*255(?:\s*,\s*|\s+)255(?:\s*,\s*|\s+)255\b|#(?:fff|ffffff)\b|white\b)/i;
+
+    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#172130/);
+    expect(darkNodeRule).toBeDefined();
+    expect(darkHoverNodeRule).toBeDefined();
+    expect(darkRunningNodeRule).toBeDefined();
+    expect(darkErrorNodeRule).toBeDefined();
+    expect(darkSelectedClassNodeRule).toBeDefined();
+    expect(darkSelectedDataNodeRule).toBeDefined();
+    expect(darkRunningKeyframes).toBeDefined();
+    expect(darkNodeRule).toMatch(/border:\s*1px solid #2f435b/);
+    expect(darkNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(darkHoverNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(darkRunningNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(darkErrorNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(darkSelectedClassNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(darkSelectedDataNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(darkRunningKeyframes).not.toMatch(whiteInsetHighlight);
+  });
 });
