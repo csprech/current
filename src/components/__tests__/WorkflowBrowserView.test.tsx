@@ -64,6 +64,16 @@ describe("WorkflowBrowserView", () => {
     });
   });
 
+  it("uses the adaptive browser surface for readable actions", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce({ json: async () => listResponse() } as Response);
+
+    render(<WorkflowBrowserView onWorkflowLoaded={vi.fn()} />);
+
+    expect((await screen.findByRole("heading", { name: "Your Workflows" })).closest(".current-workflow-browser")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open from directory" })).toHaveClass("current-workflow-browser__directory-action");
+    expect(screen.getByRole("button", { name: "Change folder" })).toHaveClass("current-workflow-browser__change-folder");
+  });
+
   it("does not record a failed workflow open", async () => {
     vi.spyOn(global, "fetch")
       .mockResolvedValueOnce({ json: async () => listResponse() } as Response)

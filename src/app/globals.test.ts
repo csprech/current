@@ -88,4 +88,13 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?background:\s*#1d2a3b/);
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?border:\s*none/);
   });
+
+  it("uses appearance-aware ink and action surfaces in the workflow browser", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/\.current-workflow-browser\s*\{[\s\S]*?color:\s*var\(--current-inspector\)/);
+    expect(css).toMatch(/\.current-workflow-browser \.text-neutral-100,[\s\S]*?color:\s*var\(--current-inspector\)/);
+    expect(css).toMatch(/\.current-workflow-browser \.text-neutral-300,[\s\S]*?color:\s*var\(--current-graphite\)/);
+    expect(css).toMatch(/\.current-workflow-browser__directory-action\s*\{[\s\S]*?background:\s*var\(--current-canvas\)/);
+  });
 });

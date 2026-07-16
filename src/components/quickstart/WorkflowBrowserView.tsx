@@ -170,7 +170,7 @@ export function WorkflowBrowserView({
   // State A: No default directory configured
   if (defaultDir === null) {
     return (
-      <div className="current-quickstart-view p-8 flex flex-col items-center">
+      <div className="current-quickstart-view current-workflow-browser p-8 flex flex-col items-center">
         {onBack && (
           <div className="w-full mb-4">
             <QuickstartBackButton onClick={onBack} />
@@ -213,7 +213,7 @@ export function WorkflowBrowserView({
 
   // State B: Default directory configured — show listing
   return (
-    <div className="current-quickstart-view flex flex-col h-full max-h-[70vh]">
+    <div className="current-quickstart-view current-workflow-browser flex flex-col h-full max-h-[70vh]">
       {/* Header */}
       <div className="px-6 pt-4 pb-3 border-b border-neutral-700/50 flex-shrink-0">
         {onBack && (
@@ -337,7 +337,7 @@ export function WorkflowBrowserView({
         <button
           onClick={handleBrowseOther}
           disabled={loadingWorkflow !== null}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-300 bg-neutral-700/50 hover:bg-neutral-700 border border-neutral-600/50 hover:border-neutral-600 rounded-md transition-colors disabled:opacity-50"
+          className="current-workflow-browser__directory-action flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-50"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
@@ -347,7 +347,7 @@ export function WorkflowBrowserView({
         <button
           onClick={browseAndSetDir}
           disabled={loadingWorkflow !== null}
-          className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors disabled:opacity-50"
+          className="current-workflow-browser__change-folder text-xs transition-colors disabled:opacity-50"
         >
           Change folder
         </button>

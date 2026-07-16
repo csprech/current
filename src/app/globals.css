@@ -1595,6 +1595,34 @@ body {
 .current-quickstart-view textarea { color: #303139; background: rgba(255,255,255,0.88); border-color: var(--current-divider); }
 .current-quickstart-view input:focus,
 .current-quickstart-view textarea:focus { border-color: var(--current-blue); box-shadow: var(--current-focus); }
+.current-workflow-browser { color: var(--current-inspector); }
+.current-workflow-browser .text-neutral-100,
+.current-workflow-browser .text-neutral-200 { color: var(--current-inspector); }
+.current-workflow-browser .text-neutral-300,
+.current-workflow-browser .text-neutral-400 { color: var(--current-graphite); }
+.current-workflow-browser .text-neutral-500,
+.current-workflow-browser .text-neutral-600 { color: color-mix(in srgb, var(--current-graphite) 78%, var(--current-paper)); }
+.current-workflow-browser .border-neutral-700,
+.current-workflow-browser .border-neutral-700\/50,
+.current-workflow-browser .border-neutral-600,
+.current-workflow-browser .border-neutral-600\/50 { border-color: var(--current-divider); }
+.current-workflow-browser__directory-action {
+  color: var(--current-inspector);
+  background: var(--current-canvas);
+  border: 1px solid var(--current-divider);
+}
+.current-workflow-browser__directory-action:hover:not(:disabled) {
+  color: var(--current-blue);
+  border-color: color-mix(in srgb, var(--current-blue) 42%, var(--current-divider));
+  background: color-mix(in srgb, var(--current-blue) 9%, var(--current-paper));
+}
+.current-workflow-browser__change-folder { color: var(--current-graphite); }
+.current-workflow-browser__change-folder:hover:not(:disabled) { color: var(--current-blue); }
+:root[data-appearance="dark"] .current-launchpad__detail {
+  border-color: var(--current-divider);
+  background: var(--current-paper);
+  box-shadow: 0 22px 70px rgb(0 0 0 / 38%);
+}
 .current-template-card { border-color: var(--current-divider); background: rgba(255,255,255,0.74); }
 .current-template-explorer { min-height: 0; flex: 1; display: grid; grid-template-columns: 230px minmax(0, 1fr); overflow: hidden; }
 .current-template-explorer aside { padding: 20px; border-right: 1px solid var(--current-divider); background: rgba(244,245,247,0.74); }
