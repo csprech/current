@@ -191,7 +191,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
           data-handletype="image"
           style={{ top: "40%" }}
         />
-        <HandleLabel label="Image" side="target" color="rgb(59, 130, 246)" top="calc(40% - 18px)" visible={showLabels} />
+        <HandleLabel label="Image" side="target" color="var(--handle-color-image)" top="calc(40% - 18px)" visible={showLabels} />
 
         <Handle
           type="target"

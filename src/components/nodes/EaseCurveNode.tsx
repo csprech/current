@@ -78,9 +78,9 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
         id="easeCurve"
         data-handletype="easeCurve"
         isConnectable={true}
-        style={{ top: "75%", background: "rgb(190, 242, 100)" }}
+        style={{ top: "75%", background: "var(--handle-color-ease-curve)" }}
       />
-      <HandleLabel label="Settings" side="target" color="rgb(190, 242, 100)" top="calc(75% - 7px)" visible={showLabels} />
+      <HandleLabel label="Settings" side="target" color="var(--handle-color-ease-curve)" top="calc(75% - 7px)" visible={showLabels} />
 
       {/* Settings Out (source, right, 75%) */}
       <Handle
@@ -89,9 +89,9 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
         id="easeCurve"
         data-handletype="easeCurve"
         isConnectable={true}
-        style={{ top: "75%", background: "rgb(190, 242, 100)" }}
+        style={{ top: "75%", background: "var(--handle-color-ease-curve)" }}
       />
-      <HandleLabel label="Settings" side="source" color="rgb(190, 242, 100)" top="calc(75% - 7px)" visible={showLabels} />
+      <HandleLabel label="Settings" side="source" color="var(--handle-color-ease-curve)" top="calc(75% - 7px)" visible={showLabels} />
     </>
   );
 

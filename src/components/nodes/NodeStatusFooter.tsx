@@ -18,6 +18,7 @@ export function NodeStatusFooter({ state, label, detail, action }: NodeStatusFoo
   return (
     <div
       className="current-node-status nopan"
+      data-drag-surface="true"
       data-state={state}
     >
       <span className="current-node-status__indicator" aria-hidden="true" />

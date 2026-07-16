@@ -184,10 +184,12 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
             ref={searchRef}
             type="search"
             role="searchbox"
+            name="node-search"
+            autoComplete="off"
             aria-label="Search nodes"
             aria-controls="current-add-palette-results"
             aria-activedescendant={results[activeIndex] ? `add-node-${results[activeIndex].type}` : undefined}
-            placeholder="Search nodes"
+            placeholder="Search nodes…"
             value={query}
             onChange={(event) => { setQuery(event.target.value); setActiveIndex(0); }}
             onKeyDown={handleSearchKeyDown}

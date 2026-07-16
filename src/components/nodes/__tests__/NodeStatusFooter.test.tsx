@@ -50,6 +50,20 @@ describe("NodeStatusFooter", () => {
   it("keeps the status footer available as a node drag surface", () => {
     render(<NodeStatusFooter state="complete" label="Complete" detail="128 characters" />);
 
-    expect(screen.getByRole("status").closest(".current-node-status")).not.toHaveClass("nodrag");
+    const footer = screen.getByRole("status").closest(".current-node-status");
+    expect(footer).toHaveAttribute("data-drag-surface", "true");
+    expect(footer).not.toHaveClass("nodrag");
+  });
+
+  it("keeps footer actions interactive instead of draggable", () => {
+    render(
+      <NodeStatusFooter
+        state="error"
+        label="Connection failed"
+        action={{ label: "View error details", onClick: vi.fn() }}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "View error details" })).toHaveClass("nodrag", "nopan");
   });
 });

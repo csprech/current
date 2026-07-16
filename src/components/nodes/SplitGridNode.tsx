@@ -92,7 +92,7 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
           className="!bg-gray-500"
           style={{ zIndex: 10 }}
         />
-        <HandleLabel label="Ref" side="source" color="#6b7280" visible={showLabels} />
+        <HandleLabel label="Ref" side="source" color="var(--current-minimap-neutral)" visible={showLabels} />
 
         {/* Full-bleed preview area */}
         {nodeData.sourceImage ? (

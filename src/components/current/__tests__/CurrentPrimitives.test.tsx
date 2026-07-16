@@ -32,7 +32,27 @@ describe("Current control primitives", () => {
       </CurrentIconButton>,
     );
 
-    expect(screen.getByRole("button", { name: "Open library" })).toBeInTheDocument();
+    const button = screen.getByRole("button", { name: "Open library" });
+    expect(button).toBeInTheDocument();
+    expect(button).toHaveAttribute("title", "Open library");
+  });
+
+  it("preserves an explicit native tooltip for an icon-only control", () => {
+    render(<CurrentIconButton label="Run workflow" title="Run current workflow" />);
+
+    expect(screen.getByRole("button", { name: "Run workflow" })).toHaveAttribute("title", "Run current workflow");
+  });
+
+  it("preserves accessible pressed and disabled icon-button state", () => {
+    render(
+      <CurrentIconButton label="Toggle inspector" aria-pressed disabled>
+        <span aria-hidden>i</span>
+      </CurrentIconButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Toggle inspector" });
+    expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(button).toBeDisabled();
   });
 
   it("passes native button props and exposes primary and danger variants", () => {

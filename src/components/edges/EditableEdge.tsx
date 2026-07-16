@@ -263,7 +263,7 @@ export function EditableEdge({
           {/* Background circle */}
           <circle
             r={10}
-            fill="#27272a"
+            fill="var(--current-surface-elevated)"
             stroke={edgeColor}
             strokeWidth={2}
           />

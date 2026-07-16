@@ -59,6 +59,15 @@ describe("AddPalette", () => {
     await waitFor(() => expect(screen.getByRole("searchbox", { name: "Search nodes" })).toHaveFocus());
   });
 
+  it("gives node search a stable browser form contract", () => {
+    render(<AddPalette open onClose={vi.fn()} />);
+    const search = screen.getByRole("searchbox", { name: "Search nodes" });
+
+    expect(search).toHaveAttribute("name", "node-search");
+    expect(search).toHaveAttribute("autocomplete", "off");
+    expect(search).toHaveAttribute("placeholder", "Search nodes…");
+  });
+
   it("filters nodes by name and keyword", () => {
     render(<AddPalette open onClose={vi.fn()} />);
     fireEvent.change(screen.getByRole("searchbox", { name: "Search nodes" }), { target: { value: "video" } });

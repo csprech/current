@@ -73,7 +73,7 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
         isConnectable={true}
         style={{ top: "50%" }}
       />
-      <HandleLabel label="Image Out" side="source" color="rgb(59, 130, 246)" top="calc(50% - 7px)" visible={showLabels} />
+      <HandleLabel label="Image Out" side="source" color="var(--handle-color-image)" top="calc(50% - 7px)" visible={showLabels} />
 
       <div className="flex-1 flex flex-col min-h-0 gap-2">
         {/* Image preview area */}

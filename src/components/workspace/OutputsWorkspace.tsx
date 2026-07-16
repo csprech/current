@@ -36,6 +36,7 @@ export function OutputsWorkspace({ onBack }: { onBack?: () => void } = {}) {
             </svg>
             <input
               type="range"
+              name="output-thumbnail-size"
               min="144"
               max="320"
               step="8"
