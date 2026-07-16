@@ -3,6 +3,28 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("Current Add Palette brand colors", () => {
+  it("defines adaptive semantic roles and keeps primary actions independent from paper", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const lightTheme = css.match(/\n:root\s*\{([\s\S]*?)\n\}/)?.[1];
+    const darkTheme = css.match(/:root\[data-appearance="dark"\]\s*\{([\s\S]*?)\n\}/)?.[1];
+    const primaryButton = css.match(/\.current-button--primary\s*\{([^}]*)\}/)?.[1];
+
+    for (const theme of [lightTheme, darkTheme]) {
+      expect(theme).toContain("--current-surface-chrome:");
+      expect(theme).toContain("--current-surface-panel:");
+      expect(theme).toContain("--current-surface-elevated:");
+      expect(theme).toContain("--current-surface-control:");
+      expect(theme).toContain("--current-text-primary:");
+      expect(theme).toContain("--current-action:");
+      expect(theme).toContain("--current-action-foreground:");
+      expect(theme).toContain("--current-border-strong:");
+    }
+
+    expect(primaryButton).toContain("color: var(--current-action-foreground)");
+    expect(primaryButton).toContain("background: var(--current-action)");
+    expect(primaryButton).not.toContain("var(--current-paper)");
+  });
+
   it("uses the approved Current accent and focus tokens", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const palette = css.slice(css.indexOf("/* Current Add Palette */"));

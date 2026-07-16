@@ -31,15 +31,37 @@
 
 :root {
   color-scheme: light;
-  --background: #f2f2f5;
-  --foreground: #1b1b21;
+  --background: #f2f4f7;
+  --foreground: #1d2430;
   --current-blue: #5578f6;
   --current-aqua: #47cbb3;
   --current-blue-indigo: #6a70e8;
   --current-aqua-cyan: #3db9c4;
   --current-steel-blue: #528adf;
+  --current-surface-chrome: rgb(255 255 255 / 94%);
+  --current-surface-panel: #f7f8fa;
+  --current-surface-elevated: #ffffff;
+  --current-surface-control: #eef1f5;
+  --current-surface-control-hover: #e5eaf1;
+  --current-border: #d8dee7;
+  --current-border-strong: #7f8da0;
+  --current-text-primary: #1d2430;
+  --current-text-secondary: #566274;
+  --current-text-tertiary: #616e80;
+  --current-action: #4164d9;
+  --current-action-hover: #3658c9;
+  --current-action-foreground: #ffffff;
+  --current-accent-text: #4164d9;
+  --current-status-success: #18875d;
+  --current-status-warning: #a35f00;
+  --current-status-danger: #c53c45;
+  --current-status-info: #4164d9;
+  --current-focus-inner: #ffffff;
+  --current-focus-outer: #4164d9;
+  --current-shadow: rgb(35 48 68 / 14%);
+  --current-shadow-strong: rgb(35 48 68 / 28%);
   --current-paper: #ffffff;
-  --current-canvas: #f4f5f7;
+  --current-canvas: #f2f4f7;
   --current-divider: #d9dbe0;
   --current-graphite: #4c4e55;
   --current-minimap-neutral: #8a8d96;
@@ -48,7 +70,7 @@
   --current-danger: #e5484d;
   --current-warning: #d99a2b;
   --current-success: #2fa66d;
-  --current-focus: 0 0 0 3px rgb(85 120 246 / 22%);
+  --current-focus: 0 0 0 2px var(--current-focus-inner), 0 0 0 4px var(--current-focus-outer);
   /* Typed connections derive exclusively from the Current cool-color family. */
   --handle-color-image: var(--current-aqua);
   --handle-color-text: var(--current-blue);
@@ -62,6 +84,29 @@
   color-scheme: dark;
   --background: #172130;
   --foreground: #f5f5f7;
+  --current-surface-chrome: #1d2a3b;
+  --current-surface-panel: #213147;
+  --current-surface-elevated: #26384e;
+  --current-surface-control: #2b3f57;
+  --current-surface-control-hover: #344b66;
+  --current-border: #3a516c;
+  --current-border-strong: #6f86a0;
+  --current-text-primary: #f5f5f7;
+  --current-text-secondary: #b6c2d2;
+  --current-text-tertiary: #93a4b9;
+  --current-action: #4164d9;
+  --current-action-hover: #3658c9;
+  --current-action-foreground: #ffffff;
+  --current-accent-text: #6f8cff;
+  --current-status-success: #47c58d;
+  --current-status-warning: #ffb85a;
+  --current-status-danger: #ff7b84;
+  --current-status-info: #6f8cff;
+  --current-focus-inner: #172130;
+  --current-focus-outer: #6f8cff;
+  --current-focus: 0 0 0 2px var(--current-focus-inner), 0 0 0 4px var(--current-focus-outer);
+  --current-shadow: rgb(5 10 18 / 28%);
+  --current-shadow-strong: rgb(5 10 18 / 48%);
   --current-paper: #1d2a3b;
   --current-canvas: #172130;
   --current-divider: #2f435b;
@@ -268,8 +313,8 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-segmented-control button:focus-visible { outline: none; box-shadow: var(--current-focus); }
 .current-button:disabled,
 .current-icon-button:disabled { cursor: not-allowed; opacity: 0.45; }
-.current-button--primary { color: var(--current-paper); background: var(--current-blue); }
-.current-button--primary:hover:not(:disabled) { background: var(--current-steel-blue); }
+.current-button--primary { color: var(--current-action-foreground); background: var(--current-action); }
+.current-button--primary:hover:not(:disabled) { background: var(--current-action-hover); }
 .current-button--secondary { color: var(--current-inspector); background: var(--current-paper); border-color: var(--current-divider); }
 .current-button--secondary:hover:not(:disabled) { background: var(--current-canvas); }
 .current-button--quiet { color: var(--current-graphite); background: transparent; }
