@@ -1,26 +1,27 @@
-import { useId } from "react";
-
 interface CurrentMarkProps {
   showWordmark?: boolean;
+  wordmarkTone?: "adaptive" | "color";
   className?: string;
 }
 
-export function CurrentMark({ showWordmark = false, className = "" }: CurrentMarkProps) {
-  const gradientId = `current-flow-${useId().replace(/:/g, "")}`;
-
+export function CurrentMark({
+  showWordmark = false,
+  wordmarkTone = "adaptive",
+  className = "",
+}: CurrentMarkProps) {
   return (
     <span role="img" aria-label="Current" className={`current-identity ${className}`}>
-      <svg aria-hidden="true" viewBox="0 0 32 32" className="current-mark">
-        <defs>
-          <linearGradient id={gradientId} x1="4" y1="4" x2="28" y2="28">
-            <stop offset="0" stopColor="var(--current-blue)" />
-            <stop offset="1" stopColor="var(--current-aqua)" />
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="28" height="28" rx="9" fill={`url(#${gradientId})`} />
-        <path d="M6 12c4-3 8 3 12 0s6-2 8-1M6 20c4 3 8-3 12 0s6 2 8 1" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-      {showWordmark && <span aria-hidden="true" className="current-wordmark">current</span>}
+      <span aria-hidden="true" className="current-brand-icon">
+        <img className="current-brand-asset current-brand-asset--icon-color" src="/brand/current-icon-color.svg" alt="" />
+        <img className="current-brand-asset current-brand-asset--white" src="/brand/current-icon-white.svg" alt="" />
+      </span>
+      {showWordmark && (
+        <span aria-hidden="true" className={`current-brand-wordmark current-brand-wordmark--${wordmarkTone}`}>
+          <img className="current-brand-asset current-brand-asset--black" src="/brand/current-logo-black.svg" alt="" />
+          <img className="current-brand-asset current-brand-asset--wordmark-color" src="/brand/current-logo-color.svg" alt="" />
+          <img className="current-brand-asset current-brand-asset--white" src="/brand/current-logo-white.svg" alt="" />
+        </span>
+      )}
     </span>
   );
 }
