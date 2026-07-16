@@ -50,6 +50,7 @@ Legacy Tailwind neutral utilities may remain where necessary, but their values m
 | Resting control | `#eef1f5` | `#2b3f57` |
 | Hovered control | `#e5eaf1` | `#344b66` |
 | Divider | `#d8dee7` | `#3a516c` |
+| Strong control boundary | `#7f8da0` | `#6f86a0` |
 | Primary text | `#1d2430` | `#f5f5f7` |
 | Secondary text | `#566274` | `#b6c2d2` |
 | Tertiary text | `#616e80` | `#93a4b9` |
@@ -63,7 +64,7 @@ The brighter brand blue is not used as normal-size text on white or as a filled 
 ### Contrast targets
 
 - Normal text: at least 4.5:1 against its rendered surface.
-- Large text, essential icons, focus indicators, control boundaries, and meaningful graphical states: at least 3:1 against adjacent colors.
+- Large text, essential icons, focus indicators, strong control boundaries, and meaningful graphical states: at least 3:1 against adjacent colors. Decorative dividers may remain quieter when grouping and spacing already communicate the boundary.
 - Hover, active, selected, and focus states increase contrast relative to rest.
 - Disabled state may reduce emphasis but must remain identifiable and must never be the only way an error or requirement is communicated.
 - Translucent surfaces are evaluated against their actual composited backgrounds, not their declared alpha color in isolation.
@@ -273,4 +274,3 @@ The refinement is complete when:
 - All established workflows and tests remain intact.
 - The full test suite and production build pass.
 - The user can inspect the local desktop preview in both appearances without encountering known unreadable or nonfunctional surfaces.
-
