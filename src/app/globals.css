@@ -1690,6 +1690,44 @@ body {
 .current-template-explorer__results section > h3 { margin: 0 0 12px; color: #696a73; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .current-template-explorer__empty { padding: 80px 20px; color: #85868e; text-align: center; }
 
+:root[data-appearance="dark"] .current-launchpad__detail .text-neutral-100,
+:root[data-appearance="dark"] .current-launchpad__detail .text-neutral-200 { color: #f5f5f7; }
+:root[data-appearance="dark"] .current-launchpad__detail .text-neutral-300,
+:root[data-appearance="dark"] .current-launchpad__detail .text-neutral-400 { color: #c7c7cc; }
+:root[data-appearance="dark"] .current-launchpad__detail .text-neutral-500,
+:root[data-appearance="dark"] .current-launchpad__detail .text-neutral-600 { color: #9cabbd; }
+:root[data-appearance="dark"] .current-launchpad__detail .border-neutral-700,
+:root[data-appearance="dark"] .current-launchpad__detail .border-neutral-700\/50 { border-color: #2f435b; }
+:root[data-appearance="dark"] .current-launchpad__detail .bg-neutral-900\/50,
+:root[data-appearance="dark"] .current-launchpad__detail .bg-neutral-800\/50 { background: #26384e; }
+:root[data-appearance="dark"] .current-quickstart-view { color: #e7edf5; }
+:root[data-appearance="dark"] .current-quickstart-view input,
+:root[data-appearance="dark"] .current-quickstart-view textarea {
+  color: #f5f5f7;
+  background: #172130;
+  border-color: #2f435b;
+}
+:root[data-appearance="dark"] .current-quickstart-view input::placeholder,
+:root[data-appearance="dark"] .current-quickstart-view textarea::placeholder { color: #8fa1b5; }
+:root[data-appearance="dark"] .current-template-card {
+  border-color: #2f435b;
+  background: #1d2a3b;
+}
+:root[data-appearance="dark"] .current-template-explorer aside {
+  border-right-color: #2f435b;
+  background: #172130;
+}
+:root[data-appearance="dark"] .current-template-explorer aside > h3,
+:root[data-appearance="dark"] .current-template-explorer__results section > h3 { color: #9cabbd; }
+:root[data-appearance="dark"] .current-template-explorer__outcomes button { color: #e7edf5; }
+:root[data-appearance="dark"] .current-template-explorer__outcomes button:hover { background: #26384e; }
+:root[data-appearance="dark"] .current-template-explorer__outcomes button[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--current-blue) 46%, #2f435b);
+  background: color-mix(in srgb, var(--current-blue) 16%, #1d2a3b);
+}
+:root[data-appearance="dark"] .current-template-explorer__outcomes span,
+:root[data-appearance="dark"] .current-template-explorer__empty { color: #9cabbd; }
+
 .current-workflow-proposal { display: grid; gap: 18px; }
 .current-workflow-proposal__summary { padding: 20px; border: 1px solid color-mix(in srgb, var(--current-blue) 18%, var(--current-divider)); border-radius: 14px; background: linear-gradient(135deg, color-mix(in srgb, var(--current-blue) 7%, white), color-mix(in srgb, var(--current-aqua) 6%, white)); }
 .current-workflow-proposal__summary > span { color: var(--current-blue); font-size: 9px; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -1703,6 +1741,19 @@ body {
 .current-workflow-proposal__connections { padding: 14px; border-radius: 11px; background: #f1f2f5; }
 .current-workflow-proposal__connections h4 { margin: 0 0 6px; color: #6f7078; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
 .current-workflow-proposal__connections p { margin: 3px 0; color: #55565e; font-size: 11px; }
+
+:root[data-appearance="dark"] .current-workflow-proposal__summary {
+  border-color: color-mix(in srgb, var(--current-blue) 38%, #2f435b);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--current-blue) 14%, #1d2a3b), color-mix(in srgb, var(--current-aqua) 10%, #1d2a3b));
+}
+:root[data-appearance="dark"] .current-workflow-proposal__summary h3,
+:root[data-appearance="dark"] .current-workflow-proposal li strong { color: #f5f5f7; }
+:root[data-appearance="dark"] .current-workflow-proposal__summary p,
+:root[data-appearance="dark"] .current-workflow-proposal li p { color: #b6c2d2; }
+:root[data-appearance="dark"] .current-workflow-proposal li { border-color: #2f435b; background: #1d2a3b; }
+:root[data-appearance="dark"] .current-workflow-proposal__connections { background: #172130; }
+:root[data-appearance="dark"] .current-workflow-proposal__connections h4 { color: #9cabbd; }
+:root[data-appearance="dark"] .current-workflow-proposal__connections p { color: #c7c7cc; }
 
 .current-ftux { position: relative; min-height: 360px; color: #303139; }
 .current-ftux__progress { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 12px; padding: 2px 2px 18px; border-bottom: 1px solid var(--current-divider); }

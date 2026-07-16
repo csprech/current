@@ -52,6 +52,21 @@ describe("PromptWorkflowView", () => {
     expect(screen.getByRole("button", { name: "Review workflow" })).toBeEnabled();
   });
 
+  it("keeps wheel gestures inside the workflow content region", () => {
+    const onParentWheel = vi.fn();
+    render(
+      <div onWheel={onParentWheel}>
+        <PromptWorkflowView onBack={vi.fn()} onWorkflowGenerated={vi.fn()} />
+      </div>,
+    );
+
+    const content = screen.getByRole("region", { name: "Workflow description" });
+    fireEvent.wheel(content, { deltaY: 80 });
+
+    expect(onParentWheel).not.toHaveBeenCalled();
+    expect(content).toHaveClass("nowheel", "overscroll-contain");
+  });
+
   it("requests and renders a reviewable proposal without applying a workflow", async () => {
     const props = renderView();
     await requestProposal();

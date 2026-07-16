@@ -42,6 +42,22 @@ describe("TemplateExplorerView outcomes", () => {
     await waitFor(() => expect(screen.getByText("Style Transfer")).toBeInTheDocument());
   });
 
+  it("keeps wheel gestures inside the template results region", async () => {
+    const onParentWheel = vi.fn();
+    render(
+      <div onWheel={onParentWheel}>
+        <TemplateExplorerView onBack={vi.fn()} onWorkflowSelected={vi.fn()} />
+      </div>,
+    );
+
+    await waitFor(() => expect(screen.queryByText("Loading workflows…")).not.toBeInTheDocument());
+    const results = screen.getByRole("region", { name: "Template results" });
+    fireEvent.wheel(results, { deltaY: 80 });
+
+    expect(onParentWheel).not.toHaveBeenCalled();
+    expect(results).toHaveClass("nowheel", "overscroll-contain");
+  });
+
   it("applies Create, Refine, and Compose outcomes consistently to classified community workflows", async () => {
     const community = [
       { id: "community-create", name: "Campaign Generator", author: "A", description: "Generate launch imagery", filename: "create.json", size: 1, nodeCount: 3, tags: ["generation"] },

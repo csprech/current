@@ -140,7 +140,12 @@ export function TemplateExplorerView({ onBack, onWorkflowSelected }: TemplateExp
           </div>
         </aside>
 
-        <div className="current-template-explorer__results">
+        <div
+          className="current-template-explorer__results nowheel overscroll-contain"
+          role="region"
+          aria-label="Template results"
+          onWheelCapture={(event) => event.stopPropagation()}
+        >
           {filteredPresets.length > 0 ? (
             <section>
               <h3>{outcome === "all" ? "Featured workflows" : OUTCOMES.find((item) => item.id === outcome)?.label}</h3>

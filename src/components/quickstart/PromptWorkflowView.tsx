@@ -57,7 +57,7 @@ export function PromptWorkflowView({ onBack, onWorkflowGenerated }: PromptWorkfl
   const busy = phase === "proposing" || phase === "building";
 
   return (
-    <div className="current-quickstart-view flex flex-col h-full">
+    <div className="current-quickstart-view flex flex-col h-full min-h-0">
       <div className="px-6 py-4 border-b border-neutral-700 flex items-center gap-4">
         <QuickstartBackButton onClick={phase === "review" ? () => setPhase("editing") : onBack} disabled={busy} />
         <h2 className="text-lg font-semibold text-neutral-100">
@@ -65,7 +65,12 @@ export function PromptWorkflowView({ onBack, onWorkflowGenerated }: PromptWorkfl
         </h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-5">
+      <div
+        className="flex-1 overflow-y-auto p-6 space-y-5 nowheel overscroll-contain"
+        role="region"
+        aria-label="Workflow description"
+        onWheelCapture={(event) => event.stopPropagation()}
+      >
         {phase === "editing" || phase === "proposing" ? (
           <div className="space-y-2">
             <label htmlFor="workflow-description" className="text-xs font-medium text-neutral-400">Describe your workflow</label>
