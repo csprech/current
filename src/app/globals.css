@@ -201,16 +201,42 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
   gap: 0.5rem;
 }
 
-.current-mark {
+.current-brand-icon,
+.current-brand-wordmark {
+  position: relative;
   display: block;
-  width: 2rem;
-  height: 2rem;
   flex: none;
 }
 
-.current-wordmark {
-  font-weight: 650;
-  line-height: 1;
+.current-brand-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.current-brand-wordmark {
+  width: 6.5rem;
+  height: 1.25rem;
+}
+
+.current-brand-asset {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.current-brand-asset--white { display: none; }
+.current-brand-asset--wordmark-color { display: none; }
+
+.current-brand-wordmark--color .current-brand-asset--black { display: none; }
+.current-brand-wordmark--color .current-brand-asset--wordmark-color { display: block; }
+
+:root[data-appearance="dark"] .current-brand-asset--icon-color,
+:root[data-appearance="dark"] .current-brand-asset--wordmark-color,
+:root[data-appearance="dark"] .current-brand-asset--black { display: none; }
+:root[data-appearance="dark"] .current-brand-asset--white { display: block; }
 }
 
 .current-button,

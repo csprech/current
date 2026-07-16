@@ -115,4 +115,13 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-selection-toolbar \.current-toolbar-action\s*\{[\s\S]*?color:\s*#e7edf5/);
     expect(css).toMatch(/\.current-selection-toolbar__separator\s*\{[\s\S]*?background:\s*var\(--current-divider\)/);
   });
+
+  it("adapts the supplied Current assets to the active appearance", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/\.current-brand-asset--white\s*\{[\s\S]*?display:\s*none/);
+    expect(css).toMatch(/\.current-brand-wordmark--color \.current-brand-asset--black\s*\{[\s\S]*?display:\s*none/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--icon-color,[\s\S]*?display:\s*none/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--white\s*\{[\s\S]*?display:\s*block/);
+  });
 });
