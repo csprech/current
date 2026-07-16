@@ -97,4 +97,13 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-workflow-browser \.text-neutral-300,[\s\S]*?color:\s*var\(--current-graphite\)/);
     expect(css).toMatch(/\.current-workflow-browser__directory-action\s*\{[\s\S]*?background:\s*var\(--current-canvas\)/);
   });
+
+  it("uses the Current navy hierarchy for the inspector", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/\.current-panel\[data-side="right"\]\s*\{[\s\S]*?background:\s*linear-gradient\(180deg, #1b2a3e 0%, #111c2b 100%\)/);
+    expect(css).toMatch(/\.current-panel\[data-side="right"\]\s*\{[\s\S]*?border-left:\s*1px solid #2f435b/);
+    expect(css).toMatch(/\.current-inspector__field,[\s\S]*?background:\s*#223247/);
+    expect(css).toMatch(/\.current-inspector__browse\s*\{[\s\S]*?background:\s*#26384e/);
+  });
 });

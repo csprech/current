@@ -488,9 +488,9 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-panel[data-side="left"] { border-right-width: 1px; }
 .current-panel[data-side="right"] {
   color: #f5f5f7;
-  background: linear-gradient(180deg, rgb(44 44 46 / 96%), rgb(28 28 30 / 98%));
-  border-left: 1px solid rgb(255 255 255 / 12%);
-  box-shadow: -18px 0 42px rgb(0 0 0 / 20%);
+  background: linear-gradient(180deg, #1b2a3e 0%, #111c2b 100%);
+  border-left: 1px solid #2f435b;
+  box-shadow: -18px 0 42px rgb(0 0 0 / 32%);
 }
 .current-panel__header,
 .current-sheet__header {
@@ -502,7 +502,7 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--current-divider);
 }
-.current-panel[data-side="right"] .current-panel__header { border-bottom-color: rgb(255 255 255 / 12%); }
+.current-panel[data-side="right"] .current-panel__header { border-bottom-color: #2f435b; }
 .current-panel__header h2,
 .current-sheet__header h2 { margin: 0; font-size: 0.9375rem; font-weight: 650; }
 .current-panel__content,
@@ -514,8 +514,8 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-inspector__selection {
   margin: 0;
   padding: 0 0 0.75rem;
-  color: rgb(255 255 255 / 68%);
-  border-bottom: 1px solid rgb(255 255 255 / 12%);
+  color: #b6c2d2;
+  border-bottom: 1px solid #2f435b;
   font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.02em;
@@ -524,14 +524,14 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-inspector__controls { padding-top: 0.125rem; }
 .current-inspector__model { padding: 0.625rem 0 0.75rem; }
 .current-panel[data-side="right"] :is(.text-neutral-100, .text-neutral-200) { color: #f5f5f7; }
-.current-panel[data-side="right"] :is(.text-neutral-300, .text-neutral-400) { color: rgb(235 235 245 / 70%); }
-.current-panel[data-side="right"] .text-neutral-500 { color: rgb(235 235 245 / 48%); }
+.current-panel[data-side="right"] :is(.text-neutral-300, .text-neutral-400) { color: #b6c2d2; }
+.current-panel[data-side="right"] .text-neutral-500 { color: #8fa2b8; }
 .current-panel[data-side="right"] button.bg-neutral-700 {
   color: #f5f5f7;
-  background: rgb(255 255 255 / 10%);
-  border-color: rgb(255 255 255 / 13%);
+  background: #26384e;
+  border-color: #2f435b;
 }
-.current-panel[data-side="right"] button.bg-neutral-700:hover:not(:disabled) { background: rgb(255 255 255 / 16%); }
+.current-panel[data-side="right"] button.bg-neutral-700:hover:not(:disabled) { background: #344b66; }
 .current-panel[data-side="right"] .flex.justify-end > button.bg-neutral-700 {
   color: #fff;
   background: #0a84ff;
@@ -541,36 +541,36 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-inspector__browse {
   min-height: 1.875rem;
   padding: 0.375rem 0.625rem;
-  border: 1px solid rgb(255 255 255 / 13%);
+  border: 1px solid #2f435b;
   border-radius: 0.4375rem;
   color: #f5f5f7;
-  background: rgb(255 255 255 / 10%);
+  background: #26384e;
   font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1;
   cursor: pointer;
   transition: background-color 140ms ease, border-color 140ms ease;
 }
-.current-inspector__browse:hover { background: rgb(255 255 255 / 16%); border-color: rgb(255 255 255 / 20%); }
+.current-inspector__browse:hover { background: #344b66; border-color: #415a76; }
 .current-inspector__field,
 .current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700 {
   min-height: 2rem;
   padding: 0.3125rem 1.9rem 0.3125rem 0.625rem;
-  border: 1px solid rgb(255 255 255 / 14%);
+  border: 1px solid #2f435b;
   border-radius: 0.4375rem;
   color: #f5f5f7;
-  background-color: rgb(255 255 255 / 10%);
+  background: #223247;
   color-scheme: dark;
   font-size: 0.75rem;
   line-height: 1;
   outline: none;
 }
 .current-inspector__field:hover,
-.current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700:hover { background-color: rgb(255 255 255 / 14%); }
+.current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700:hover { background-color: #26384e; }
 .current-inspector__field:focus,
 .current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700:focus { border-color: rgb(87 120 246 / 88%); box-shadow: var(--current-focus); }
 .current-inspector__checkbox { accent-color: var(--current-blue); }
-.current-inspector__actions { display: flex; justify-content: flex-end; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgb(255 255 255 / 12%); }
+.current-inspector__actions { display: flex; justify-content: flex-end; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #2f435b; }
 .current-inspector__run {
   display: inline-flex;
   min-height: 2rem;
