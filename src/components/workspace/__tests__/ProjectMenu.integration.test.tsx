@@ -16,9 +16,11 @@ vi.mock("@/components/ProjectSetupModal", () => ({
   ProjectSetupModal: function MockProjectSetupModal({
     isOpen,
     onSave,
+    initialTab,
   }: {
     isOpen: boolean;
     onSave: (id: string, name: string, path: string) => void | boolean | Promise<void | boolean>;
+    initialTab?: string;
   }) {
     const [name, setName] = useState("New Project");
     const [path, setPath] = useState("/tmp/new-project");
@@ -26,6 +28,7 @@ vi.mock("@/components/ProjectSetupModal", () => ({
     if (!isOpen) return null;
     return (
       <div role="dialog" aria-label="Project setup">
+        <span>Initial tab: {initialTab || "project"}</span>
         <label>Project name<input value={name} onChange={(event) => setName(event.target.value)} /></label>
         <label>Project location<input value={path} onChange={(event) => setPath(event.target.value)} /></label>
         {saveError && <div role="alert">{saveError}</div>}
@@ -101,6 +104,14 @@ describe("ProjectMenu version history integration", () => {
     await waitFor(() => {
       expect(mockRestoreWorkflowVersion).toHaveBeenCalledWith("1720000000000");
     });
+  });
+
+  it("opens Provider settings directly from the command-bar API key control", () => {
+    render(<ProjectMenu />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure API keys" }));
+
+    expect(screen.getByRole("dialog", { name: "Project setup" })).toHaveTextContent("Initial tab: providers");
   });
 
   it("asks before reverting AI changes without using browser confirm", () => {

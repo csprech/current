@@ -30,6 +30,7 @@ export const ActivityIcon = (props: CurrentIconProps) => <Icon {...props}><path 
 export const AssistantIcon = (props: CurrentIconProps) => <Icon {...props}><path d="M12 3.5 13.45 8.55 18.5 10 13.45 11.45 12 16.5l-1.45-5.05L5.5 10l5.05-1.45L12 3.5Z" /><path d="m18 15 .65 2.35L21 18l-2.35.65L18 21l-.65-2.35L15 18l2.35-.65L18 15Z" /></Icon>;
 export const MoonIcon = (props: CurrentIconProps) => <Icon {...props}><path d="M20 15.2A7.8 7.8 0 0 1 8.8 4 8.2 8.2 0 1 0 20 15.2Z" /></Icon>;
 export const SunIcon = (props: CurrentIconProps) => <Icon {...props}><circle cx="12" cy="12" r="3.3" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.65 5.65l1.4 1.4M16.95 16.95l1.4 1.4M18.35 5.65l-1.4 1.4M7.05 16.95l-1.4 1.4" /></Icon>;
+export const KeyIcon = (props: CurrentIconProps) => <Icon {...props}><circle cx="8.3" cy="11.7" r="3.3" /><path d="m10.65 14.05 6.85 6.85M14.35 17.75l1.75-1.75M16.1 19.5l1.75-1.75" /></Icon>;
 export const CloseIcon = (props: CurrentIconProps) => <Icon {...props}><path d="m6 6 12 12M18 6 6 18" /></Icon>;
 export const ChevronDownIcon = (props: CurrentIconProps) => <Icon {...props}><path d="m7 9.5 5 5 5-5" /></Icon>;
 export const PlayIcon = (props: CurrentIconProps) => <Icon {...props}><path d="m9 6 9 6-9 6V6Z" /></Icon>;

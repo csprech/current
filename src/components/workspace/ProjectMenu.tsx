@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import { ChevronDownIcon } from "@/components/current/CurrentIcons";
+import { ChevronDownIcon, KeyIcon } from "@/components/current/CurrentIcons";
 import { CurrentIconButton } from "@/components/current/CurrentIconButton";
 import { CostIndicator } from "@/components/CostIndicator";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
-import { ProjectSetupModal } from "@/components/ProjectSetupModal";
+import { ProjectSetupModal, type ProjectSetupTab } from "@/components/ProjectSetupModal";
 import { WorkflowBrowserModal } from "@/components/WorkflowBrowserModal";
 import { WorkflowVersionHistory } from "@/components/WorkflowVersionHistory";
 import { useWorkflowStore } from "@/store/workflowStore";
@@ -57,6 +57,7 @@ export function ProjectMenu() {
   })));
   const [menuOpen, setMenuOpen] = useState(false);
   const [projectModalMode, setProjectModalMode] = useState<"new" | "settings">("new");
+  const [projectModalInitialTab, setProjectModalInitialTab] = useState<ProjectSetupTab>("project");
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showWorkflowBrowser, setShowWorkflowBrowser] = useState(false);
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
@@ -125,8 +126,9 @@ export function ProjectMenu() {
     setMenuOpen(false);
     action();
   };
-  const openProjectModal = (mode: "new" | "settings") => closeAnd(() => {
+  const openProjectModal = (mode: "new" | "settings", initialTab: ProjectSetupTab = "project") => closeAnd(() => {
     setProjectModalMode(mode);
+    setProjectModalInitialTab(initialTab);
     setShowProjectModal(true);
   });
   const attemptSave = async (showHostRecovery = true): Promise<boolean> => {
@@ -215,6 +217,12 @@ export function ProjectMenu() {
         >
           <SaveIcon />
         </CurrentIconButton>
+        <CurrentIconButton
+          label="Configure API keys"
+          onClick={() => openProjectModal("settings", "providers")}
+        >
+          <KeyIcon />
+        </CurrentIconButton>
         <div className="current-popover current-project__menu" hidden={!menuOpen}>
           <div ref={menuItemsRef} role="menu" aria-label="Project menu" onKeyDown={handleMenuKeyDown}>
             <button type="button" role="menuitem" onClick={() => closeAnd(() => setShowQuickstart(true))}>Open welcome</button>
@@ -249,6 +257,7 @@ export function ProjectMenu() {
         onClose={() => setShowProjectModal(false)}
         onSave={handleProjectSave}
         mode={projectModalMode}
+        initialTab={projectModalInitialTab}
       />
       <WorkflowBrowserModal
         isOpen={showWorkflowBrowser}

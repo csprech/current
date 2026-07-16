@@ -81,11 +81,14 @@ const getProviderIcon = (provider: ProviderType) => {
   }
 };
 
+export type ProjectSetupTab = "project" | "providers" | "nodeDefaults" | "canvas";
+
 interface ProjectSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (id: string, name: string, directoryPath: string) => boolean | Promise<boolean>;
   mode: "new" | "settings";
+  initialTab?: ProjectSetupTab;
 }
 
 export function ProjectSetupModal({
@@ -93,6 +96,7 @@ export function ProjectSetupModal({
   onClose,
   onSave,
   mode,
+  initialTab = "project",
 }: ProjectSetupModalProps) {
   const sanitizeProjectFolderName = (projectName: string): string => {
     return projectName
@@ -146,7 +150,7 @@ export function ProjectSetupModal({
   const { inlineParametersEnabled, setInlineParameters } = useInlineParameters();
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<"project" | "providers" | "nodeDefaults" | "canvas">("project");
+  const [activeTab, setActiveTab] = useState<ProjectSetupTab>(initialTab);
 
   // Project tab state
   const [name, setName] = useState("");
@@ -202,6 +206,7 @@ export function ProjectSetupModal({
         setActiveTab("project");
         newProjectIdRef.current = generateWorkflowId();
       } else {
+        setActiveTab(initialTab);
         newProjectIdRef.current = null;
       }
 
@@ -243,7 +248,7 @@ export function ProjectSetupModal({
         .then((res) => res.json())
         .then((data: EnvStatusResponse) => setEnvStatus(data))
         .catch(() => setEnvStatus(null));
-  }, [isOpen, mode, workflowName, saveDirectoryPath, useExternalImageStorage, providerSettings, canvasNavigationSettings]);
+  }, [isOpen, mode, initialTab, workflowName, saveDirectoryPath, useExternalImageStorage, providerSettings, canvasNavigationSettings]);
 
   const handleBrowse = async () => {
     setIsBrowsing(true);
