@@ -8,7 +8,6 @@ import {
   ActivityIcon,
   AddIcon,
   AssistantIcon,
-  LibraryIcon,
   RedoIcon,
   UndoIcon,
 } from "@/components/current/CurrentIcons";
@@ -73,9 +72,7 @@ export function CurrentCommandBar({ onAddNode }: CurrentCommandBarProps) {
     canRedo,
     undo,
     redo,
-    activeLeftPanel,
     activeRightPanel,
-    toggleLeftPanel,
     toggleRightPanel,
     setShowQuickstart,
   } = useWorkflowStore(useShallow((state) => ({
@@ -85,9 +82,7 @@ export function CurrentCommandBar({ onAddNode }: CurrentCommandBarProps) {
     canRedo: state.canRedo,
     undo: state.undo,
     redo: state.redo,
-    activeLeftPanel: state.activeLeftPanel,
     activeRightPanel: state.activeRightPanel,
-    toggleLeftPanel: state.toggleLeftPanel,
     toggleRightPanel: state.toggleRightPanel,
     setShowQuickstart: state.setShowQuickstart,
   })));
@@ -120,7 +115,6 @@ export function CurrentCommandBar({ onAddNode }: CurrentCommandBarProps) {
         <CurrentIconButton label="Add node" onClick={onAddNode} disabled={!onAddNode} data-tutorial="add-node-button"><AddIcon /></CurrentIconButton>
         <span className="current-command-bar__divider" aria-hidden="true" />
         <AppearanceToggle />
-        <CurrentIconButton label="Open library" aria-pressed={activeLeftPanel === "library"} onClick={() => toggleLeftPanel("library")}><LibraryIcon /></CurrentIconButton>
         <CurrentIconButton label="Open activity" aria-pressed={activeRightPanel === "activity"} onClick={() => toggleRightPanel("activity")}><ActivityIcon /></CurrentIconButton>
         <CurrentIconButton label="Open assistant" aria-pressed={activeRightPanel === "assistant"} onClick={() => toggleRightPanel("assistant")}><AssistantIcon /></CurrentIconButton>
         <CommentsNavigation />

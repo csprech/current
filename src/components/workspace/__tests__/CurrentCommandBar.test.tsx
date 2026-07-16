@@ -170,18 +170,17 @@ describe("CurrentCommandBar", () => {
     expect(add.querySelector("svg")).toHaveAttribute("stroke-width", "1.6");
   });
 
-  it("opens the requested workspace panel", () => {
+  it("keeps Outputs as the asset destination without a separate library control", () => {
     render(<CurrentCommandBar />);
-    fireEvent.click(screen.getByRole("button", { name: "Open library" }));
-    expect(mockToggleLeftPanel).toHaveBeenCalledWith("library");
+    expect(screen.getByRole("button", { name: "Outputs" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Open library" })).not.toBeInTheDocument();
   });
 
   it("reflects and toggles activity and assistant panels", () => {
     mockUseWorkflowStore.mockImplementation((selector) =>
-      selector(createState({ activeRightPanel: "activity", activeLeftPanel: "library" }))
+      selector(createState({ activeRightPanel: "activity" }))
     );
     render(<CurrentCommandBar />);
-    expect(screen.getByRole("button", { name: "Open library" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "Open activity" })).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(screen.getByRole("button", { name: "Open assistant" }));
     expect(mockToggleRightPanel).toHaveBeenCalledWith("assistant");

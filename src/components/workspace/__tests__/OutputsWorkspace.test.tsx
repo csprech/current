@@ -3,6 +3,12 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { OutputsWorkspace } from "../OutputsWorkspace";
 import { useWorkflowStore } from "@/store/workflowStore";
 
+vi.mock("@/components/AssetLibrary", () => ({
+  AssetLibrary: ({ embedded }: { embedded?: boolean }) => (
+    <div data-testid="asset-library">embedded: {String(embedded)}</div>
+  ),
+}));
+
 describe("OutputsWorkspace", () => {
   beforeEach(() => {
     useWorkflowStore.setState({
@@ -14,13 +20,12 @@ describe("OutputsWorkspace", () => {
     });
   });
 
-  it("shows workflow outputs without mutating the canvas", () => {
+  it("uses the asset browser as the Outputs workspace without mutating the canvas", () => {
     const before = useWorkflowStore.getState().nodes;
     render(<OutputsWorkspace />);
     expect(screen.getByRole("main", { name: "Workflow outputs" })).toBeInTheDocument();
-    expect(screen.getByText("Latest generations")).toBeInTheDocument();
-    expect(screen.getByText("Output nodes")).toBeInTheDocument();
-    expect(screen.getByText("Final frame")).toBeInTheDocument();
+    expect(screen.getByText("All outputs")).toBeInTheDocument();
+    expect(screen.getByTestId("asset-library")).toHaveTextContent("embedded: true");
     expect(useWorkflowStore.getState().nodes).toBe(before);
   });
 
@@ -35,14 +40,4 @@ describe("OutputsWorkspace", () => {
     expect(screen.getByRole("main", { name: "Workflow outputs" })).toHaveClass("absolute", "inset-0", "h-full", "min-h-0", "overflow-y-auto");
   });
 
-  it("uses the Output node media contract for audio and video fallbacks", () => {
-    useWorkflowStore.setState({ nodes: [
-      { id: "audio", type: "output", position: { x: 0, y: 0 }, data: { customTitle: "Audio fallback", contentType: "audio", image: "data:audio/mpeg;base64,audio" } } as never,
-      { id: "video", type: "output", position: { x: 0, y: 0 }, data: { customTitle: "Video fallback", image: "https://example.com/result.mp4" } } as never,
-    ] });
-    const { container } = render(<OutputsWorkspace />);
-    expect(container.querySelector('audio[src="data:audio/mpeg;base64,audio"]')).toBeInTheDocument();
-    expect(container.querySelector('video[src="https://example.com/result.mp4"]')).toBeInTheDocument();
-    expect(container.querySelectorAll("img")).toHaveLength(1);
-  });
 });
