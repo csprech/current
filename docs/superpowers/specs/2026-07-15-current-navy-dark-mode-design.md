@@ -17,6 +17,10 @@ Make the desktop dark appearance feel native to Current by replacing neutral gra
 
 Update only the dark appearance variables and dark-specific overrides in `src/app/globals.css`. Light appearance remains unchanged. The appearance toggle continues to default to dark and preserves an explicitly selected light appearance.
 
+## Node treatment
+
+Nodes use the same navy surface hierarchy rather than a bright white keyline. Their resting edge is a low-contrast blue-slate separator, their shadow creates the primary separation from the canvas, and their selected state uses a controlled Current-blue ring. Running and error states retain their semantic accents without reintroducing white inset highlights. Node footers and headers remain distinct through tonal layering, not borders.
+
 ## Verification
 
-Targeted CSS and appearance-toggle tests must pass. The local preview must report the dark appearance, navy page background, and an available switch to light appearance.
+Targeted CSS, appearance-toggle, and node-style tests must pass. The local preview must report the dark appearance, navy page background, polished node surfaces without white keylines, and an available switch to light appearance.
