@@ -88,6 +88,50 @@ describe("Current Add Palette brand colors", () => {
     expect(inspectorRun).toContain("background: var(--current-action)");
   });
 
+  it("uses adaptive semantic roles across secondary product surfaces", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const addPalette = css.match(/\n\.current-add-palette\s*\{([^}]*)\}/)?.[1];
+    const addSearch = css.match(/\.current-add-palette__search\s*\{([^}]*)\}/)?.[1];
+    const focusWorkspace = css.match(/\.current-focus-workspace\s*\{([^}]*)\}/)?.[1];
+    const focusBar = css.match(/\.current-focus-workspace__bar\s*\{([^}]*)\}/)?.[1];
+    const launchpad = css.match(/\.current-launchpad\s*\{([^}]*)\}/)?.[1];
+    const launchRoute = css.match(/\.current-launchpad__route\s*\{([^}]*)\}/)?.[1];
+    const launchDetail = css.match(/\.current-launchpad__detail\s*\{([^}]*)\}/)?.[1];
+    const quickstart = css.match(/\.current-quickstart-view\s*\{([^}]*)\}/)?.[1];
+    const templateCard = css.match(/\.current-template-card\s*\{([^}]*)\}/)?.[1];
+    const templateSidebar = css.match(/\.current-template-explorer aside\s*\{([^}]*)\}/)?.[1];
+    const outputs = css.match(/\.current-outputs\s*\{([^}]*)\}/)?.[1];
+    const outputCard = css.match(/\.current-output-card\s*\{([^}]*)\}/)?.[1];
+    const proposalItem = css.match(/\.current-workflow-proposal li\s*\{([^}]*)\}/)?.[1];
+    const ftux = css.match(/\.current-ftux\s*\{([^}]*)\}/)?.[1];
+    const runOptions = css.match(/\.current-run-control__options\s*\{([^}]*)\}/)?.[1];
+    const runValidation = css.match(/\.current-run-control__validation\s*\{([^}]*)\}/)?.[1];
+
+    expect(addPalette).toContain("color: var(--current-text-primary)");
+    expect(addPalette).toContain("background: var(--current-surface-elevated)");
+    expect(addPalette).toContain("border: 1px solid var(--current-border)");
+    expect(addSearch).toContain("background: var(--current-surface-control)");
+    expect(focusWorkspace).toContain("color: var(--current-text-primary)");
+    expect(focusWorkspace).toContain("background: var(--current-canvas)");
+    expect(focusBar).toContain("background: var(--current-surface-chrome)");
+    expect(launchpad).toContain("color: var(--current-text-primary)");
+    expect(launchpad).toContain("var(--current-canvas)");
+    expect(launchRoute).toContain("background: var(--current-surface-elevated)");
+    expect(launchDetail).toContain("background: var(--current-surface-elevated)");
+    expect(quickstart).toContain("color: var(--current-text-primary)");
+    expect(templateCard).toContain("background: var(--current-surface-elevated)");
+    expect(templateSidebar).toContain("background: var(--current-surface-panel)");
+    expect(outputs).toContain("color: var(--current-text-primary)");
+    expect(outputs).toContain("background: var(--current-canvas)");
+    expect(outputCard).toContain("background: var(--current-surface-elevated)");
+    expect(proposalItem).toContain("background: var(--current-surface-elevated)");
+    expect(ftux).toContain("color: var(--current-text-primary)");
+    expect(runOptions).toContain("color: var(--current-action-foreground)");
+    expect(runOptions).toContain("background: var(--current-action)");
+    expect(runValidation).toContain("color: var(--current-status-danger)");
+    expect(runValidation).toContain("var(--current-surface-elevated)");
+  });
+
   it("uses the approved Current accent and focus tokens", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const palette = css.slice(css.indexOf("/* Current Add Palette */"));
@@ -98,8 +142,8 @@ describe("Current Add Palette brand colors", () => {
 
   it("keeps the focused-workspace back control legible on the dark command bar", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
-    expect(css).toMatch(/\.current-focus-workspace__back\s*\{[\s\S]*?color:\s*var\(--current-paper\)/);
-    expect(css).toMatch(/\.current-focus-workspace__back:hover:not\(:disabled\)\s*\{[\s\S]*?var\(--current-blue\)/);
+    expect(css).toMatch(/\.current-focus-workspace__back\s*\{[\s\S]*?color:\s*var\(--current-text-primary\)/);
+    expect(css).toMatch(/\.current-focus-workspace__back:hover:not\(:disabled\)\s*\{[\s\S]*?var\(--current-surface-control-hover\)/);
     expect(css).toMatch(/\.current-focus-workspace__back:focus-visible\s*\{[\s\S]*?var\(--current-focus\)/);
   });
 
@@ -159,19 +203,19 @@ describe("Current Add Palette brand colors", () => {
   it("keeps launchpad copy and recent projects legible in dark appearance", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad\s*\{[\s\S]*?color:\s*#f5f5f7/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__intro h1\s*\{[\s\S]*?color:\s*#f5f5f7/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__description\s*\{[\s\S]*?color:\s*#b6c2d2/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__recents button\s*\{[\s\S]*?color:\s*#e7edf5/);
+    expect(css).toMatch(/\.current-launchpad\s*\{[\s\S]*?color:\s*var\(--current-text-primary\)/);
+    expect(css).toMatch(/\.current-launchpad__intro h1\s*\{[\s\S]*?color:\s*var\(--current-text-primary\)/);
+    expect(css).toMatch(/\.current-launchpad__description\s*\{[\s\S]*?color:\s*var\(--current-text-secondary\)/);
+    expect(css).toMatch(/\.current-launchpad__recents button\s*\{[\s\S]*?color:\s*var\(--current-text-primary\)/);
   });
 
   it("keeps quickstart detail surfaces on the Current navy palette in dark appearance", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__detail \.text-neutral-100,[\s\S]*?color:\s*#f5f5f7/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-quickstart-view input,[\s\S]*?background:\s*#172130/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-template-card\s*\{[\s\S]*?background:\s*#1d2a3b/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-template-explorer aside\s*\{[\s\S]*?background:\s*#172130/);
+    expect(css).toMatch(/\.current-launchpad__detail \.text-neutral-100,[\s\S]*?color:\s*var\(--current-text-primary\)/);
+    expect(css).toMatch(/\.current-quickstart-view input,[\s\S]*?background:\s*var\(--current-surface-control\)/);
+    expect(css).toMatch(/\.current-template-card\s*\{[\s\S]*?background:\s*var\(--current-surface-elevated\)/);
+    expect(css).toMatch(/\.current-template-explorer aside\s*\{[\s\S]*?background:\s*var\(--current-surface-panel\)/);
   });
 
   it("gives the dark navigator a navy surface without a bright keyline", () => {
@@ -184,10 +228,10 @@ describe("Current Add Palette brand colors", () => {
   it("uses appearance-aware ink and action surfaces in the workflow browser", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/\.current-workflow-browser\s*\{[\s\S]*?color:\s*var\(--current-inspector\)/);
-    expect(css).toMatch(/\.current-workflow-browser \.text-neutral-100,[\s\S]*?color:\s*var\(--current-inspector\)/);
-    expect(css).toMatch(/\.current-workflow-browser \.text-neutral-300,[\s\S]*?color:\s*var\(--current-graphite\)/);
-    expect(css).toMatch(/\.current-workflow-browser__directory-action\s*\{[\s\S]*?background:\s*var\(--current-canvas\)/);
+    expect(css).toMatch(/\.current-workflow-browser\s*\{[\s\S]*?color:\s*var\(--current-text-primary\)/);
+    expect(css).toMatch(/\.current-workflow-browser \.text-neutral-100,[\s\S]*?color:\s*var\(--current-text-primary\)/);
+    expect(css).toMatch(/\.current-workflow-browser \.text-neutral-300,[\s\S]*?color:\s*var\(--current-text-secondary\)/);
+    expect(css).toMatch(/\.current-workflow-browser__directory-action\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
   });
 
   it("uses the Current navy hierarchy for the inspector", () => {
