@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { OutputsWorkspace } from "../OutputsWorkspace";
 import { useWorkflowStore } from "@/store/workflowStore";
 
@@ -51,8 +51,11 @@ describe("OutputsWorkspace", () => {
   it("lets people adjust the output thumbnail scale", () => {
     render(<OutputsWorkspace />);
 
-    const slider = screen.getByRole("slider", { name: "Thumbnail size" });
+    const outputs = screen.getByRole("region", { name: "All outputs" });
+    const slider = within(outputs).getByRole("slider", { name: "Thumbnail size" });
     expect(slider).toHaveValue("208");
+    expect(outputs).toContainElement(slider);
+    expect(screen.getByRole("banner")).not.toContainElement(slider);
     fireEvent.change(slider, { target: { value: "280" } });
 
     expect(screen.getByTestId("asset-library")).toHaveTextContent("thumbnail size: 280");

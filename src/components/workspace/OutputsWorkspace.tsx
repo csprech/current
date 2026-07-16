@@ -22,9 +22,18 @@ export function OutputsWorkspace({ onBack }: { onBack?: () => void } = {}) {
     >
       <header className="current-outputs__header">
         <div><span className="current-eyebrow">Review</span><h1>Workflow outputs</h1></div>
-        <div className="current-outputs__actions">
-          <label className="current-output-thumbnail-size">
-            <span>Thumbnail size</span>
+        <CurrentButton variant="secondary" onClick={back}>Back to Canvas</CurrentButton>
+      </header>
+      <section aria-labelledby="output-assets-heading">
+        <div className="current-outputs__section-heading">
+          <h2 id="output-assets-heading">All outputs</h2>
+          <label className="current-output-thumbnail-size" title="Thumbnail size">
+            <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="2.5" y="2.5" width="4" height="4" rx="0.75" />
+              <rect x="9.5" y="2.5" width="4" height="4" rx="0.75" />
+              <rect x="2.5" y="9.5" width="4" height="4" rx="0.75" />
+              <rect x="9.5" y="9.5" width="4" height="4" rx="0.75" />
+            </svg>
             <input
               type="range"
               min="144"
@@ -32,14 +41,14 @@ export function OutputsWorkspace({ onBack }: { onBack?: () => void } = {}) {
               step="8"
               value={thumbnailSize}
               onChange={(event) => setThumbnailSize(Number(event.target.value))}
+              aria-label="Thumbnail size"
               aria-valuetext={`${thumbnailSize} pixels`}
             />
+            <svg className="current-output-thumbnail-size__large-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="2" y="2" width="12" height="12" rx="2" />
+            </svg>
           </label>
-          <CurrentButton variant="secondary" onClick={back}>Back to Canvas</CurrentButton>
         </div>
-      </header>
-      <section aria-labelledby="output-assets-heading">
-        <h2 id="output-assets-heading">All outputs</h2>
         <AssetLibrary embedded thumbnailSize={thumbnailSize} />
       </section>
     </main>
