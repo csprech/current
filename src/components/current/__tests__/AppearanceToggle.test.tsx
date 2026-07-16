@@ -8,14 +8,27 @@ describe("AppearanceToggle", () => {
     delete document.documentElement.dataset.appearance;
   });
 
-  it("lets a desktop user switch between light and dark appearance", () => {
+  it("starts in dark appearance and lets a desktop user switch to light", () => {
     render(<AppearanceToggle />);
-
-    const toggle = screen.getByRole("button", { name: "Use dark appearance" });
-    fireEvent.click(toggle);
 
     expect(document.documentElement.dataset.appearance).toBe("dark");
     expect(localStorage.getItem("current-appearance")).toBe("dark");
-    expect(screen.getByRole("button", { name: "Use light appearance" })).toBeInTheDocument();
+
+    const toggle = screen.getByRole("button", { name: "Use light appearance" });
+    fireEvent.click(toggle);
+
+    expect(document.documentElement.dataset.appearance).toBe("light");
+    expect(localStorage.getItem("current-appearance")).toBe("light");
+    expect(screen.getByRole("button", { name: "Use dark appearance" })).toBeInTheDocument();
+  });
+
+  it("keeps an appearance the user explicitly selected", () => {
+    localStorage.setItem("current-appearance", "light");
+    localStorage.setItem("current-appearance-user-choice", "true");
+
+    render(<AppearanceToggle />);
+
+    expect(document.documentElement.dataset.appearance).toBe("light");
+    expect(screen.getByRole("button", { name: "Use dark appearance" })).toBeInTheDocument();
   });
 });

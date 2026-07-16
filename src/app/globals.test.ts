@@ -30,4 +30,11 @@ describe("Current Add Palette brand colors", () => {
 
     expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--background:\s*#111113/);
   });
+
+  it("gives the dark workspace a dark canvas and high-contrast controls", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow\s*\{[\s\S]*?#111113/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-media-action,[\s\S]*?background:\s*#3a3a3c/);
+  });
 });

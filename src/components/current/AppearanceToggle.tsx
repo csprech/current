@@ -5,21 +5,24 @@ import { CurrentIconButton } from "./CurrentIconButton";
 import { MoonIcon, SunIcon } from "./CurrentIcons";
 
 const STORAGE_KEY = "current-appearance";
+const EXPLICIT_CHOICE_KEY = "current-appearance-user-choice";
 type Appearance = "light" | "dark";
 
-function applyAppearance(appearance: Appearance) {
+function applyAppearance(appearance: Appearance, explicit = false) {
   document.documentElement.dataset.appearance = appearance;
   localStorage.setItem(STORAGE_KEY, appearance);
+  if (explicit) localStorage.setItem(EXPLICIT_CHOICE_KEY, "true");
 }
 
 export function AppearanceToggle() {
-  const [appearance, setAppearance] = useState<Appearance>("light");
+  const [appearance, setAppearance] = useState<Appearance>("dark");
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    const nextAppearance: Appearance = saved === "dark" || saved === "light"
+    const hasExplicitChoice = localStorage.getItem(EXPLICIT_CHOICE_KEY) === "true";
+    const nextAppearance: Appearance = hasExplicitChoice && (saved === "dark" || saved === "light")
       ? saved
-      : window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      : "dark";
     setAppearance(nextAppearance);
     applyAppearance(nextAppearance);
   }, []);
@@ -31,7 +34,7 @@ export function AppearanceToggle() {
       aria-pressed={appearance === "dark"}
       onClick={() => {
         setAppearance(nextAppearance);
-        applyAppearance(nextAppearance);
+        applyAppearance(nextAppearance, true);
       }}
     >
       {appearance === "dark" ? <SunIcon /> : <MoonIcon />}
