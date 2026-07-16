@@ -237,6 +237,16 @@ describe("WorkflowCanvas", () => {
       expect(document.querySelector(".react-flow__controls")).toBeInTheDocument();
     });
 
+    it("places canvas controls in the top-left utility position", () => {
+      render(
+        <TestWrapper>
+          <WorkflowCanvas />
+        </TestWrapper>
+      );
+
+      expect(document.querySelector(".react-flow__controls")?.closest(".react-flow__panel")).toHaveClass("top", "left");
+    });
+
     it("should render MiniMap component", () => {
       render(
         <TestWrapper>

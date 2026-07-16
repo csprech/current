@@ -81,4 +81,11 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__description\s*\{[\s\S]*?color:\s*#b6c2d2/);
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__recents button\s*\{[\s\S]*?color:\s*#e7edf5/);
   });
+
+  it("gives the dark navigator a navy surface without a bright keyline", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?background:\s*#1d2a3b/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?border:\s*none/);
+  });
 });

@@ -43,6 +43,7 @@
   --current-divider: #d9dbe0;
   --current-graphite: #4c4e55;
   --current-minimap-neutral: #8a8d96;
+  --current-minimap-mask: rgb(240 240 244 / 65%);
   --current-inspector: #25262b;
   --current-danger: #e5484d;
   --current-warning: #d99a2b;
@@ -67,6 +68,7 @@
   --current-graphite: #b6c2d2;
   --current-inspector: #f5f5f7;
   --current-minimap-neutral: #59708a;
+  --current-minimap-mask: rgb(23 33 48 / 78%);
   --color-neutral-100: #f5f5f7;
   --color-neutral-200: #e5e5ea;
   --color-neutral-300: #c7c7cc;
@@ -107,6 +109,11 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 :root[data-appearance="dark"] .react-flow__background { background-color: #172130; }
 :root[data-appearance="dark"] .react-flow__background-pattern.dots { fill: #2f435b !important; }
 :root[data-appearance="dark"] .react-flow__minimap-mask { fill: rgb(23 33 48 / 78%) !important; }
+:root[data-appearance="dark"] .react-flow__minimap.current-transient-surface {
+  background: #1d2a3b !important;
+  border: none !important;
+  box-shadow: 0 10px 28px -12px rgb(0 0 0 / 48%) !important;
+}
 :root[data-appearance="dark"] .react-flow__controls {
   background: #26384e !important;
   border-color: #2f435b !important;

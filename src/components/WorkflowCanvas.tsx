@@ -2236,10 +2236,16 @@ export function WorkflowCanvas() {
           size={1}
           className={tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}
         />
-        <Controls className={`current-transient-surface !rounded-xl overflow-hidden [&>button]:bg-transparent [&>button]:border-black/5 [&>button]:fill-neutral-300 [&>button:hover]:bg-black/5 [&>button:hover]:fill-neutral-100 ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`} />
+        <Controls
+          position="top-left"
+          className={`current-canvas-controls current-transient-surface !rounded-xl overflow-hidden [&>button]:bg-transparent [&>button]:border-black/5 [&>button]:fill-neutral-300 [&>button:hover]:bg-black/5 [&>button:hover]:fill-neutral-100 ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`}
+        />
         <MiniMap
-          className={`current-transient-surface !rounded-xl ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`}
-          maskColor="rgba(240, 240, 244, 0.65)"
+          className={`current-canvas-navigator current-transient-surface !rounded-xl ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`}
+          bgColor="var(--current-canvas)"
+          maskColor="var(--current-minimap-mask)"
+          maskStrokeColor="var(--current-divider)"
+          nodeStrokeColor="transparent"
           pannable
           zoomable
           nodeColor={(node) => getMinimapColor(node.type)}
