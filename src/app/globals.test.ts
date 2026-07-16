@@ -25,6 +25,35 @@ describe("Current Add Palette brand colors", () => {
     expect(primaryButton).not.toContain("var(--current-paper)");
   });
 
+  it("uses semantic roles for shared controls and transient surfaces", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const button = css.match(/\.current-button\s*\{([^}]*)\}/)?.[1];
+    const secondary = css.match(/\.current-button--secondary\s*\{([^}]*)\}/)?.[1];
+    const iconButton = css.match(/\.current-icon-button\s*\{([^}]*)\}/)?.[1];
+    const segmented = css.match(/\.current-segmented-control\s*\{([^}]*)\}/)?.[1];
+    const selectedSegment = css.match(/\.current-segmented-control button\[aria-pressed="true"\]\s*\{([^}]*)\}/)?.[1];
+    const panel = css.match(/\.current-panel\s*\{([^}]*)\}/)?.[1];
+    const sheet = css.match(/\.current-sheet\s*\{([^}]*)\}/)?.[1];
+
+    expect(button).toContain("min-height: 2.125rem");
+    expect(button).toContain("box-shadow 160ms ease");
+    expect(secondary).toContain("color: var(--current-text-primary)");
+    expect(secondary).toContain("background: var(--current-surface-control)");
+    expect(secondary).toContain("border-color: var(--current-border)");
+    expect(iconButton).toContain("color: var(--current-text-primary)");
+    expect(segmented).toContain("background: var(--current-surface-control)");
+    expect(selectedSegment).toContain("background: var(--current-surface-elevated)");
+    expect(panel).toContain("color: var(--current-text-primary)");
+    expect(panel).toContain("background: var(--current-surface-panel)");
+    expect(sheet).toContain("color: var(--current-text-primary)");
+    expect(sheet).toContain("background: var(--current-surface-elevated)");
+    expect(css).toMatch(/\.current-icon-button\[aria-pressed="true"\][\s\S]*?background:\s*var\(--current-surface-control\)/);
+    expect(css).toMatch(/\.current-inline-notice--error\s*\{[\s\S]*?var\(--current-status-danger\)/);
+    expect(css).toMatch(/\.current-inline-notice--warning\s*\{[\s\S]*?var\(--current-status-warning\)/);
+    expect(css).toMatch(/\.current-inline-notice--success\s*\{[\s\S]*?var\(--current-status-success\)/);
+    expect(css).toMatch(/\.current-inline-notice--info\s*\{[\s\S]*?var\(--current-status-info\)/);
+  });
+
   it("uses the approved Current accent and focus tokens", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const palette = css.slice(css.indexOf("/* Current Add Palette */"));
@@ -57,8 +86,8 @@ describe("Current Add Palette brand colors", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
     expect(css).toMatch(/current-command-bar\s*\{[\s\S]*?background:\s*#1d2a3b/);
-    expect(css).toMatch(/current-button--secondary\s*\{[\s\S]*?background:\s*#26384e/);
-    expect(css).toMatch(/current-button--secondary:hover:not\(:disabled\)\s*\{[\s\S]*?background:\s*#344b66/);
+    expect(css).toMatch(/current-button--secondary\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
+    expect(css).toMatch(/current-button--secondary:hover:not\(:disabled\)\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow\s*\{[\s\S]*?#172130/);
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__controls\s*\{[\s\S]*?background:\s*#26384e/);
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__controls-button:hover\s*\{[\s\S]*?background:\s*#344b66/);

@@ -132,22 +132,12 @@ html[data-appearance="dark"] .current-command-bar {
   border-bottom-color: #2f435b;
   box-shadow: 0 4px 18px rgb(0 0 0 / 20%);
 }
-html[data-appearance="dark"] .current-command-bar__actions .current-icon-button[aria-pressed="true"],
-html[data-appearance="dark"] .current-icon-button:hover:not(:disabled),
-html[data-appearance="dark"] .current-button--quiet:hover:not(:disabled) { background: #344b66; }
 html[data-appearance="dark"] .current-project__trigger,
 html[data-appearance="dark"] .current-project__name { color: #f5f5f7; }
 html[data-appearance="dark"] .current-project__status { color: rgb(235 235 245 / 58%); }
-html[data-appearance="dark"] .current-segmented-control { border-color: #2f435b; background: #26384e; }
-html[data-appearance="dark"] .current-segmented-control button { color: rgb(235 235 245 / 68%); }
-html[data-appearance="dark"] .current-segmented-control button[aria-pressed="true"] { color: #fff; background: #344b66; box-shadow: none; }
-html[data-appearance="dark"] .current-sheet,
 html[data-appearance="dark"] .current-popover,
-html[data-appearance="dark"] .current-panel[data-side="left"],
 html[data-appearance="dark"] .current-output-card { color: #f5f5f7; background: #1d2a3b; border-color: #2f435b; }
 html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 58%); }
-html[data-appearance="dark"] .current-button--secondary { color: #f5f5f7; background: #26384e; border-color: #2f435b; }
-html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { background: #344b66; }
 :root[data-appearance="dark"] .react-flow {
   background: radial-gradient(120% 90% at 50% -25%, #26384e 0%, transparent 55%), #172130;
 }
@@ -292,18 +282,16 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 
 .current-button {
   display: inline-flex;
-  min-height: 2rem;
+  min-height: 2.125rem;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
   padding: 0.4rem 0.75rem;
   border: 1px solid transparent;
-  border-radius: 0.55rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1;
+  border-radius: 0.625rem;
+  font: 600 0.8125rem/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   cursor: pointer;
-  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease, transform 140ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease, opacity 160ms ease, transform 160ms ease;
 }
 
 .current-button:hover:not(:disabled) { transform: translateY(-1px); }
@@ -312,15 +300,15 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-icon-button:focus-visible,
 .current-segmented-control button:focus-visible { outline: none; box-shadow: var(--current-focus); }
 .current-button:disabled,
-.current-icon-button:disabled { cursor: not-allowed; opacity: 0.45; }
+.current-icon-button:disabled { cursor: not-allowed; opacity: 0.58; }
 .current-button--primary { color: var(--current-action-foreground); background: var(--current-action); }
 .current-button--primary:hover:not(:disabled) { background: var(--current-action-hover); }
-.current-button--secondary { color: var(--current-inspector); background: var(--current-paper); border-color: var(--current-divider); }
-.current-button--secondary:hover:not(:disabled) { background: var(--current-canvas); }
-.current-button--quiet { color: var(--current-graphite); background: transparent; }
-.current-button--quiet:hover:not(:disabled) { background: rgb(76 78 85 / 8%); }
-.current-button--danger { color: var(--current-paper); background: var(--current-danger); }
-.current-button--danger:hover:not(:disabled) { background: #cc3f44; }
+.current-button--secondary { color: var(--current-text-primary); background: var(--current-surface-control); border-color: var(--current-border); }
+.current-button--secondary:hover:not(:disabled) { background: var(--current-surface-control-hover); border-color: var(--current-border-strong); }
+.current-button--quiet { color: var(--current-text-secondary); background: transparent; }
+.current-button--quiet:hover:not(:disabled) { color: var(--current-text-primary); background: var(--current-surface-control-hover); }
+.current-button--danger { color: var(--current-action-foreground); background: var(--current-status-danger); }
+.current-button--danger:hover:not(:disabled) { background: color-mix(in srgb, var(--current-status-danger) 86%, black); }
 
 .current-icon-button {
   display: inline-flex;
@@ -330,24 +318,25 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
   align-items: center;
   justify-content: center;
   padding: 0.25rem;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 0.5rem;
-  color: inherit;
+  color: var(--current-text-primary);
   background: transparent;
   cursor: pointer;
   transition: background-color 140ms ease, color 140ms ease, opacity 140ms ease, transform 140ms ease;
 }
 
-.current-icon-button:hover:not(:disabled) { background: rgb(76 78 85 / 10%); }
+.current-icon-button:hover:not(:disabled) { background: var(--current-surface-control-hover); }
+.current-icon-button[aria-pressed="true"] { color: var(--current-accent-text); background: var(--current-surface-control); border-color: var(--current-border); }
 .current-icon-button:active:not(:disabled) { transform: scale(0.96); }
 
 .current-segmented-control {
   display: inline-flex;
   gap: 0.125rem;
   padding: 0.1875rem;
-  border: 1px solid var(--current-divider);
+  border: 1px solid var(--current-border);
   border-radius: 0.625rem;
-  background: rgb(76 78 85 / 7%);
+  background: var(--current-surface-control);
 }
 
 .current-segmented-control button {
@@ -355,7 +344,7 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
   padding: 0.25rem 0.625rem;
   border: 0;
   border-radius: 0.4375rem;
-  color: var(--current-graphite);
+  color: var(--current-text-secondary);
   background: transparent;
   font-size: 0.75rem;
   font-weight: 600;
@@ -364,9 +353,9 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 }
 
 .current-segmented-control button[aria-pressed="true"] {
-  color: var(--current-inspector);
-  background: var(--current-paper);
-  box-shadow: 0 1px 3px rgb(37 38 43 / 12%);
+  color: var(--current-text-primary);
+  background: var(--current-surface-elevated);
+  box-shadow: 0 1px 3px var(--current-shadow);
 }
 
 .current-command-bar {
@@ -548,10 +537,10 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
   height: 100%;
   min-width: 15rem;
   flex-direction: column;
-  color: var(--current-inspector);
-  background: var(--current-paper);
-  border-color: var(--current-divider);
-  box-shadow: 0 12px 36px rgb(37 38 43 / 12%);
+  color: var(--current-text-primary);
+  background: var(--current-surface-panel);
+  border-color: var(--current-border);
+  box-shadow: 0 12px 36px var(--current-shadow);
   transition: opacity 210ms ease, transform 210ms ease;
 }
 
@@ -764,11 +753,11 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
   max-height: min(48rem, calc(100vh - 4rem));
   flex-direction: column;
   overflow: hidden;
-  color: var(--current-inspector);
-  background: var(--current-paper);
-  border: 1px solid rgb(255 255 255 / 55%);
+  color: var(--current-text-primary);
+  background: var(--current-surface-elevated);
+  border: 1px solid var(--current-border);
   border-radius: 1rem;
-  box-shadow: 0 24px 80px rgb(37 38 43 / 28%);
+  box-shadow: 0 24px 80px var(--current-shadow-strong);
   animation: current-sheet-in 220ms ease both;
 }
 .current-sheet[data-width="compact"] { width: min(100%, 28rem); }
@@ -776,9 +765,9 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-sheet[data-width="wide"] { width: min(100%, 52rem); }
 .current-sheet__content { flex: initial; }
 
-.current-alert { border-top: 3px solid var(--current-blue); }
-.current-alert--danger { border-top-color: var(--current-danger); }
-.current-alert__description { color: var(--current-graphite); font-size: 0.875rem; line-height: 1.5; }
+.current-alert { border-top: 3px solid var(--current-status-info); }
+.current-alert--danger { border-top-color: var(--current-status-danger); }
+.current-alert__description { color: var(--current-text-secondary); font-size: 0.875rem; line-height: 1.5; }
 .current-alert__actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
 
 .current-inline-notice {
@@ -787,17 +776,17 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
   align-items: center;
   gap: 0.75rem;
   padding: 0.625rem 0.75rem;
-  border: 1px solid var(--current-divider);
+  border: 1px solid var(--current-border);
   border-radius: 0.625rem;
-  color: var(--current-graphite);
-  background: var(--current-canvas);
+  color: var(--current-text-primary);
+  background: var(--current-surface-control);
   font-size: 0.8125rem;
 }
 .current-inline-notice__content { min-width: 0; flex: 1; }
-.current-inline-notice--error { color: #9b2429; background: #fff5f5; border-color: rgb(229 72 77 / 35%); }
-.current-inline-notice--warning { color: #79510b; background: #fff9ec; border-color: rgb(217 154 43 / 38%); }
-.current-inline-notice--success { color: #176940; background: #effaf4; border-color: rgb(47 166 109 / 35%); }
-.current-inline-notice--info { color: #3158b5; background: #f1f5ff; border-color: rgb(85 120 246 / 32%); }
+.current-inline-notice--error { color: var(--current-status-danger); background: color-mix(in srgb, var(--current-status-danger) 10%, var(--current-surface-elevated)); border-color: color-mix(in srgb, var(--current-status-danger) 44%, var(--current-border)); }
+.current-inline-notice--warning { color: var(--current-status-warning); background: color-mix(in srgb, var(--current-status-warning) 10%, var(--current-surface-elevated)); border-color: color-mix(in srgb, var(--current-status-warning) 44%, var(--current-border)); }
+.current-inline-notice--success { color: var(--current-status-success); background: color-mix(in srgb, var(--current-status-success) 10%, var(--current-surface-elevated)); border-color: color-mix(in srgb, var(--current-status-success) 44%, var(--current-border)); }
+.current-inline-notice--info { color: var(--current-status-info); background: color-mix(in srgb, var(--current-status-info) 10%, var(--current-surface-elevated)); border-color: color-mix(in srgb, var(--current-status-info) 44%, var(--current-border)); }
 
 @keyframes current-backdrop-in { from { opacity: 0; } }
 @keyframes current-sheet-in { from { opacity: 0; transform: translateY(0.75rem) scale(0.985); } }

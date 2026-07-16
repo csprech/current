@@ -35,6 +35,18 @@ describe("Current control primitives", () => {
     expect(screen.getByRole("button", { name: "Open library" })).toBeInTheDocument();
   });
 
+  it("preserves accessible pressed and disabled icon-button state", () => {
+    render(
+      <CurrentIconButton label="Toggle inspector" aria-pressed disabled>
+        <span aria-hidden>i</span>
+      </CurrentIconButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Toggle inspector" });
+    expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(button).toBeDisabled();
+  });
+
   it("passes native button props and exposes primary and danger variants", () => {
     const { rerender } = render(
       <CurrentButton variant="primary" disabled data-command="run">
