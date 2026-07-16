@@ -28,14 +28,20 @@ describe("Current Add Palette brand colors", () => {
   it("uses a root appearance selector so the dark palette reaches the entire workspace", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--background:\s*#111113/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--background:\s*#172130[\s\S]*?--current-paper:\s*#1d2a3b[\s\S]*?--current-canvas:\s*#172130[\s\S]*?--current-divider:\s*#2f435b[\s\S]*?--current-graphite:\s*#b6c2d2[\s\S]*?--current-minimap-neutral:\s*#59708a/);
   });
 
-  it("gives the dark workspace a dark canvas and high-contrast controls", () => {
+  it("gives the dark workspace navy canvas, controls, and action states", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow\s*\{[\s\S]*?#111113/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-media-action,[\s\S]*?background:\s*#3a3a3c/);
+    expect(css).toMatch(/current-command-bar\s*\{[\s\S]*?background:\s*#1d2a3b/);
+    expect(css).toMatch(/current-button--secondary\s*\{[\s\S]*?background:\s*#26384e/);
+    expect(css).toMatch(/current-button--secondary:hover:not\(:disabled\)\s*\{[\s\S]*?background:\s*#344b66/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow\s*\{[\s\S]*?#172130/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__controls\s*\{[\s\S]*?background:\s*#26384e/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__controls-button:hover\s*\{[\s\S]*?background:\s*#344b66/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-media-action,[\s\S]*?background:\s*#26384e/);
+    expect(css).toMatch(/current-media-action:hover:not\(:disabled\)[\s\S]*?background:\s*#344b66/);
   });
 
   it("uses navy dark surfaces without a top-edge node highlight", () => {

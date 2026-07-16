@@ -59,75 +59,75 @@
 
 :root[data-appearance="dark"] {
   color-scheme: dark;
-  --background: #111113;
+  --background: #172130;
   --foreground: #f5f5f7;
-  --current-paper: #1c1c1e;
-  --current-canvas: #111113;
-  --current-divider: #3a3a3c;
-  --current-graphite: #aeb1b8;
+  --current-paper: #1d2a3b;
+  --current-canvas: #172130;
+  --current-divider: #2f435b;
+  --current-graphite: #b6c2d2;
   --current-inspector: #f5f5f7;
-  --current-minimap-neutral: #73737a;
+  --current-minimap-neutral: #59708a;
   --color-neutral-100: #f5f5f7;
   --color-neutral-200: #e5e5ea;
   --color-neutral-300: #c7c7cc;
   --color-neutral-400: #98989f;
   --color-neutral-500: #6e6e73;
-  --color-neutral-600: #48484a;
-  --color-neutral-700: #3a3a3c;
-  --color-neutral-800: #2c2c2e;
-  --color-neutral-900: #1c1c1e;
-  --color-neutral-950: #111113;
+  --color-neutral-600: #59708a;
+  --color-neutral-700: #2f435b;
+  --color-neutral-800: #26384e;
+  --color-neutral-900: #1d2a3b;
+  --color-neutral-950: #172130;
 }
 
 html[data-appearance="dark"] .current-command-bar {
   color: #f5f5f7;
-  background: rgb(28 28 30 / 92%);
-  border-bottom-color: rgb(255 255 255 / 12%);
+  background: #1d2a3b;
+  border-bottom-color: #2f435b;
   box-shadow: 0 4px 18px rgb(0 0 0 / 20%);
 }
 html[data-appearance="dark"] .current-command-bar__actions .current-icon-button[aria-pressed="true"],
 html[data-appearance="dark"] .current-icon-button:hover:not(:disabled),
-html[data-appearance="dark"] .current-button--quiet:hover:not(:disabled) { background: rgb(255 255 255 / 12%); }
+html[data-appearance="dark"] .current-button--quiet:hover:not(:disabled) { background: #344b66; }
 html[data-appearance="dark"] .current-project__trigger,
 html[data-appearance="dark"] .current-project__name { color: #f5f5f7; }
 html[data-appearance="dark"] .current-project__status { color: rgb(235 235 245 / 58%); }
-html[data-appearance="dark"] .current-segmented-control { border-color: rgb(255 255 255 / 12%); background: rgb(255 255 255 / 8%); }
+html[data-appearance="dark"] .current-segmented-control { border-color: #2f435b; background: #26384e; }
 html[data-appearance="dark"] .current-segmented-control button { color: rgb(235 235 245 / 68%); }
-html[data-appearance="dark"] .current-segmented-control button[aria-pressed="true"] { color: #fff; background: rgb(255 255 255 / 16%); box-shadow: none; }
+html[data-appearance="dark"] .current-segmented-control button[aria-pressed="true"] { color: #fff; background: #344b66; box-shadow: none; }
 html[data-appearance="dark"] .current-sheet,
 html[data-appearance="dark"] .current-popover,
 html[data-appearance="dark"] .current-panel[data-side="left"],
-html[data-appearance="dark"] .current-output-card { color: #f5f5f7; background: #1c1c1e; border-color: rgb(255 255 255 / 12%); }
+html[data-appearance="dark"] .current-output-card { color: #f5f5f7; background: #1d2a3b; border-color: #2f435b; }
 html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 58%); }
-html[data-appearance="dark"] .current-button--secondary { color: #f5f5f7; background: #2c2c2e; border-color: rgb(255 255 255 / 14%); }
-html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { background: #3a3a3c; }
+html[data-appearance="dark"] .current-button--secondary { color: #f5f5f7; background: #26384e; border-color: #2f435b; }
+html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { background: #344b66; }
 :root[data-appearance="dark"] .react-flow {
-  background: radial-gradient(120% 90% at 50% -25%, #26262a 0%, transparent 55%), #111113;
+  background: radial-gradient(120% 90% at 50% -25%, #26384e 0%, transparent 55%), #172130;
 }
-:root[data-appearance="dark"] .react-flow__background { background-color: #111113; }
-:root[data-appearance="dark"] .react-flow__background-pattern.dots { fill: #3a3a3c !important; }
-:root[data-appearance="dark"] .react-flow__minimap-mask { fill: rgb(17 17 19 / 78%) !important; }
+:root[data-appearance="dark"] .react-flow__background { background-color: #172130; }
+:root[data-appearance="dark"] .react-flow__background-pattern.dots { fill: #2f435b !important; }
+:root[data-appearance="dark"] .react-flow__minimap-mask { fill: rgb(23 33 48 / 78%) !important; }
 :root[data-appearance="dark"] .react-flow__controls {
-  background: #2c2c2e !important;
-  border-color: rgb(255 255 255 / 18%) !important;
+  background: #26384e !important;
+  border-color: #2f435b !important;
   box-shadow: 0 6px 18px rgb(0 0 0 / 34%) !important;
 }
-:root[data-appearance="dark"] .react-flow__controls-button { border-bottom-color: rgb(255 255 255 / 12%) !important; }
+:root[data-appearance="dark"] .react-flow__controls-button { border-bottom-color: #2f435b !important; }
 :root[data-appearance="dark"] .react-flow__controls-button svg,
 :root[data-appearance="dark"] .react-flow__controls-button svg path { fill: #f5f5f7 !important; }
-:root[data-appearance="dark"] .react-flow__controls-button:hover { background: #48484a !important; }
+:root[data-appearance="dark"] .react-flow__controls-button:hover { background: #344b66 !important; }
 :root[data-appearance="dark"] .current-media-action,
 :root[data-appearance="dark"] .current-node-header__more {
   color: #f5f5f7;
-  background: #3a3a3c;
-  border-color: rgb(255 255 255 / 24%);
-  box-shadow: inset 0 1px rgb(255 255 255 / 10%);
+  background: #26384e;
+  border-color: #2f435b;
+  box-shadow: none;
   opacity: 1;
 }
-:root[data-appearance="dark"] .current-media-action--overlay { background: rgb(28 28 30 / 94%); }
+:root[data-appearance="dark"] .current-media-action--overlay { background: rgb(29 42 59 / 94%); }
 :root[data-appearance="dark"] .current-media-action:hover:not(:disabled),
 :root[data-appearance="dark"] .current-node-header__more:hover,
-:root[data-appearance="dark"] .current-node-header__more[aria-expanded="true"] { color: #fff; background: #48484a; }
+:root[data-appearance="dark"] .current-node-header__more[aria-expanded="true"] { color: #fff; background: #344b66; }
 
 .current-identity {
   display: inline-flex;
