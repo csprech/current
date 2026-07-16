@@ -1,173 +1,115 @@
-<div align="center">
+# Current
 
-<img width="full" alt="Node Banana" src="public/node-banana.png" />
+Current is a desktop-first visual workspace for building AI media workflows. Arrange nodes on an infinite canvas, connect typed inputs and outputs, then run the flow in dependency order.
 
-### An Open Visual Workflow Editor for AI APIs
+It is designed for creative work that benefits from seeing the entire process: reference images, prompts, generations, edits, audio, video, and final outputs all stay in one place.
 
-[![GitHub stars](https://img.shields.io/github/stars/shrimbly/node-banana?style=flat&logo=github)](https://github.com/shrimbly/node-banana/stargazers)
-[![License](https://img.shields.io/github/license/shrimbly/node-banana?style=flat)](LICENSE)
-[![Discord](https://img.shields.io/badge/Discord-555?logo=discord)](https://discord.com/invite/89Nr6EKkTf)
+## What you can build
 
-<br />
+- Image generation and editing workflows
+- Prompt and LLM-assisted text chains
+- Video, audio, and 3D generation pipelines
+- Reusable workflow templates and local project files
+- Multi-step creative processes with typed image, text, and audio connections
 
-Build AI image, 3D, audio and video generation pipelines by connecting nodes on a visual canvas.<br />
-Multi-provider support. Dynamic prompting features. Local, private, MIT, BYOK.
+## Highlights
 
-<br />
+| Capability | Details |
+| --- | --- |
+| Visual canvas | Drag, connect, group, pan, zoom, and inspect workflows on a desktop canvas. |
+| Typed connections | Image, text, and audio handles prevent incompatible connections. |
+| AI generation | Run supported Gemini, OpenAI, and Kie.ai models from a single workflow. |
+| Creative tools | Annotate images, split grids, compare results, trim video, and preview GLB files. |
+| Local projects | Save workflow files and media to a local project directory. |
+| Outputs workspace | Review generated work, reopen it on the canvas, and manage assets from one place. |
+| Bring your own keys | Add provider API keys in Project Settings or with environment variables. |
 
-[**Documentation**](https://node-banana-docs.vercel.app/) &nbsp;&bull;&nbsp; [Discord](https://discord.com/invite/89Nr6EKkTf)
+## Quick start
 
-<br />
+### Requirements
 
-</div>
-
-## Build Complex AI Pipelines Visually
-
-Node Banana is a node-based workflow editor for AI media generation. Drag nodes onto an infinite canvas, connect them with typed handles, and execute pipelines that call AI APIs in dependency order.
-
-- **Build dynamic prompts** with variables, LLM/VLM-powered prompt construction, and reusable prompt chains
-- **Generate workflows from natural language** or choose from preset templates
-- **Chain multiple AI models together** across providers in a single pipeline
-- **Generate images, video, 3D models, and audio** from a single workflow
-- **Annotate and edit images** with a full-screen drawing editor
-- **Save and share workflows** as portable JSON files
-
-## Features
-
-| Feature | Description |
-|:--------|:------------|
-| **Dynamic Prompting** | Build prompts with variables, LLM-powered text construction, and reusable prompt chains that adapt per run and per input |
-| **Prompt to Workflow** | Generate complete workflows from natural language descriptions |
-| **Visual Node Editor** | Drag-and-drop nodes onto an infinite canvas with pan and zoom |
-| **Image Generation** | Generate images using Google Gemini, Replicate, fal.ai, Kie.ai, and more |
-| **Video Generation** | Generate video via AI API providers |
-| **Audio Generation** | Text-to-speech and AI audio generation |
-| **3D Generation** | Generate 3D models or use them as node inputs |
-| **Image Annotation** | Full-screen editor with drawing tools (rectangles, circles, arrows, freehand, text) |
-| **Text Generation** | Generate text using Google Gemini, OpenAI, or Anthropic models |
-| **Workflow Chaining** | Connect multiple nodes to create complex multi-step pipelines |
-| **Group Locking** | Lock node groups to skip them during execution |
-| **Save/Load** | Export and import workflows as JSON files |
-
-## Supported Providers
-
-| Provider | Status |
-|:---------|:-------|
-| [Google Gemini](https://ai.google.dev/) | Fully supported |
-| [Replicate](https://replicate.com/) | Supported |
-| [fal.ai](https://fal.ai/) | Supported |
-| [Kie.ai](https://kie.ai/) | Supported |
-| [WaveSpeed](https://wavespeed.ai/) | Supported |
-| [OpenAI](https://openai.com/) | LLM only |
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
+- Node.js 20.9 or later
 - npm
+- A provider API key for the models you plan to run
 
-### Quick Start
+### Install and run
 
 ```bash
-git clone https://github.com/shrimbly/node-banana.git
-cd node-banana
+git clone https://github.com/csprech/current.git
+cd current
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Environment Variables
+If you do not create `.env.local`, you can add API keys from the key button in the command bar once the app is running.
 
-Create a `.env.local` file in the root directory:
+## Configuration
+
+Create `.env.local` in the repository root when you prefer local environment configuration:
 
 ```env
-GEMINI_API_KEY=your_gemini_api_key          # Required for prompt-to-workflow
-OPENAI_API_KEY=your_openai_api_key          # Optional
-ANTHROPIC_API_KEY=your_anthropic_api_key    # Optional
-REPLICATE_API_KEY=your_replicate_api_key    # Optional
-FAL_API_KEY=your_fal_api_key                # Optional
-KIE_API_KEY=your_kie_api_key                # Optional
-WAVESPEED_API_KEY=your_wavespeed_api_key    # Optional
+# Required for Gemini image generation and Gemini-backed workflow features
+GEMINI_API_KEY=your_gemini_api_key
+
+# Optional providers
+OPENAI_API_KEY=your_openai_api_key
+KIE_API_KEY=your_kie_api_key
 ```
 
-**API keys can also be configured in Project Settings within the app.** 
+Keep `.env.local` private. It should never be committed.
 
-### Build
+## Core workflow
+
+1. Create a canvas or open a project.
+2. Add input, prompt, generation, and output nodes from the canvas tools.
+3. Connect matching handles. Image connects to image, text to text, and audio to audio.
+4. Select a node to adjust its model and parameters in the inspector.
+5. Run with the command bar or `Cmd/Ctrl + Enter`.
+6. Review results in Outputs, then reuse an asset or continue refining the workflow.
+
+## Included node families
+
+| Family | Examples |
+| --- | --- |
+| Inputs | Image Input, Audio Input, Prompt |
+| Generation | Image, LLM, Audio, Video, and 3D generation |
+| Transform | Annotation, Split Grid, Video Trim, Video Frame Grab, Image Compare |
+| Control | Array, Router, Switch, Conditional Switch, Ease Curve |
+| Output | Output and Output Gallery |
+
+## Keyboard shortcuts
+
+| Shortcut | Action |
+| --- | --- |
+| `Cmd/Ctrl + Enter` | Run the workflow |
+| `Shift + P` | Add a prompt node |
+| `Shift + I` | Add an image input node |
+| `Shift + G` | Add an image generation node |
+| `Shift + L` | Add an LLM node |
+| `Shift + A` | Add an annotation node |
+| `?` | Show all shortcuts |
+
+## Development
 
 ```bash
-npm run build
-npm run start
+npm run dev       # Start the local Next.js server
+npm run test:run  # Run the Vitest suite once
+npm run lint      # Run linting
+npm run build     # Create a production build
+npm run start     # Serve a production build
 ```
 
-## Example Workflows
+### Architecture
 
-The `/examples` directory contains example workflow files. To try them:
+- **Next.js App Router** for the desktop web application
+- **React Flow** for the node editor and typed connections
+- **Zustand** for workflow state, execution, and persistence
+- **Konva** for image annotation
 
-1. Start the dev server with `npm run dev`
-2. Drag any `.json` file from the `/examples` folder into the browser window
-3. Review the prompts in each node before running — they're targeted to specific use cases
-
-## Node Types
-
-| Type | Purpose |
-|:-----|:--------|
-| **Image Input** | Load or upload reference images |
-| **Audio Input** | Load or upload audio files |
-| **Prompt** | Text prompt input |
-| **Prompt Constructor** | Build dynamic prompts with variables and LLM-powered text construction |
-| **Array** | Batch process multiple inputs through a workflow |
-| **Generate** | AI image generation (multi-provider) |
-| **Generate Video** | AI video generation |
-| **Generate Audio** | Text-to-speech and AI audio generation |
-| **Generate 3D** | AI 3D model generation |
-| **LLM** | AI text generation (Gemini, OpenAI, Anthropic) |
-| **Annotation** | Draw on images with full-screen editor |
-| **Split Grid** | Split image into grid cells |
-| **Video Stitch** | Combine video clips into a single output |
-| **Video Trim** | Trim video clips to a specific range |
-| **Video Frame Grab** | Extract frames from video |
-| **Image Compare** | Side-by-side image comparison |
-| **Ease Curve** | Define easing curves for parameter interpolation |
-| **Router** | Route data to different branches |
-| **Switch** | Toggle between execution paths |
-| **Conditional Switch** | Route data based on conditions |
-| **GLB Viewer** | Load and display 3D GLB models |
-| **Output** | Display final result |
-| **Output Gallery** | Display multiple results in a gallery |
-
-## Tech Stack
-
-<p>
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white" alt="Next.js" /></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
-  <a href="https://reactflow.dev/"><img src="https://img.shields.io/badge/React%20Flow-FF0072?logo=react&logoColor=white" alt="React Flow" /></a>
-  <a href="https://konvajs.org/"><img src="https://img.shields.io/badge/Konva.js-0D83CD?logo=konva&logoColor=white" alt="Konva.js" /></a>
-  <a href="https://zustand-demo.pmnd.rs/"><img src="https://img.shields.io/badge/Zustand-443E38?logo=react&logoColor=white" alt="Zustand" /></a>
-  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwindcss-%2338B2AC.svg?logo=tailwind-css&logoColor=white" alt="TailwindCSS" /></a>
-</p>
-
-## Testing
-
-```bash
-npm test              # Watch mode
-npm run test:run      # Single run
-npm run test:coverage # With coverage report
-```
-
-## Contributing
-
-PRs are welcome! Fork the repo, branch from `develop`, and open a PR back to `develop`.
-
-This is primarily built for my own workflows — if a PR conflicts with my plans I'll politely decline. For larger contributions, join the [Discord](https://discord.com/invite/89Nr6EKkTf) to coordinate first.
-
-## Community
-
-- **[Discord](https://discord.com/invite/89Nr6EKkTf)** — Chat, get help, and share workflows
-- **[Documentation](https://node-banana-docs.vercel.app/)** — Guides and reference
-- **[GitHub Issues](https://github.com/shrimbly/node-banana/issues)** — Report bugs and request features
+The main workflow engine lives in [`src/store/workflowStore.ts`](src/store/workflowStore.ts). The canvas and connection rules are in [`src/components/WorkflowCanvas.tsx`](src/components/WorkflowCanvas.tsx).
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
