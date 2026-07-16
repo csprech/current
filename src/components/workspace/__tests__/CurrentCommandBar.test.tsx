@@ -100,6 +100,7 @@ describe("CurrentCommandBar", () => {
     expect(screen.getByText("current")).toBeInTheDocument();
     expect(screen.getByText("Campaign Study")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Run" })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Use dark appearance" })).toBeInTheDocument();
   });
 
   it("does not duplicate the Current accessible name in the project button", () => {

@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { CurrentIconButton } from "@/components/current/CurrentIconButton";
+import { AppearanceToggle } from "@/components/current/AppearanceToggle";
 import {
   ActivityIcon,
   AddIcon,
@@ -118,6 +119,7 @@ export function CurrentCommandBar({ onAddNode }: CurrentCommandBarProps) {
         <CurrentIconButton label="Redo" disabled={!canRedo} onClick={redo}><RedoIcon /></CurrentIconButton>
         <CurrentIconButton label="Add node" onClick={onAddNode} disabled={!onAddNode} data-tutorial="add-node-button"><AddIcon /></CurrentIconButton>
         <span className="current-command-bar__divider" aria-hidden="true" />
+        <AppearanceToggle />
         <CurrentIconButton label="Open library" aria-pressed={activeLeftPanel === "library"} onClick={() => toggleLeftPanel("library")}><LibraryIcon /></CurrentIconButton>
         <CurrentIconButton label="Open activity" aria-pressed={activeRightPanel === "activity"} onClick={() => toggleRightPanel("activity")}><ActivityIcon /></CurrentIconButton>
         <CurrentIconButton label="Open assistant" aria-pressed={activeRightPanel === "assistant"} onClick={() => toggleRightPanel("assistant")}><AssistantIcon /></CurrentIconButton>
