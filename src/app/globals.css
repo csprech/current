@@ -126,89 +126,9 @@
   --color-neutral-950: #172130;
 }
 
-html[data-appearance="dark"] .current-command-bar {
-  color: #f5f5f7;
-  background: #1d2a3b;
-  border-bottom-color: #2f435b;
-  box-shadow: 0 4px 18px rgb(0 0 0 / 20%);
-}
-html[data-appearance="dark"] .current-project__trigger,
-html[data-appearance="dark"] .current-project__name { color: #f5f5f7; }
-html[data-appearance="dark"] .current-project__status { color: rgb(235 235 245 / 58%); }
 html[data-appearance="dark"] .current-popover,
 html[data-appearance="dark"] .current-output-card { color: #f5f5f7; background: #1d2a3b; border-color: #2f435b; }
 html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 58%); }
-:root[data-appearance="dark"] .react-flow {
-  background: radial-gradient(120% 90% at 50% -25%, #26384e 0%, transparent 55%), #172130;
-}
-:root[data-appearance="dark"] .react-flow__background { background-color: #172130; }
-:root[data-appearance="dark"] .react-flow__background-pattern.dots { fill: #2f435b !important; }
-:root[data-appearance="dark"] .react-flow__minimap-mask { fill: rgb(23 33 48 / 78%) !important; }
-:root[data-appearance="dark"] .react-flow__minimap.current-transient-surface {
-  background: #1d2a3b !important;
-  border: none !important;
-  box-shadow: 0 10px 28px -12px rgb(0 0 0 / 48%) !important;
-}
-:root[data-appearance="dark"] .react-flow__controls {
-  background: #26384e !important;
-  border-color: #2f435b !important;
-  box-shadow: 0 6px 18px rgb(0 0 0 / 34%) !important;
-}
-:root[data-appearance="dark"] .react-flow__controls-button { border-bottom-color: #2f435b !important; }
-:root[data-appearance="dark"] .react-flow__controls-button svg,
-:root[data-appearance="dark"] .react-flow__controls-button svg path { fill: #f5f5f7 !important; }
-:root[data-appearance="dark"] .react-flow__controls-button:hover { background: #344b66 !important; }
-:root[data-appearance="dark"] .current-media-action,
-:root[data-appearance="dark"] .current-node-header__more {
-  color: #f5f5f7;
-  background: #26384e;
-  border-color: #2f435b;
-  box-shadow: none;
-  opacity: 1;
-}
-:root[data-appearance="dark"] .current-media-action--overlay { background: rgb(29 42 59 / 94%); }
-:root[data-appearance="dark"] .current-media-action:hover:not(:disabled),
-:root[data-appearance="dark"] .current-node-header__more:hover,
-:root[data-appearance="dark"] .current-node-header__more[aria-expanded="true"] { color: #fff; background: #344b66; }
-
-/* Dark nodes use solid navy surfaces so the canvas remains calm behind moving content. */
-:root[data-appearance="dark"] .current-node {
-  background: linear-gradient(180deg, #1d2a3b 0%, #192637 100%);
-  border: 1px solid #2f435b;
-  box-shadow:
-    0 1px 2px rgb(0 0 0 / 24%),
-    0 12px 28px -10px rgb(0 0 0 / 42%);
-}
-:root[data-appearance="dark"] .current-node:hover {
-  border-color: #415a76;
-  box-shadow:
-    0 2px 4px rgb(0 0 0 / 28%),
-    0 16px 34px -12px rgb(0 0 0 / 48%);
-}
-:root[data-appearance="dark"] .current-node--selected {
-  border-color: var(--current-blue) !important;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--current-blue) 42%, transparent),
-    0 0 20px -4px color-mix(in srgb, var(--current-blue) 48%, transparent),
-    0 14px 32px -12px rgb(0 0 0 / 52%) !important;
-}
-:root[data-appearance="dark"] .current-node[data-selected="true"] {
-  border-color: var(--current-blue) !important;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--current-blue) 42%, transparent),
-    0 0 20px -4px color-mix(in srgb, var(--current-blue) 48%, transparent),
-    0 14px 32px -12px rgb(0 0 0 / 52%) !important;
-}
-:root[data-appearance="dark"] .current-node[data-state="running"] {
-  border-color: color-mix(in srgb, var(--current-blue) 78%, #2f435b) !important;
-  animation: current-node-breathe 2.6s ease-in-out infinite;
-}
-:root[data-appearance="dark"] .current-node[data-state="error"] {
-  border-color: color-mix(in srgb, var(--current-danger) 78%, #2f435b) !important;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--current-danger) 38%, transparent),
-    0 14px 32px -12px rgb(0 0 0 / 48%) !important;
-}
 :root[data-appearance="dark"] .current-launchpad { color: #f5f5f7; }
 :root[data-appearance="dark"] .current-launchpad__intro h1 { color: #f5f5f7; }
 :root[data-appearance="dark"] .current-launchpad__description { color: #b6c2d2; }
@@ -368,10 +288,12 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   align-items: center;
   gap: 1rem;
   padding: 0 0.75rem;
-  color: var(--current-inspector);
-  background: rgb(255 255 255 / 94%);
-  border-bottom: 1px solid var(--current-divider);
-  box-shadow: 0 4px 18px rgb(37 38 43 / 5%);
+  color: var(--current-text-primary);
+  background: var(--current-surface-chrome);
+  border-bottom: 1px solid var(--current-border);
+  box-shadow: 0 4px 18px var(--current-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
 }
 
 .current-command-bar__identity,
@@ -395,10 +317,10 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-project__trigger:focus-visible,
 .current-run-control__options:focus-visible,
 .current-popover button:focus-visible { outline: none; box-shadow: var(--current-focus); }
-.current-command-bar__divider { width: 1px; height: 1.5rem; margin: 0 0.25rem; background: var(--current-divider); }
+.current-command-bar__divider { width: 1px; height: 1.5rem; margin: 0 0.25rem; background: var(--current-border); }
 .current-command-bar__actions .current-icon-button[aria-pressed="true"] {
-  color: var(--current-blue);
-  background: rgb(85 120 246 / 11%);
+  color: var(--current-accent-text);
+  background: var(--current-surface-control);
 }
 
 .current-project { position: relative; min-width: 0; gap: 0.125rem; }
@@ -413,7 +335,7 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   padding: 0.3rem 0.4rem 0.3rem 0.625rem;
   border: 0;
   border-radius: 0.5rem;
-  color: var(--current-inspector);
+  color: var(--current-text-primary);
   background: transparent;
   text-align: left;
   cursor: pointer;
@@ -430,7 +352,7 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 }
 .current-project__status {
   grid-row: 2;
-  color: var(--current-graphite);
+  color: var(--current-text-tertiary);
   font-size: 0.625rem;
   line-height: 1.1;
   white-space: nowrap;
@@ -445,11 +367,11 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   flex-direction: column;
   overflow: hidden;
   padding: 0.3rem;
-  color: var(--current-inspector);
-  background: var(--current-paper);
-  border: 1px solid var(--current-divider);
+  color: var(--current-text-primary);
+  background: var(--current-surface-elevated);
+  border: 1px solid var(--current-border);
   border-radius: 0.75rem;
-  box-shadow: 0 18px 48px rgb(37 38 43 / 18%);
+  box-shadow: 0 18px 48px var(--current-shadow-strong);
 }
 .current-popover button[role="menuitem"] {
   width: 100%;
@@ -546,10 +468,10 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 
 .current-panel[data-side="left"] { border-right-width: 1px; }
 .current-panel[data-side="right"] {
-  color: #f5f5f7;
-  background: linear-gradient(180deg, #1b2a3e 0%, #111c2b 100%);
-  border-left: 1px solid #2f435b;
-  box-shadow: -18px 0 42px rgb(0 0 0 / 32%);
+  color: var(--current-text-primary);
+  background: var(--current-surface-panel);
+  border-left: 1px solid var(--current-border);
+  box-shadow: -18px 0 42px var(--current-shadow-strong);
 }
 .current-panel__header,
 .current-sheet__header {
@@ -561,7 +483,7 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--current-divider);
 }
-.current-panel[data-side="right"] .current-panel__header { border-bottom-color: #2f435b; }
+.current-panel[data-side="right"] .current-panel__header { border-bottom-color: var(--current-border); }
 .current-panel__header h2,
 .current-sheet__header h2 { margin: 0; font-size: 0.9375rem; font-weight: 650; }
 .current-panel__content,
@@ -569,12 +491,12 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-panel[data-side="right"] .current-panel__content { padding: 0.875rem; }
 .current-panel__actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--current-divider); }
 
-/* Inspector: a compact, dark macOS utility surface with semantic controls. */
+/* Inspector: a compact macOS utility surface that follows the active appearance. */
 .current-inspector__selection {
   margin: 0;
   padding: 0 0 0.75rem;
-  color: #b6c2d2;
-  border-bottom: 1px solid #2f435b;
+  color: var(--current-text-secondary);
+  border-bottom: 1px solid var(--current-border);
   font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.02em;
@@ -582,76 +504,76 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 }
 .current-inspector__controls { padding-top: 0.125rem; }
 .current-inspector__model { padding: 0.625rem 0 0.75rem; }
-.current-panel[data-side="right"] :is(.text-neutral-100, .text-neutral-200) { color: #f5f5f7; }
-.current-panel[data-side="right"] :is(.text-neutral-300, .text-neutral-400) { color: #b6c2d2; }
-.current-panel[data-side="right"] .text-neutral-500 { color: #8fa2b8; }
+.current-panel[data-side="right"] :is(.text-neutral-100, .text-neutral-200) { color: var(--current-text-primary); }
+.current-panel[data-side="right"] :is(.text-neutral-300, .text-neutral-400) { color: var(--current-text-secondary); }
+.current-panel[data-side="right"] .text-neutral-500 { color: var(--current-text-tertiary); }
 .current-panel[data-side="right"] button.bg-neutral-700 {
-  color: #f5f5f7;
-  background: #26384e;
-  border-color: #2f435b;
+  color: var(--current-text-primary);
+  background: var(--current-surface-control);
+  border-color: var(--current-border);
 }
-.current-panel[data-side="right"] button.bg-neutral-700:hover:not(:disabled) { background: #344b66; }
+.current-panel[data-side="right"] button.bg-neutral-700:hover:not(:disabled) { background: var(--current-surface-control-hover); }
 .current-panel[data-side="right"] .flex.justify-end > button.bg-neutral-700 {
-  color: #fff;
-  background: #0a84ff;
-  border-color: rgb(255 255 255 / 16%);
+  color: var(--current-action-foreground);
+  background: var(--current-action);
+  border-color: transparent;
 }
-.current-panel[data-side="right"] .flex.justify-end > button.bg-neutral-700:hover:not(:disabled) { background: #409cff; }
+.current-panel[data-side="right"] .flex.justify-end > button.bg-neutral-700:hover:not(:disabled) { background: var(--current-action-hover); }
 .current-inspector__browse {
   min-height: 1.875rem;
   padding: 0.375rem 0.625rem;
-  border: 1px solid #2f435b;
+  border: 1px solid var(--current-border);
   border-radius: 0.4375rem;
-  color: #f5f5f7;
-  background: #26384e;
+  color: var(--current-text-primary);
+  background: var(--current-surface-control);
   font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1;
   cursor: pointer;
   transition: background-color 140ms ease, border-color 140ms ease;
 }
-.current-inspector__browse:hover { background: #344b66; border-color: #415a76; }
+.current-inspector__browse:hover { background: var(--current-surface-control-hover); border-color: var(--current-border-strong); }
 .current-inspector__field,
 .current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700 {
   min-height: 2rem;
   padding: 0.3125rem 1.9rem 0.3125rem 0.625rem;
-  border: 1px solid #2f435b;
+  border: 1px solid var(--current-border);
   border-radius: 0.4375rem;
-  color: #f5f5f7;
-  background: #223247;
-  color-scheme: dark;
+  color: var(--current-text-primary);
+  background: var(--current-surface-control);
+  color-scheme: inherit;
   font-size: 0.75rem;
   line-height: 1;
   outline: none;
 }
 .current-inspector__field:hover,
-.current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700:hover { background-color: #26384e; }
+.current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700:hover { background-color: var(--current-surface-control-hover); }
 .current-inspector__field:focus,
-.current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700:focus { border-color: rgb(87 120 246 / 88%); box-shadow: var(--current-focus); }
-.current-inspector__checkbox { accent-color: var(--current-blue); }
-.current-inspector__actions { display: flex; justify-content: flex-end; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #2f435b; }
+.current-panel[data-side="right"] :is(select, input, textarea).bg-neutral-700:focus { border-color: var(--current-focus-outer); box-shadow: var(--current-focus); }
+.current-inspector__checkbox { accent-color: var(--current-action); }
+.current-inspector__actions { display: flex; justify-content: flex-end; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--current-border); }
 .current-inspector__run {
   display: inline-flex;
   min-height: 2rem;
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
-  border: 1px solid rgb(255 255 255 / 16%);
+  border: 1px solid transparent;
   border-radius: 0.4375rem;
-  color: #fff;
-  background: #0a84ff;
-  box-shadow: inset 0 1px rgb(255 255 255 / 16%), 0 1px 2px rgb(0 0 0 / 22%);
+  color: var(--current-action-foreground);
+  background: var(--current-action);
+  box-shadow: 0 1px 2px var(--current-shadow);
   font-size: 0.75rem;
   font-weight: 650;
   line-height: 1;
   cursor: pointer;
   transition: background-color 140ms ease, transform 140ms ease, opacity 140ms ease;
 }
-.current-inspector__run:hover:not(:disabled) { background: #409cff; }
+.current-inspector__run:hover:not(:disabled) { background: var(--current-action-hover); }
 .current-inspector__run:active:not(:disabled) { transform: scale(0.98); }
 .current-inspector__run:focus-visible,
 .current-inspector__browse:focus-visible { outline: none; box-shadow: var(--current-focus); }
-.current-inspector__run:disabled { cursor: not-allowed; opacity: 0.45; }
+.current-inspector__run:disabled { cursor: not-allowed; opacity: 0.58; }
 
 .current-panel {
   position: absolute;
@@ -712,7 +634,7 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-activity__row > span[data-status="running"] { color: var(--current-aqua); }
 
 .current-empty-state { margin: 0; padding: 1.5rem 0.5rem; color: var(--current-secondary-text); font-size: 0.8125rem; text-align: center; }
-.current-panel[data-side="right"] .current-empty-state { color: rgb(255 255 255 / 55%); }
+.current-panel[data-side="right"] .current-empty-state { color: var(--current-text-tertiary); }
 .current-eyebrow { color: var(--current-blue); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
 .current-outputs { flex: 1; min-height: 0; overflow: auto; padding: clamp(1.5rem, 3vw, 3rem); color: var(--current-inspector); background: var(--current-canvas); }
 .current-outputs__header { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-bottom: 2rem; }
@@ -815,41 +737,38 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
    Current material system — light, depth, restraint
    ============================================================ */
 
-/* The stage: soft daylight paper. A gentle top sheen falls off into a
-   slightly cooler gray; the dot grid is barely there. */
+/* The stage stays visually quiet so the workflow remains the primary object. */
 .react-flow {
   background:
-    radial-gradient(130% 90% at 50% -25%, #ffffff 0%, rgba(255, 255, 255, 0) 55%),
-    radial-gradient(100% 120% at 50% 130%, #ececf0 0%, #e8e8ed 100%);
+    radial-gradient(130% 90% at 50% -25%, color-mix(in srgb, var(--current-surface-elevated) 46%, transparent) 0%, transparent 55%),
+    var(--current-canvas);
 }
+.react-flow__background { background-color: var(--current-canvas); }
+.react-flow__background-pattern.dots { fill: var(--current-border) !important; }
+.react-flow__minimap-mask { fill: var(--current-minimap-mask) !important; }
 
 /* Current node chassis. No backdrop blur here: these surfaces move as a group. */
 .current-node {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
-  border: 0.5px solid rgba(20, 20, 30, 0.06);
+  background: var(--current-surface-elevated);
+  border: 1px solid var(--current-border);
   box-shadow:
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(20, 20, 35, 0.04),
-    0 10px 26px -8px rgba(20, 20, 35, 0.1),
-    0 22px 50px -16px rgba(20, 20, 35, 0.08);
-  transition: box-shadow 0.25s ease, border-color 0.2s ease;
+    0 1px 2px var(--current-shadow),
+    0 14px 34px -12px var(--current-shadow-strong);
+  transition: box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
 }
 .current-node:hover {
-  border-color: rgba(20, 20, 30, 0.09);
+  border-color: var(--current-border-strong);
   box-shadow:
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
-    0 1px 3px rgba(20, 20, 35, 0.05),
-    0 14px 34px -8px rgba(20, 20, 35, 0.13),
-    0 30px 66px -18px rgba(20, 20, 35, 0.11);
+    0 2px 4px var(--current-shadow),
+    0 18px 42px -14px var(--current-shadow-strong);
 }
 .current-node--selected,
 .current-node[data-selected="true"] {
-  border-color: rgba(74, 134, 247, 0.65) !important;
+  border-color: var(--current-blue) !important;
   box-shadow:
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px rgba(74, 134, 247, 0.35),
-    0 0 22px -2px rgba(74, 134, 247, 0.3),
-    0 12px 30px -8px rgba(20, 20, 35, 0.14) !important;
+    0 0 0 1px color-mix(in srgb, var(--current-blue) 38%, transparent),
+    0 0 22px -4px color-mix(in srgb, var(--current-blue) 42%, transparent),
+    0 14px 34px -12px var(--current-shadow-strong) !important;
 }
 .react-flow__node:focus-visible .current-node {
   outline: 2px solid var(--current-aqua);
@@ -879,11 +798,10 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   :root[data-appearance="dark"] .current-node[data-state="running"] { box-shadow: 0 0 0 1px color-mix(in srgb, var(--current-blue) 45%, transparent), 0 12px 30px -8px rgb(0 0 0 / 36%) !important; }
 }
 .current-node[data-state="error"] {
-  border-color: color-mix(in srgb, var(--current-danger) 72%, transparent) !important;
+  border-color: color-mix(in srgb, var(--current-status-danger) 72%, transparent) !important;
   box-shadow:
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px color-mix(in srgb, var(--current-danger) 35%, transparent),
-    0 12px 30px -8px rgba(20, 20, 35, 0.12) !important;
+    0 0 0 1px color-mix(in srgb, var(--current-status-danger) 35%, transparent),
+    0 12px 30px -8px var(--current-shadow-strong) !important;
 }
 
 .current-node-status {
@@ -893,12 +811,14 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   gap: 0.5rem;
   min-height: 2.25rem;
   padding: 0.45rem 0.65rem;
-  color: var(--current-graphite);
-  background: color-mix(in srgb, var(--current-canvas) 72%, transparent);
-  border-top: 1px solid var(--current-divider);
+  color: var(--current-text-secondary);
+  background: var(--current-surface-panel);
+  border-top: 1px solid var(--current-border);
   font-size: 0.6875rem;
   line-height: 1.25;
+  cursor: grab;
 }
+.react-flow__node.dragging .current-node-status { cursor: grabbing; }
 .current-node-status__indicator {
   width: 0.45rem;
   height: 0.45rem;
@@ -906,19 +826,19 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   background: var(--current-minimap-neutral);
 }
 .current-node-status__copy { display: flex; min-width: 0; flex-direction: column; }
-.current-node-status__copy strong { color: var(--current-inspector); font-weight: 650; }
+.current-node-status__copy strong { color: var(--current-text-primary); font-weight: 650; }
 .current-node-status[data-state="running"] .current-node-status__indicator { background: var(--current-blue); }
-.current-node-status[data-state="complete"] .current-node-status__indicator { background: var(--current-success); }
+.current-node-status[data-state="complete"] .current-node-status__indicator { background: var(--current-status-success); }
 .current-node-status[data-state="skipped"] .current-node-status__indicator,
-.current-node-status[data-state="locked"] .current-node-status__indicator { background: var(--current-warning); }
-.current-node-status[data-state="disabled"] .current-node-status__indicator { background: var(--current-graphite); }
-.current-node-status[data-state="error"] .current-node-status__indicator { background: var(--current-danger); }
+.current-node-status[data-state="locked"] .current-node-status__indicator { background: var(--current-status-warning); }
+.current-node-status[data-state="disabled"] .current-node-status__indicator { background: var(--current-text-tertiary); }
+.current-node-status[data-state="error"] .current-node-status__indicator { background: var(--current-status-danger); }
 .current-node-status button {
   padding: 0.25rem 0.45rem;
-  border: 1px solid var(--current-divider);
+  border: 1px solid var(--current-border);
   border-radius: 0.4rem;
-  color: var(--current-blue);
-  background: var(--current-paper);
+  color: var(--current-accent-text);
+  background: var(--current-surface-control);
   font-weight: 650;
   cursor: pointer;
 }
@@ -1001,14 +921,14 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   align-items: center;
   justify-content: center;
   padding: 0.2rem;
-  border: 1px solid var(--current-divider);
+  border: 1px solid var(--current-border);
   border-radius: 0.4rem;
-  color: var(--current-graphite);
-  background: color-mix(in srgb, var(--current-paper) 82%, transparent);
+  color: var(--current-text-secondary);
+  background: var(--current-surface-control);
   cursor: pointer;
 }
 .current-node-header__more:hover,
-.current-node-header__more[aria-expanded="true"] { color: var(--current-inspector); background: var(--current-paper); }
+.current-node-header__more[aria-expanded="true"] { color: var(--current-text-primary); background: var(--current-surface-control-hover); }
 .current-node-header__more svg { width: 0.9rem; height: 0.9rem; }
 .current-node-header__menu {
   position: absolute;
@@ -1017,10 +937,11 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   z-index: 12000;
   min-width: 9rem;
   padding: 0.25rem;
-  border: 1px solid var(--current-divider);
+  border: 1px solid var(--current-border);
   border-radius: 0.55rem;
-  background: rgb(255 255 255 / 96%);
-  box-shadow: 0 10px 28px rgb(37 38 43 / 16%);
+  color: var(--current-text-primary);
+  background: var(--current-surface-elevated);
+  box-shadow: 0 10px 28px var(--current-shadow-strong);
 }
 .current-node-header__menu button {
   width: 100%;
@@ -1039,14 +960,12 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 
 /* Frosted transient chrome, reserved for overlays and contextual controls. */
 .current-transient-surface {
-  color: var(--current-inspector);
-  background: rgba(255, 255, 255, 0.74);
+  color: var(--current-text-primary);
+  background: color-mix(in srgb, var(--current-surface-elevated) 88%, transparent);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
   backdrop-filter: blur(22px) saturate(180%);
-  border: 0.5px solid rgba(20, 20, 30, 0.07);
-  box-shadow:
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
-    0 10px 32px -8px rgba(20, 20, 35, 0.16);
+  border: 1px solid var(--current-border);
+  box-shadow: 0 10px 32px -8px var(--current-shadow-strong);
 }
 
 .current-floating-toolbar { color: var(--current-inspector); }
@@ -1076,20 +995,9 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   color: var(--current-danger);
   background: color-mix(in srgb, var(--current-danger) 9%, var(--current-paper));
 }
-.current-selection-toolbar .current-toolbar-action { color: var(--current-graphite); }
-.current-selection-toolbar__separator { background: var(--current-divider); }
-:root[data-appearance="dark"] .current-selection-toolbar.current-transient-surface {
-  color: #e7edf5;
-  background: #1d2a3b;
-  border-color: #2f435b;
-  box-shadow: 0 12px 32px -12px rgb(0 0 0 / 48%);
-}
-:root[data-appearance="dark"] .current-selection-toolbar .current-toolbar-action { color: #e7edf5; }
-:root[data-appearance="dark"] .current-selection-toolbar .current-toolbar-action:hover:not(:disabled) {
-  color: #fff;
-  background: #344b66;
-}
-:root[data-appearance="dark"] .current-selection-toolbar__separator { background: #415a76; }
+.current-selection-toolbar .current-toolbar-action { color: var(--current-text-primary); }
+.current-selection-toolbar .current-toolbar-action:hover:not(:disabled) { color: var(--current-text-primary); background: var(--current-surface-control-hover); }
+.current-selection-toolbar__separator { background: var(--current-border); }
 
 .current-toast { min-width: min(24rem, calc(100vw - 3rem)); }
 .current-toast--info { border-color: color-mix(in srgb, var(--current-blue) 35%, var(--current-divider)); }
@@ -1106,18 +1014,18 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   flex: none;
   place-items: center;
   padding: 0.375rem;
-  border: 1px solid var(--current-divider);
+  border: 1px solid var(--current-border);
   border-radius: 0.5rem;
-  color: var(--current-graphite);
-  background: color-mix(in srgb, var(--current-canvas) 86%, var(--current-paper));
+  color: var(--current-text-secondary);
+  background: var(--current-surface-control);
   cursor: pointer;
   transition: color 140ms ease, background-color 140ms ease, opacity 140ms ease;
 }
-.current-media-action:hover:not(:disabled) { color: var(--current-inspector); background: var(--current-paper); }
+.current-media-action:hover:not(:disabled) { color: var(--current-text-primary); background: var(--current-surface-control-hover); }
 .current-media-action:focus-visible { outline: none; box-shadow: var(--current-focus); opacity: 1; }
 .current-media-action:disabled { cursor: not-allowed; opacity: 0.45; }
-.current-media-action--primary { color: var(--current-paper); border-color: transparent; background: var(--current-blue); }
-.current-media-action--primary:hover:not(:disabled) { color: var(--current-paper); background: var(--current-steel-blue); }
+.current-media-action--primary { color: var(--current-action-foreground); border-color: transparent; background: var(--current-action); }
+.current-media-action--primary:hover:not(:disabled) { color: var(--current-action-foreground); background: var(--current-action-hover); }
 .current-media-action--overlay { color: var(--current-paper); border-color: rgb(255 255 255 / 18%); background: rgb(37 38 43 / 78%); opacity: 0.76; }
 .group:hover .current-media-action--overlay,
 .current-media-action--overlay:hover:not(:disabled) { color: var(--current-paper); background: rgb(37 38 43 / 92%); opacity: 1; }
@@ -1291,15 +1199,19 @@ body {
 }
 
 .react-flow__edge-path {
-  stroke: #b4b4c0;
+  stroke: var(--current-border-strong);
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: 0.78;
+  transition: opacity 160ms ease, stroke 160ms ease, stroke-width 160ms ease;
 }
 
 .react-flow__edge.selected .react-flow__edge-path,
 .react-flow__edge:hover .react-flow__edge-path {
   stroke: var(--current-blue);
+  stroke-width: 3.5;
+  opacity: 1;
 }
 
 /* Hide resize handles but show resize cursor on edges */
@@ -1330,34 +1242,42 @@ body {
   cursor: nesw-resize !important;
 }
 
-/* React Flow Controls — light chrome */
+/* React Flow controls and navigator follow the same adaptive utility chrome. */
 .react-flow__controls {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border: 0.5px solid rgba(20, 20, 30, 0.08) !important;
+  color: var(--current-text-primary);
+  background: var(--current-surface-elevated) !important;
+  border: 1px solid var(--current-border) !important;
   border-radius: 10px !important;
-  box-shadow: 0 4px 14px -2px rgba(20, 20, 35, 0.12) !important;
+  box-shadow: 0 10px 28px -10px var(--current-shadow-strong) !important;
+}
+
+.react-flow__minimap.current-transient-surface {
+  color: var(--current-text-primary);
+  background: var(--current-surface-elevated) !important;
+  border: 1px solid var(--current-border) !important;
+  box-shadow: 0 10px 28px -10px var(--current-shadow-strong) !important;
 }
 
 .react-flow__controls-button {
   background: transparent !important;
-  border-bottom: 1px solid rgba(20, 20, 30, 0.06) !important;
+  border-bottom: 1px solid var(--current-border) !important;
 }
 
 .react-flow__controls-button svg {
-  fill: #6b6b78 !important;
+  fill: var(--current-text-secondary) !important;
 }
 
 .react-flow__controls-button svg path {
-  fill: #6b6b78 !important;
+  fill: var(--current-text-secondary) !important;
 }
 
 .react-flow__controls-button:hover {
-  background: rgba(20, 20, 30, 0.05) !important;
+  background: var(--current-surface-control-hover) !important;
 }
 
 .react-flow__controls-button:hover svg,
 .react-flow__controls-button:hover svg path {
-  fill: #1b1b21 !important;
+  fill: var(--current-text-primary) !important;
 }
 
 .react-flow__controls-button:last-child {
@@ -1376,12 +1296,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c9c9d2;
+  background: var(--current-border-strong);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a9a9b4;
+  background: var(--current-text-tertiary);
 }
 
 /* Make the multi-selection box pass through pointer events so we can still

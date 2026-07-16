@@ -54,6 +54,40 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-inline-notice--info\s*\{[\s\S]*?var\(--current-status-info\)/);
   });
 
+  it("uses adaptive semantic roles across the core workspace", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const commandBar = css.match(/\.current-command-bar\s*\{([^}]*)\}/)?.[1];
+    const canvas = css.match(/\/\* The stage[\s\S]*?\.react-flow\s*\{([^}]*)\}/)?.[1];
+    const edge = css.match(/\.react-flow__edge-path\s*\{([^}]*)\}/)?.[1];
+    const controls = css.match(/\.react-flow__controls\s*\{([^}]*)\}/)?.[1];
+    const minimap = css.match(/\.react-flow__minimap\.current-transient-surface\s*\{([^}]*)\}/)?.[1];
+    const node = css.match(/\/\* Current node chassis[\s\S]*?\.current-node\s*\{([^}]*)\}/)?.[1];
+    const footer = css.match(/\.current-node-status\s*\{([^}]*)\}/)?.[1];
+    const inspector = css.match(/\.current-panel\[data-side="right"\]\s*\{([^}]*)\}/)?.[1];
+    const inspectorField = css.match(/\.current-inspector__field,[\s\S]*?\{([^}]*)\}/)?.[1];
+    const inspectorRun = css.match(/\.current-inspector__run\s*\{([^}]*)\}/)?.[1];
+
+    expect(commandBar).toContain("color: var(--current-text-primary)");
+    expect(commandBar).toContain("background: var(--current-surface-chrome)");
+    expect(commandBar).toContain("border-bottom: 1px solid var(--current-border)");
+    expect(canvas).toContain("var(--current-canvas)");
+    expect(edge).toContain("opacity: 0.78");
+    expect(edge).toContain("opacity 160ms ease");
+    expect(controls).toContain("background: var(--current-surface-elevated)");
+    expect(controls).toContain("border: 1px solid var(--current-border)");
+    expect(minimap).toContain("background: var(--current-surface-elevated)");
+    expect(node).toContain("background: var(--current-surface-elevated)");
+    expect(node).toContain("border: 1px solid var(--current-border)");
+    expect(footer).toContain("background: var(--current-surface-panel)");
+    expect(footer).toContain("cursor: grab");
+    expect(inspector).toContain("background: var(--current-surface-panel)");
+    expect(inspector).toContain("border-left: 1px solid var(--current-border)");
+    expect(inspectorField).toContain("color: var(--current-text-primary)");
+    expect(inspectorField).toContain("background: var(--current-surface-control)");
+    expect(inspectorRun).toContain("color: var(--current-action-foreground)");
+    expect(inspectorRun).toContain("background: var(--current-action)");
+  });
+
   it("uses the approved Current accent and focus tokens", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const palette = css.slice(css.indexOf("/* Current Add Palette */"));
@@ -85,42 +119,40 @@ describe("Current Add Palette brand colors", () => {
   it("gives the dark workspace navy canvas, controls, and action states", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/current-command-bar\s*\{[\s\S]*?background:\s*#1d2a3b/);
+    expect(css).toMatch(/current-command-bar\s*\{[\s\S]*?background:\s*var\(--current-surface-chrome\)/);
     expect(css).toMatch(/current-button--secondary\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
     expect(css).toMatch(/current-button--secondary:hover:not\(:disabled\)\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow\s*\{[\s\S]*?#172130/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__controls\s*\{[\s\S]*?background:\s*#26384e/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__controls-button:hover\s*\{[\s\S]*?background:\s*#344b66/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-media-action,[\s\S]*?background:\s*#26384e/);
-    expect(css).toMatch(/current-media-action:hover:not\(:disabled\)[\s\S]*?background:\s*#344b66/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#172130/);
+    expect(css).toMatch(/\.react-flow\s*\{[\s\S]*?var\(--current-canvas\)/);
+    expect(css).toMatch(/\.react-flow__controls\s*\{[\s\S]*?background:\s*var\(--current-surface-elevated\)/);
+    expect(css).toMatch(/\.react-flow__controls-button:hover\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
+    expect(css).toMatch(/\.current-media-action\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
+    expect(css).toMatch(/current-media-action:hover:not\(:disabled\)[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
   });
 
   it("uses navy dark surfaces without a top-edge node highlight", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
-    const darkNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node\s*\{([^}]*)\}/)?.[1];
-    const darkHoverNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node:hover\s*\{([^}]*)\}/)?.[1];
-    const darkRunningNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node\[data-state="running"\]\s*\{([^}]*)\}/)?.[1];
-    const darkErrorNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node\[data-state="error"\]\s*\{([^}]*)\}/)?.[1];
-    const darkSelectedClassNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node--selected[\s\S]*?\{([^}]*)\}/)?.[1];
-    const darkSelectedDataNodeRule = css.match(/:root\[data-appearance="dark"\] \.current-node\[data-selected="true"\][\s\S]*?\{([^}]*)\}/)?.[1];
+    const nodeRule = css.match(/\/\* Current node chassis[\s\S]*?\.current-node\s*\{([^}]*)\}/)?.[1];
+    const hoverNodeRule = css.match(/\.current-node:hover\s*\{([^}]*)\}/)?.[1];
+    const runningNodeRule = css.match(/\.current-node\[data-state="running"\]\s*\{([^}]*)\}/)?.[1];
+    const errorNodeRule = css.match(/\.current-node\[data-state="error"\]\s*\{([^}]*)\}/)?.[1];
+    const selectedNodeRule = css.match(/\.current-node--selected,[\s\S]*?\{([^}]*)\}/)?.[1];
     const darkRunningKeyframes = css.match(/@keyframes current-node-breathe\s*\{([\s\S]*?)^\}/m)?.[1];
     const whiteInsetHighlight = /inset\s+0\s+0\.5px\s+0\s+(?:rgba?\(\s*255(?:\s*,\s*|\s+)255(?:\s*,\s*|\s+)255\b|#(?:fff|ffffff)\b|white\b)/i;
 
     expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#172130/);
-    expect(darkNodeRule).toBeDefined();
-    expect(darkHoverNodeRule).toBeDefined();
-    expect(darkRunningNodeRule).toBeDefined();
-    expect(darkErrorNodeRule).toBeDefined();
-    expect(darkSelectedClassNodeRule).toBeDefined();
-    expect(darkSelectedDataNodeRule).toBeDefined();
+    expect(nodeRule).toBeDefined();
+    expect(hoverNodeRule).toBeDefined();
+    expect(runningNodeRule).toBeDefined();
+    expect(errorNodeRule).toBeDefined();
+    expect(selectedNodeRule).toBeDefined();
     expect(darkRunningKeyframes).toBeDefined();
-    expect(darkNodeRule).toMatch(/border:\s*1px solid #2f435b/);
-    expect(darkNodeRule).not.toMatch(whiteInsetHighlight);
-    expect(darkHoverNodeRule).not.toMatch(whiteInsetHighlight);
-    expect(darkRunningNodeRule).not.toMatch(whiteInsetHighlight);
-    expect(darkErrorNodeRule).not.toMatch(whiteInsetHighlight);
-    expect(darkSelectedClassNodeRule).not.toMatch(whiteInsetHighlight);
-    expect(darkSelectedDataNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(nodeRule).toMatch(/border:\s*1px solid var\(--current-border\)/);
+    expect(nodeRule).not.toMatch(whiteInsetHighlight);
+    expect(hoverNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(runningNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(errorNodeRule).not.toMatch(whiteInsetHighlight);
+    expect(selectedNodeRule).not.toMatch(whiteInsetHighlight);
     expect(darkRunningKeyframes).not.toMatch(whiteInsetHighlight);
   });
 
@@ -145,8 +177,8 @@ describe("Current Add Palette brand colors", () => {
   it("gives the dark navigator a navy surface without a bright keyline", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?background:\s*#1d2a3b/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?border:\s*none/);
+    expect(css).toMatch(/\.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?background:\s*var\(--current-surface-elevated\)/);
+    expect(css).toMatch(/\.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?border:\s*1px solid var\(--current-border\)/);
   });
 
   it("uses appearance-aware ink and action surfaces in the workflow browser", () => {
@@ -161,19 +193,19 @@ describe("Current Add Palette brand colors", () => {
   it("uses the Current navy hierarchy for the inspector", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/\.current-panel\[data-side="right"\]\s*\{[\s\S]*?background:\s*linear-gradient\(180deg, #1b2a3e 0%, #111c2b 100%\)/);
-    expect(css).toMatch(/\.current-panel\[data-side="right"\]\s*\{[\s\S]*?border-left:\s*1px solid #2f435b/);
-    expect(css).toMatch(/\.current-inspector__field,[\s\S]*?background:\s*#223247/);
-    expect(css).toMatch(/\.current-inspector__browse\s*\{[\s\S]*?background:\s*#26384e/);
+    expect(css).toMatch(/\.current-panel\[data-side="right"\]\s*\{[\s\S]*?background:\s*var\(--current-surface-panel\)/);
+    expect(css).toMatch(/\.current-panel\[data-side="right"\]\s*\{[\s\S]*?border-left:\s*1px solid var\(--current-border\)/);
+    expect(css).toMatch(/\.current-inspector__field,[\s\S]*?background:\s*var\(--current-surface-control\)/);
+    expect(css).toMatch(/\.current-inspector__browse\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
   });
 
   it("keeps group action icons legible in both appearances", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/\.current-selection-toolbar \.current-toolbar-action\s*\{[\s\S]*?color:\s*var\(--current-graphite\)/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-selection-toolbar\.current-transient-surface\s*\{[\s\S]*?background:\s*#1d2a3b/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-selection-toolbar \.current-toolbar-action\s*\{[\s\S]*?color:\s*#e7edf5/);
-    expect(css).toMatch(/\.current-selection-toolbar__separator\s*\{[\s\S]*?background:\s*var\(--current-divider\)/);
+    expect(css).toMatch(/\.current-selection-toolbar \.current-toolbar-action\s*\{[\s\S]*?color:\s*var\(--current-text-primary\)/);
+    expect(css).toMatch(/\.current-transient-surface\s*\{[\s\S]*?background:\s*color-mix\(in srgb, var\(--current-surface-elevated\)/);
+    expect(css).toMatch(/\.current-selection-toolbar \.current-toolbar-action:hover:not\(:disabled\)\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
+    expect(css).toMatch(/\.current-selection-toolbar__separator\s*\{[\s\S]*?background:\s*var\(--current-border\)/);
   });
 
   it("adapts the supplied Current assets to the active appearance", () => {
