@@ -237,7 +237,6 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 :root[data-appearance="dark"] .current-brand-asset--wordmark-color,
 :root[data-appearance="dark"] .current-brand-asset--black { display: none; }
 :root[data-appearance="dark"] .current-brand-asset--white { display: block; }
-}
 
 .current-button,
 .current-icon-button,
