@@ -129,6 +129,45 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 :root[data-appearance="dark"] .current-node-header__more:hover,
 :root[data-appearance="dark"] .current-node-header__more[aria-expanded="true"] { color: #fff; background: #344b66; }
 
+/* Dark nodes use solid navy surfaces so the canvas remains calm behind moving content. */
+:root[data-appearance="dark"] .current-node {
+  background: linear-gradient(180deg, #1d2a3b 0%, #192637 100%);
+  border: 1px solid #2f435b;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 24%),
+    0 12px 28px -10px rgb(0 0 0 / 42%);
+}
+:root[data-appearance="dark"] .current-node:hover {
+  border-color: #415a76;
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 28%),
+    0 16px 34px -12px rgb(0 0 0 / 48%);
+}
+:root[data-appearance="dark"] .current-node--selected {
+  border-color: var(--current-blue) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--current-blue) 42%, transparent),
+    0 0 20px -4px color-mix(in srgb, var(--current-blue) 48%, transparent),
+    0 14px 32px -12px rgb(0 0 0 / 52%) !important;
+}
+:root[data-appearance="dark"] .current-node[data-selected="true"] {
+  border-color: var(--current-blue) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--current-blue) 42%, transparent),
+    0 0 20px -4px color-mix(in srgb, var(--current-blue) 48%, transparent),
+    0 14px 32px -12px rgb(0 0 0 / 52%) !important;
+}
+:root[data-appearance="dark"] .current-node[data-state="running"] {
+  border-color: color-mix(in srgb, var(--current-blue) 78%, #2f435b) !important;
+  animation: current-node-breathe 2.6s ease-in-out infinite;
+}
+:root[data-appearance="dark"] .current-node[data-state="error"] {
+  border-color: color-mix(in srgb, var(--current-danger) 78%, #2f435b) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--current-danger) 38%, transparent),
+    0 14px 32px -12px rgb(0 0 0 / 48%) !important;
+}
+
 .current-identity {
   display: inline-flex;
   align-items: center;
@@ -728,21 +767,20 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 @keyframes current-node-breathe {
   0%, 100% {
     box-shadow:
-      inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
       0 0 0 1px color-mix(in srgb, var(--current-blue) 32%, transparent),
       0 0 16px -3px color-mix(in srgb, var(--current-blue) 25%, transparent),
-      0 12px 30px -8px rgba(20, 20, 35, 0.12);
+      0 12px 30px -8px rgb(0 0 0 / 36%);
   }
   50% {
     box-shadow:
-      inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
       0 0 0 1px color-mix(in srgb, var(--current-blue) 55%, transparent),
       0 0 34px 0 color-mix(in srgb, var(--current-aqua) 38%, transparent),
-      0 12px 30px -8px rgba(20, 20, 35, 0.12);
+      0 12px 30px -8px rgb(0 0 0 / 36%);
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .current-node[data-state="running"] { animation: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--current-blue) 45%, transparent), 0 12px 30px -8px rgba(20,20,35,0.12) !important; }
+  :root[data-appearance="dark"] .current-node[data-state="running"] { box-shadow: 0 0 0 1px color-mix(in srgb, var(--current-blue) 45%, transparent), 0 12px 30px -8px rgb(0 0 0 / 36%) !important; }
 }
 .current-node[data-state="error"] {
   border-color: color-mix(in srgb, var(--current-danger) 72%, transparent) !important;
