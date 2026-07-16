@@ -38,8 +38,18 @@ describe("TemplateExplorerView outcomes", () => {
     expect(screen.getByText("Style Transfer")).toBeInTheDocument();
     expect(screen.queryByText("Product Shot")).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText("Search templates..."), { target: { value: "style" } });
+    fireEvent.change(screen.getByPlaceholderText("Search templates…"), { target: { value: "style" } });
     await waitFor(() => expect(screen.getByText("Style Transfer")).toBeInTheDocument());
+  });
+
+  it("gives template search a stable browser form contract", async () => {
+    render(<TemplateExplorerView onBack={vi.fn()} onWorkflowSelected={vi.fn()} />);
+    await waitFor(() => expect(screen.queryByText("Loading workflows…")).not.toBeInTheDocument());
+    const search = screen.getByRole("textbox", { name: "Search templates" });
+
+    expect(search).toHaveAttribute("name", "template-search");
+    expect(search).toHaveAttribute("autocomplete", "off");
+    expect(search).toHaveAttribute("placeholder", "Search templates…");
   });
 
   it("keeps wheel gestures inside the template results region", async () => {

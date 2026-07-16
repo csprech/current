@@ -129,7 +129,14 @@ export function TemplateExplorerView({ onBack, onWorkflowSelected }: TemplateExp
       <div className="current-template-explorer">
         <aside>
           <label htmlFor="template-search" className="sr-only">Search templates</label>
-          <input id="template-search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search templates..." />
+          <input
+            id="template-search"
+            name="template-search"
+            autoComplete="off"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search templates…"
+          />
           <h3>Creative outcome</h3>
           <div className="current-template-explorer__outcomes">
             {OUTCOMES.map((item) => (

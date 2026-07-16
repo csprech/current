@@ -54,6 +54,7 @@ describe("OutputsWorkspace", () => {
     const outputs = screen.getByRole("region", { name: "All outputs" });
     const slider = within(outputs).getByRole("slider", { name: "Thumbnail size" });
     expect(slider).toHaveValue("208");
+    expect(slider).toHaveAttribute("name", "output-thumbnail-size");
     expect(outputs).toContainElement(slider);
     expect(screen.getByRole("banner")).not.toContainElement(slider);
     fireEvent.change(slider, { target: { value: "280" } });

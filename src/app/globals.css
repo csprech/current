@@ -128,6 +128,17 @@
 
 html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 58%); }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .current-identity {
   display: inline-flex;
   align-items: center;

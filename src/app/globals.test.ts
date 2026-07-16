@@ -154,6 +154,16 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.current-connector-pulse[\s\S]*?animation:\s*none/);
   });
 
+  it("removes nonessential motion globally when the system requests it", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const reducedMotion = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*\*,\s*\*::before,\s*\*::after\s*\{([\s\S]*?)\n\s*\}\s*\}/)?.[1];
+
+    expect(reducedMotion).toContain("scroll-behavior: auto !important");
+    expect(reducedMotion).toContain("animation-duration: 0.01ms !important");
+    expect(reducedMotion).toContain("animation-iteration-count: 1 !important");
+    expect(reducedMotion).toContain("transition-duration: 0.01ms !important");
+  });
+
   it("uses a root appearance selector so the dark palette reaches the entire workspace", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
