@@ -138,6 +138,7 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
       contentClassName="flex-1 min-h-0"
       aspectFitMedia={nodeData.image}
       fullBleed
+      stateLabel={nodeData.image ? nodeData.filename || "Image" : undefined}
     >
       <input
         ref={fileInputRef}
@@ -154,11 +155,11 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
       )}
 
       {nodeData.image ? (
-        <div className="relative group w-full h-full overflow-clip rounded-lg">
+        <div className="relative group w-full h-full overflow-clip rounded-t-lg">
           <img
             src={adaptiveImage ?? undefined}
             alt={nodeData.filename || "Uploaded image"}
-            className="w-full h-full object-cover rounded-lg"
+            className="w-full h-full object-cover rounded-t-lg"
           />
           {nodeData.isOptional && (
             <span className="absolute bottom-2 left-2 text-[9px] font-medium text-neutral-300 bg-black/50 px-1.5 py-0.5 rounded">

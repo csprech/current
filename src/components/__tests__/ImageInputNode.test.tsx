@@ -145,6 +145,19 @@ describe("ImageInputNode", () => {
       expect(img).toHaveAttribute("src", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==");
     });
 
+    it("uses the filename as the completed status and keeps the image square against its footer", () => {
+      render(
+        <TestWrapper>
+          <ImageInputNode {...propsWithImage} />
+        </TestWrapper>
+      );
+
+      expect(screen.getByAltText("test-image.png")).toHaveClass("rounded-t-lg");
+      expect(screen.getByAltText("test-image.png")).not.toHaveClass("rounded-lg");
+      expect(screen.getByRole("status")).toHaveTextContent("test-image.png");
+      expect(screen.getByRole("status")).not.toHaveTextContent("Complete");
+    });
+
     it("should not show drop zone when image is set", () => {
       render(
         <TestWrapper>
