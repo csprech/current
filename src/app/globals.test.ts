@@ -72,4 +72,13 @@ describe("Current Add Palette brand colors", () => {
     expect(darkSelectedDataNodeRule).not.toMatch(whiteInsetHighlight);
     expect(darkRunningKeyframes).not.toMatch(whiteInsetHighlight);
   });
+
+  it("keeps launchpad copy and recent projects legible in dark appearance", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad\s*\{[\s\S]*?color:\s*#f5f5f7/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__intro h1\s*\{[\s\S]*?color:\s*#f5f5f7/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__description\s*\{[\s\S]*?color:\s*#b6c2d2/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-launchpad__recents button\s*\{[\s\S]*?color:\s*#e7edf5/);
+  });
 });
