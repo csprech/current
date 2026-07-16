@@ -95,7 +95,7 @@ export const RouterNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
             backgroundColor: HANDLE_COLORS[type],
             width: 12,
             height: 12,
-            border: "2px solid #1e1e1e",
+            border: "2px solid var(--current-surface-elevated)",
           }}
         />
       ))}
@@ -109,7 +109,7 @@ export const RouterNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
             backgroundColor: getHandlePresentation("generic").color,
             width: 12,
             height: 12,
-            border: "2px solid #1e1e1e",
+            border: "2px solid var(--current-surface-elevated)",
           }}
         />
       )}
@@ -127,7 +127,7 @@ export const RouterNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
             backgroundColor: HANDLE_COLORS[type],
             width: 12,
             height: 12,
-            border: "2px solid #1e1e1e",
+            border: "2px solid var(--current-surface-elevated)",
           }}
         />
       ))}

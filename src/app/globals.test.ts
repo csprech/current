@@ -132,6 +132,21 @@ describe("Current Add Palette brand colors", () => {
     expect(runValidation).toContain("var(--current-surface-elevated)");
   });
 
+  it("keeps adaptive chrome free of fixed light-only and dark-only color bypasses", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/\.current-project__trigger:hover\s*\{[^}]*var\(--current-surface-control-hover\)/);
+    expect(css).toMatch(/\.current-activity__row\s*\{[^}]*border:\s*1px solid var\(--current-border\)/);
+    expect(css).toMatch(/\.current-activity__row p\s*\{[^}]*color:\s*var\(--current-status-danger\)/);
+    expect(css).toMatch(/\.current-activity__row > span\s*\{[^}]*color:\s*var\(--current-text-tertiary\)/);
+    expect(css).toMatch(/\.current-output-thumbnail-size input::-(?:webkit-slider-thumb|moz-range-thumb)\s*\{[^}]*var\(--current-shadow\)/);
+    expect(css).toMatch(/\.current-settings-tabs__tab\[aria-pressed="true"\]\s*\{[^}]*var\(--current-shadow\)/);
+    expect(css).toMatch(/\.current-toast--success\s*\{[^}]*color:\s*var\(--current-status-success\)/);
+    expect(css).toMatch(/\.current-toast--warning\s*\{[^}]*color:\s*var\(--current-status-warning\)/);
+    expect(css).toMatch(/\.current-toast--error\s*\{[^}]*color:\s*var\(--current-status-danger\)/);
+    expect(css).toMatch(/\.react-flow__handle\s*\{[^}]*border:\s*2px solid var\(--current-surface-elevated\)/);
+  });
+
   it("uses the approved Current accent and focus tokens", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const palette = css.slice(css.indexOf("/* Current Add Palette */"));

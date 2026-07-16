@@ -135,7 +135,7 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
             backgroundColor: HANDLE_COLORS[nodeData.inputType],
             width: 12,
             height: 12,
-            border: "2px solid #1e1e1e",
+            border: "2px solid var(--current-surface-elevated)",
           }}
         />
       ) : (
@@ -145,10 +145,10 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
           id="generic-input"
           style={{
             top: baseOffset,
-            backgroundColor: "#6b7280",
+            backgroundColor: "var(--current-steel-blue)",
             width: 12,
             height: 12,
-            border: "2px dashed #1e1e1e",
+            border: "2px dashed var(--current-surface-elevated)",
           }}
         />
       )}
@@ -168,7 +168,7 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
               opacity: sw.enabled ? 1 : 0.3,
               width: 12,
               height: 12,
-              border: "2px solid #1e1e1e",
+              border: "2px solid var(--current-surface-elevated)",
             }}
           />
         ))}

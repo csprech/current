@@ -1034,7 +1034,7 @@ function EaseCurveControls({ node }: { node: Node }) {
                   <polyline
                     points={polyline}
                     fill="none"
-                    stroke="#a3a3a3"
+                    stroke="currentColor"
                     strokeWidth="1.5"
                   />
                 </svg>

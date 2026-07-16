@@ -46,7 +46,9 @@ function GroupBackground({ groupId }: GroupBackgroundProps) {
         width: group.size.width,
         height: group.size.height,
         backgroundColor: `${bgColor}60`,
-        border: group.isNbpInput ? `3px dashed rgba(255,255,255,0.25)` : `1px solid ${bgColor}`,
+        border: group.isNbpInput
+          ? "3px dashed color-mix(in srgb, var(--current-text-primary) 25%, transparent)"
+          : `1px solid ${bgColor}`,
         pointerEvents: "none",
       }}
     />

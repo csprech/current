@@ -217,7 +217,7 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
         data-tutorial="node-input-handle"
         className="!bg-gray-500"
       />
-      <HandleLabel label="Ref" side="target" color="#6b7280" visible={showLabels} />
+      <HandleLabel label="Ref" side="target" color="var(--current-minimap-neutral)" visible={showLabels} />
       <Handle
         type="source"
         position={Position.Right}

@@ -100,9 +100,9 @@ export function ElementHighlight({ selector, onComplete }: ElementHighlightProps
             width: rect.width + 8,
             height: rect.height + 8,
             zIndex: 101,
-            border: "2px solid rgb(59, 130, 246)",
+            border: "2px solid var(--current-focus-outer)",
             borderRadius: "8px",
-            boxShadow: "0 0 8px rgba(59, 130, 246, 0.3)",
+            boxShadow: "0 0 8px color-mix(in srgb, var(--current-focus-outer) 30%, transparent)",
             animation: "pulse-ring 2s infinite",
           }}
         />

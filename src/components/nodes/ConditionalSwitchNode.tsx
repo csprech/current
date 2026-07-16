@@ -246,7 +246,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           backgroundColor: TEXT_HANDLE_COLOR,
           width: 12,
           height: 12,
-          border: "2px solid #1e1e1e",
+          border: "2px solid var(--current-surface-elevated)",
         }}
       />
 
@@ -413,7 +413,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
             backgroundColor: TEXT_HANDLE_COLOR,
             width: 12,
             height: 12,
-            border: "2px solid #1e1e1e",
+            border: "2px solid var(--current-surface-elevated)",
           }}
         />
       ))}
@@ -429,7 +429,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           backgroundColor: TEXT_HANDLE_COLOR,
           width: 12,
           height: 12,
-          border: "2px solid #1e1e1e",
+          border: "2px solid var(--current-surface-elevated)",
         }}
       />
     </BaseNode>
