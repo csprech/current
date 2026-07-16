@@ -89,7 +89,7 @@ describe("WelcomeModal", () => {
         />
       );
 
-      expect(screen.getByText("current")).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
       expect(screen.getByText("New canvas")).toBeInTheDocument();
       expect(screen.getByText("Browse templates")).toBeInTheDocument();
       expect(screen.getByText("Describe a workflow")).toBeInTheDocument();
@@ -183,7 +183,7 @@ describe("WelcomeModal", () => {
         fireEvent.click(screen.getByText("Back"));
       });
 
-      expect(screen.getByText("current")).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
       expect(screen.getByText("New canvas")).toBeInTheDocument();
     });
 
@@ -203,7 +203,7 @@ describe("WelcomeModal", () => {
       // Click back
       fireEvent.click(screen.getByText("Back"));
 
-      expect(screen.getByText("current")).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
     });
   });
 
@@ -235,7 +235,7 @@ describe("WelcomeModal", () => {
       expect(screen.getByTestId("workflow-browser-view")).toBeInTheDocument();
 
       fireEvent.click(screen.getByText("Back"));
-      expect(screen.getByText("current")).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
     });
 
     it("should call onWorkflowGenerated when a workflow is loaded from browser", () => {

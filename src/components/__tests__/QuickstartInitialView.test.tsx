@@ -27,7 +27,6 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      expect(screen.getByText("current")).toBeInTheDocument();
       expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
     });
 

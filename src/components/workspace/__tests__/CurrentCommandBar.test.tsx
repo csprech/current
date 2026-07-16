@@ -97,7 +97,7 @@ describe("CurrentCommandBar", () => {
 
   it("renders Current, the project, and one primary Run control", () => {
     render(<CurrentCommandBar />);
-    expect(screen.getByText("current")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
     expect(screen.getByText("Campaign Study")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Run" })).toHaveLength(1);
     expect(screen.getByRole("button", { name: "Use light appearance" })).toHaveAttribute("aria-pressed", "true");
