@@ -57,7 +57,7 @@
   --handle-color-ease-curve: var(--current-steel-blue);
 }
 
-html[data-appearance="dark"] {
+:root[data-appearance="dark"] {
   color-scheme: dark;
   --background: #111113;
   --foreground: #f5f5f7;

@@ -28,9 +28,9 @@ const SELECTION_STATES = ["active", "dimmed"] as const;
 function gradientStops(startColor: string, endColor: string, active: boolean) {
   return (
     <>
-      <stop offset="0%" stopColor={startColor} stopOpacity={active ? 1 : 0.25} />
-      <stop offset="50%" stopColor={endColor} stopOpacity={active ? 0.7 : 0.14} />
-      <stop offset="100%" stopColor={endColor} stopOpacity={active ? 1 : 0.25} />
+      <stop offset="0%" stopColor={startColor} stopOpacity={active ? 1 : 0.4} />
+      <stop offset="50%" stopColor={endColor} stopOpacity={active ? 0.7 : 0.26} />
+      <stop offset="100%" stopColor={endColor} stopOpacity={active ? 1 : 0.4} />
     </>
   );
 }
