@@ -99,4 +99,14 @@ describe("AssetLibrary accessibility", () => {
     expect(screen.queryByRole("button", { name: "Open asset library" })).not.toBeInTheDocument();
     await screen.findByRole("button", { name: "Open asset asset.png" });
   });
+
+  it("uses the provided thumbnail size for embedded output grids", async () => {
+    render(<AssetLibrary embedded thumbnailSize={280} />);
+
+    await screen.findByRole("button", { name: "Open asset asset.png" });
+    expect(document.querySelector(".current-library-grid")).toHaveClass("current-library-grid--resizable");
+    expect(document.querySelector(".current-library-grid")).toHaveStyle({
+      "--current-library-thumbnail-size": "280px",
+    });
+  });
 });

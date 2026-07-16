@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useId, useRef } from "react";
+import { useState, useEffect, useCallback, useId, useRef, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { AssetEntry, AssetType } from "@/app/api/assets/route";
@@ -232,7 +232,7 @@ function AssetLightbox({
   );
 }
 
-export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
+export function AssetLibrary({ embedded = false, thumbnailSize }: { embedded?: boolean; thumbnailSize?: number }) {
   const workflowPath = useWorkflowStore((state) => state.saveDirectoryPath);
   const [isOpen, setIsOpen] = useState(embedded);
   const [assets, setAssets] = useState<AssetEntry[]>([]);
@@ -326,7 +326,12 @@ export function AssetLibrary({ embedded = false }: { embedded?: boolean }) {
       {loading && <p className="current-empty-state">Loading…</p>}
       {error && <p className="current-empty-state" role="alert">{error}</p>}
       {!loading && !error && filtered.length === 0 && <p className="current-empty-state">{assets.length === 0 ? "No saved assets yet. Run a workflow to generate some." : "No assets match your filter."}</p>}
-      <div className="current-library-grid">{filtered.map((asset) => <AssetCell key={`${asset.folder}/${asset.filename}`} asset={asset} workflowPath={workflowPath} onOpen={(a, dataUrl) => setLightbox({ asset: a, dataUrl })} onDragStart={handleDragStart} />)}</div>
+      <div
+        className={`current-library-grid${thumbnailSize ? " current-library-grid--resizable" : ""}`}
+        style={thumbnailSize ? ({ "--current-library-thumbnail-size": `${thumbnailSize}px` } as CSSProperties) : undefined}
+      >
+        {filtered.map((asset) => <AssetCell key={`${asset.folder}/${asset.filename}`} asset={asset} workflowPath={workflowPath} onOpen={(a, dataUrl) => setLightbox({ asset: a, dataUrl })} onDragStart={handleDragStart} />)}
+      </div>
       {lightbox && <AssetLightbox asset={lightbox.asset} dataUrl={lightbox.dataUrl} onClose={() => setLightbox(null)} />}
     </div>
   );

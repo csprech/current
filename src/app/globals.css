@@ -635,6 +635,7 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-library-filters { display: flex; gap: 0.375rem; margin: 0.75rem 0; }
 .current-library-filters button[aria-pressed="true"] { color: white; border-color: var(--current-blue); background: var(--current-blue); }
 .current-library-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.current-library-grid--resizable { grid-template-columns: repeat(auto-fill, minmax(var(--current-library-thumbnail-size), 1fr)); }
 .current-history-list { display: flex; flex-direction: column; gap: 0.5rem; }
 .current-history-clear { align-self: flex-end; }
 .current-history-item { display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); gap: 0.75rem; align-items: center; padding: 0.5rem; border-radius: 0.625rem; text-align: left; }
@@ -657,6 +658,12 @@ html[data-appearance="dark"] .current-button--secondary:hover:not(:disabled) { b
 .current-outputs { flex: 1; min-height: 0; overflow: auto; padding: clamp(1.5rem, 3vw, 3rem); color: var(--current-inspector); background: var(--current-canvas); }
 .current-outputs__header { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-bottom: 2rem; }
 .current-outputs__header h1 { margin: 0.25rem 0 0; font-size: clamp(1.75rem, 3vw, 2.75rem); letter-spacing: -0.04em; }
+.current-outputs__actions { display: flex; align-items: center; gap: 1rem; }
+.current-output-thumbnail-size { display: flex; align-items: center; gap: 0.625rem; color: var(--current-secondary-text); font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.current-output-thumbnail-size input { width: 7.5rem; height: 0.25rem; appearance: none; border-radius: 999px; background: var(--current-divider); cursor: ew-resize; }
+.current-output-thumbnail-size input::-webkit-slider-thumb { width: 0.875rem; height: 0.875rem; appearance: none; border: 2px solid var(--current-paper); border-radius: 50%; background: var(--current-blue); box-shadow: 0 1px 3px rgb(0 0 0 / 24%); }
+.current-output-thumbnail-size input::-moz-range-thumb { width: 0.875rem; height: 0.875rem; border: 2px solid var(--current-paper); border-radius: 50%; background: var(--current-blue); box-shadow: 0 1px 3px rgb(0 0 0 / 24%); }
+.current-output-thumbnail-size input:focus-visible { outline: 2px solid var(--current-blue); outline-offset: 3px; }
 .current-outputs section + section { margin-top: 2.5rem; }
 .current-outputs h2 { font-size: 0.875rem; letter-spacing: 0.01em; }
 .current-output-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1rem; }
