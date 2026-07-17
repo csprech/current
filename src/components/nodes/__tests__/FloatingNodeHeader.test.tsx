@@ -56,6 +56,57 @@ describe("FloatingNodeHeader", () => {
     expect(container.querySelector(".current-node-header")).toHaveAttribute("data-role", "router");
   });
 
+  it("presents Run as the primary node action without changing execution", () => {
+    const onRunNode = vi.fn();
+
+    render(
+      <FloatingNodeHeader
+        id="generate-1"
+        type="nanoBanana"
+        position={{ x: 10, y: 20 }}
+        width={320}
+        selected
+        title="Generate Image"
+        onRunNode={onRunNode}
+      />
+    );
+
+    const run = screen.getByRole("button", { name: "Run this node" });
+    expect(run).toHaveClass(
+      "current-media-action",
+      "current-media-action--primary",
+      "current-node-header__run"
+    );
+    expect(run).not.toHaveClass("text-neutral-500");
+    expect(run).not.toHaveClass("border-neutral-600");
+
+    fireEvent.click(run);
+    expect(onRunNode).toHaveBeenCalledExactlyOnceWith("generate-1");
+  });
+
+  it("disables Run while the node is executing", () => {
+    const onRunNode = vi.fn();
+
+    render(
+      <FloatingNodeHeader
+        id="generate-1"
+        type="nanoBanana"
+        isExecuting
+        position={{ x: 10, y: 20 }}
+        width={320}
+        selected
+        title="Generate Image"
+        onRunNode={onRunNode}
+      />
+    );
+
+    const run = screen.getByRole("button", { name: "Run this node" });
+    expect(run).toBeDisabled();
+
+    fireEvent.click(run);
+    expect(onRunNode).not.toHaveBeenCalled();
+  });
+
   it("opens the contextual menu from the keyboard and returns focus on Escape", () => {
     render(
       <FloatingNodeHeader

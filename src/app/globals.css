@@ -1018,6 +1018,18 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-media-action:disabled { cursor: not-allowed; opacity: 0.45; }
 .current-media-action--primary { color: var(--current-action-foreground); border-color: transparent; background: var(--current-action); }
 .current-media-action--primary:hover:not(:disabled) { color: var(--current-action-foreground); background: var(--current-action-hover); }
+.current-node-header__run {
+  display: inline-flex;
+  width: auto;
+  min-width: 2rem;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+}
+
+.current-node-header__run:hover:not(:disabled) {
+  padding-right: 0.5rem;
+}
 .current-media-action--overlay { color: var(--current-paper); border-color: rgb(255 255 255 / 18%); background: rgb(37 38 43 / 78%); opacity: 0.76; }
 .group:hover .current-media-action--overlay,
 .current-media-action--overlay:hover:not(:disabled) { color: var(--current-paper); background: rgb(37 38 43 / 92%); opacity: 1; }
