@@ -9,7 +9,7 @@ import { ProviderModel, ModelCapability } from "@/lib/providers/types";
 import { CurrentSheet } from "@/components/current";
 
 // localStorage cache for models (persists across dev server restarts)
-const MODELS_CACHE_KEY = "node-banana-models-cache";
+const MODELS_CACHE_KEY = "current-models-cache";
 const MODELS_CACHE_TTL = 48 * 60 * 60 * 1000; // 48 hours
 
 interface ModelsCacheEntry {
@@ -294,7 +294,7 @@ export function ModelSearchDialog({
       // Clear localStorage model cache
       localStorage.removeItem(MODELS_CACHE_KEY);
       // Clear localStorage schema cache (keep in sync with ModelParameters.tsx)
-      localStorage.removeItem("node-banana-schema-cache");
+      localStorage.removeItem("current-schema-cache");
       // Clear in-memory deduplicatedFetch cache
       clearFetchCache();
       // Re-fetch with cache bypass

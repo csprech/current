@@ -153,7 +153,7 @@ Now: per-seat dollar budgets — Free (≈17 lifetime generations, text+image on
 
 ## 3. Current today
 
-Current (`package.json` name `node-banana`, v1.6.0, MIT) is further along than our own docs admit — CLAUDE.md documents 10 node types; the app ships **25**.
+Current (`package.json` name `current`, v1.6.0, MIT) is further along than our own docs admit — CLAUDE.md documents 10 node types; the app ships **25**.
 
 ### 3.1 Node catalog (25 types)
 

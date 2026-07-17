@@ -489,7 +489,7 @@ async function waitForPendingImageSyncs(timeout: number = 60000): Promise<void> 
 
 
 // Re-export for backward compatibility
-export { generateWorkflowId, saveGenerateImageDefaults, saveNanoBananaDefaults } from "./utils/localStorage";
+export { generateWorkflowId, saveGenerateImageDefaults } from "./utils/localStorage";
 export { GROUP_COLORS } from "./utils/nodeDefaults";
 
 /** Node types whose output carries image data */

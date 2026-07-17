@@ -5,7 +5,7 @@ import { CurrentHandle as Handle } from "./CurrentHandle";
 import { Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { ModelParameters } from "./ModelParameters";
-import { useWorkflowStore, saveNanoBananaDefaults, useProviderApiKeys } from "@/store/workflowStore";
+import { useWorkflowStore, saveGenerateImageDefaults, useProviderApiKeys } from "@/store/workflowStore";
 import { deduplicatedFetch } from "@/utils/deduplicatedFetch";
 import { NanoBananaNodeData, AspectRatio, Resolution, ModelType, MODEL_DISPLAY_NAMES, ProviderType, SelectedModel, ModelInputDef } from "@/types";
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
@@ -223,7 +223,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const aspectRatio = e.target.value as AspectRatio;
       updateNodeData(id, { aspectRatio });
-      saveNanoBananaDefaults({ aspectRatio });
+      saveGenerateImageDefaults({ aspectRatio });
     },
     [id, updateNodeData]
   );
@@ -232,7 +232,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const resolution = e.target.value as Resolution;
       updateNodeData(id, { resolution });
-      saveNanoBananaDefaults({ resolution });
+      saveGenerateImageDefaults({ resolution });
     },
     [id, updateNodeData]
   );
@@ -241,7 +241,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const model = e.target.value as ModelType;
       updateNodeData(id, { model });
-      saveNanoBananaDefaults({ model });
+      saveGenerateImageDefaults({ model });
 
       // Also update selectedModel for consistency
       const newSelectedModel: SelectedModel = {
@@ -258,7 +258,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const useGoogleSearch = e.target.checked;
       updateNodeData(id, { useGoogleSearch });
-      saveNanoBananaDefaults({ useGoogleSearch });
+      saveGenerateImageDefaults({ useGoogleSearch });
     },
     [id, updateNodeData]
   );
@@ -267,7 +267,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const useImageSearch = e.target.checked;
       updateNodeData(id, { useImageSearch });
-      saveNanoBananaDefaults({ useImageSearch });
+      saveGenerateImageDefaults({ useImageSearch });
     },
     [id, updateNodeData]
   );

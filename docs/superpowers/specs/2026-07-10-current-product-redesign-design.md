@@ -6,7 +6,7 @@
 
 ## Summary
 
-Transform Node Banana into **Current**, a desktop-only professional creative application with the focused power of Final Cut Pro and the spatial ease of Freeform. The overhaul preserves every existing capability while rebuilding the product hierarchy, visual system, node family, secondary surfaces, and interaction feedback around a coherent Mac-first design system.
+Transform the legacy app into **Current**, a desktop-only professional creative application with the focused power of Final Cut Pro and the spatial ease of Freeform. The overhaul preserves every existing capability while rebuilding the product hierarchy, visual system, node family, secondary surfaces, and interaction feedback around a coherent Mac-first design system.
 
 Current uses an adaptive hybrid workspace: a luminous neutral canvas for creative work, restrained translucent chrome for global controls, opaque white nodes for content, and a dark graphite inspector for professional configuration. The product is system-led rather than component-by-component. Shared primitives and behavior rules are established before existing features migrate to them.
 

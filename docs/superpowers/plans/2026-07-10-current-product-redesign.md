@@ -1203,7 +1203,7 @@ git commit -m "fix(ui): replace browser alerts with inline recovery"
 - Modify: `src/components/ConnectionDropMenu.tsx`
 - Modify: all files returned by the Iris audit command.
 - Modify: `src/components/__tests__/Toast.test.tsx`
-- Modify: `package.json` only if product display metadata exists there; keep the package identifier `node-banana` to avoid tooling and storage migration.
+- Modify: `package.json` only if product display metadata exists there; the package identifier has since been renamed to `current` with a one-time storage migration.
 
 - [ ] **Step 1: Add failing brand and accessibility assertions**
 
@@ -1216,7 +1216,7 @@ expect(screen.getByRole("menu", { name: "Compatible nodes" })).toBeInTheDocument
 Add a source audit to the test script or verification checklist:
 
 ```bash
-rg -n "iris-|iris\b|Node Banana|node-banana.png|banana_icon" src public
+rg -n "iris-|iris\b|legacy-brand-name" src public
 ```
 
 Expected before cleanup: matches remain.
@@ -1235,7 +1235,7 @@ Expected: FAIL where accessible labels or Current markup are missing.
 
 Remove `.iris-run`, `.iris-card`, `.iris-topbar`, `.iris-glass`, Iris spectrum variables, rainbow handle colors, and old brand text. Replace the favicon artwork with the Current wave mark.
 
-Keep `node-banana` only where it is a technical identifier whose change would break package scripts, localStorage compatibility, or existing file formats. Do not rename localStorage keys or workflow schema fields.
+Superseded: the legacy package identifier and localStorage prefix were later renamed to `current-*` with a one-time boot migration (see src/store/utils/localStorage.ts).
 
 Ensure:
 
@@ -1252,7 +1252,7 @@ Ensure:
 Run:
 
 ```bash
-rg -n "iris-|iris\b|Node Banana|node-banana.png|banana_icon" src public
+rg -n "iris-|iris\b|legacy-brand-name" src public
 npx vitest run src/components/__tests__/Toast.test.tsx src/components/__tests__/MultiSelectToolbar.test.tsx src/components/__tests__/ConnectionDropMenu.test.tsx src/components/__tests__/BaseNode.test.tsx src/components/current/__tests__ src/components/workspace/__tests__
 ```
 
@@ -1319,7 +1319,7 @@ Load or create at least 40 mixed media and routing nodes. Pan, pinch-zoom, box-s
 - [ ] **Step 5: Run final source audits**
 
 ```bash
-rg -n "iris-|iris\b|Node Banana|node-banana.png|banana_icon" src public
+rg -n "iris-|iris\b|legacy-brand-name" src public
 rg -n "\b(alert|confirm)\(" src/components
 git diff --check
 ```

@@ -23,7 +23,7 @@ import {
 } from "@/lib/providers";
 
 const REPLICATE_API_BASE = "https://api.replicate.com/v1";
-const PROVIDER_SETTINGS_KEY = "node-banana-provider-settings";
+const PROVIDER_SETTINGS_KEY = "current-provider-settings"; // keep in sync with store/utils/localStorage.ts
 
 /**
  * Response schema from Replicate's list models endpoint

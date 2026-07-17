@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback, useEffect, useId, useRef } from "react"
 import { createPortal } from "react-dom";
 import { useShallow } from "zustand/shallow";
 import { Node } from "@xyflow/react";
-import { useWorkflowStore, saveNanoBananaDefaults, useProviderApiKeys } from "@/store/workflowStore";
+import { useWorkflowStore, saveGenerateImageDefaults, useProviderApiKeys } from "@/store/workflowStore";
 import { NodeType, NanoBananaNodeData, LLMGenerateNodeData, GenerateVideoNodeData, Generate3DNodeData, GenerateAudioNodeData, EaseCurveNodeData, ConditionalSwitchNodeData, AspectRatio, Resolution, ModelType, MODEL_DISPLAY_NAMES, ProviderType, SelectedModel, LLMProvider, LLMModelType, MatchMode, ConditionalSwitchRule } from "@/types";
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
@@ -293,7 +293,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const model = e.target.value as ModelType;
       updateNodeData(node.id, { model });
-      saveNanoBananaDefaults({ model });
+      saveGenerateImageDefaults({ model });
 
       const newSelectedModel: SelectedModel = {
         provider: "gemini",
@@ -309,7 +309,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const aspectRatio = e.target.value as AspectRatio;
       updateNodeData(node.id, { aspectRatio });
-      saveNanoBananaDefaults({ aspectRatio });
+      saveGenerateImageDefaults({ aspectRatio });
     },
     [node.id, updateNodeData]
   );
@@ -318,7 +318,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const resolution = e.target.value as Resolution;
       updateNodeData(node.id, { resolution });
-      saveNanoBananaDefaults({ resolution });
+      saveGenerateImageDefaults({ resolution });
     },
     [node.id, updateNodeData]
   );
@@ -327,7 +327,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const useGoogleSearch = e.target.checked;
       updateNodeData(node.id, { useGoogleSearch });
-      saveNanoBananaDefaults({ useGoogleSearch });
+      saveGenerateImageDefaults({ useGoogleSearch });
     },
     [node.id, updateNodeData]
   );
@@ -336,7 +336,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const useImageSearch = e.target.checked;
       updateNodeData(node.id, { useImageSearch });
-      saveNanoBananaDefaults({ useImageSearch });
+      saveGenerateImageDefaults({ useImageSearch });
     },
     [node.id, updateNodeData]
   );
