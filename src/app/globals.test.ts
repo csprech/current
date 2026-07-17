@@ -221,16 +221,16 @@ describe("Current Add Palette brand colors", () => {
   it("uses a root appearance selector so the dark palette reaches the entire workspace", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--background:\s*#172130[\s\S]*?--current-paper:\s*#1d2a3b[\s\S]*?--current-canvas:\s*#172130[\s\S]*?--current-divider:\s*#2f435b[\s\S]*?--current-graphite:\s*#b6c2d2[\s\S]*?--current-minimap-neutral:\s*#59708a/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--background:\s*#111111[\s\S]*?--current-paper:\s*#1b1b1d[\s\S]*?--current-canvas:\s*#111111[\s\S]*?--current-divider:\s*#2e2e30[\s\S]*?--current-graphite:\s*#cacacb[\s\S]*?--current-minimap-neutral:\s*#707072/);
   });
 
-  it("gives the dark workspace navy canvas, controls, and action states", () => {
+  it("gives the dark workspace ink canvas, controls, and action states", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
     expect(css).toMatch(/current-command-bar\s*\{[\s\S]*?background:\s*var\(--current-surface-chrome\)/);
     expect(css).toMatch(/current-button--secondary\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
     expect(css).toMatch(/current-button--secondary:hover:not\(:disabled\)\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#172130/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#111111/);
     expect(css).toMatch(/\.current-canvas-shell\s*\{[^}]*background:\s*var\(--current-canvas\)/);
     expect(css).toMatch(/\.current-canvas-flow\s*\{[^}]*--xy-background-color:\s*var\(--current-canvas\)/);
     expect(css).toMatch(/\.react-flow\s*\{[\s\S]*?var\(--current-canvas\)/);
@@ -240,7 +240,7 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/current-media-action:hover:not\(:disabled\)[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
   });
 
-  it("uses navy dark surfaces without a top-edge node highlight", () => {
+  it("uses flat ink dark surfaces without a top-edge node highlight", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const nodeRule = css.match(/\/\* Current node chassis[\s\S]*?\.current-node\s*\{([^}]*)\}/)?.[1];
     const hoverNodeRule = css.match(/\.current-node:hover\s*\{([^}]*)\}/)?.[1];
@@ -250,7 +250,7 @@ describe("Current Add Palette brand colors", () => {
     const darkRunningKeyframes = css.match(/@keyframes current-node-breathe\s*\{([\s\S]*?)^\}/m)?.[1];
     const whiteInsetHighlight = /inset\s+0\s+0\.5px\s+0\s+(?:rgba?\(\s*255(?:\s*,\s*|\s+)255(?:\s*,\s*|\s+)255\b|#(?:fff|ffffff)\b|white\b)/i;
 
-    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#172130/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#111111/);
     expect(nodeRule).toBeDefined();
     expect(hoverNodeRule).toBeDefined();
     expect(runningNodeRule).toBeDefined();
@@ -275,7 +275,7 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-launchpad__recents button\s*\{[\s\S]*?color:\s*var\(--current-text-primary\)/);
   });
 
-  it("keeps quickstart detail surfaces on the Current navy palette in dark appearance", () => {
+  it("keeps quickstart detail surfaces on the Current ink palette in dark appearance", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
     expect(css).toMatch(/\.current-launchpad__detail \.text-neutral-100,[\s\S]*?color:\s*var\(--current-text-primary\)/);
@@ -284,7 +284,7 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-template-explorer aside\s*\{[\s\S]*?background:\s*var\(--current-surface-panel\)/);
   });
 
-  it("gives the dark navigator a navy surface without a bright keyline", () => {
+  it("gives the dark navigator an ink surface without a bright keyline", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
     expect(css).toMatch(/\.react-flow__minimap\.current-transient-surface\s*\{[\s\S]*?background:\s*var\(--current-surface-elevated\)/);
@@ -300,7 +300,7 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-workflow-browser__directory-action\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
   });
 
-  it("uses the Current navy hierarchy for the inspector", () => {
+  it("uses the Current ink hierarchy for the inspector", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
     expect(css).toMatch(/\.current-panel\[data-side="right"\]\s*\{[\s\S]*?background:\s*var\(--current-surface-panel\)/);

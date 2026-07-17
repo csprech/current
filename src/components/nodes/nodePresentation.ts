@@ -39,16 +39,13 @@ export interface NodeStatusModifiers {
 
 export type PresentedHandleType = HandleType | "generic";
 
+// Category accents from the design system: each connection type carries one
+// solid accent (like swatch dots) — no gradients in chrome.
 const HANDLE_PRESENTATIONS: Record<PresentedHandleType, HandlePresentation> = {
   text: { label: "Text", color: "var(--current-blue)" },
   image: { label: "Image", color: "var(--current-aqua)" },
-  video: {
-    label: "Video",
-    color: "var(--current-blue)",
-    endColor: "var(--current-aqua)",
-    gradient: true,
-  },
-  audio: { label: "Audio", color: "var(--current-blue-indigo)" },
+  video: { label: "Video", color: "var(--current-blue-indigo)" },
+  audio: { label: "Audio", color: "var(--current-pink)" },
   "3d": { label: "3D", color: "var(--current-aqua-cyan)" },
   easeCurve: { label: "Ease curve", color: "var(--current-steel-blue)" },
   generic: { label: "Connection", color: "var(--current-steel-blue)" },
@@ -84,34 +81,37 @@ const NODE_ROLES: Record<NodeType, NodeRole> = {
   outputGallery: "output",
 };
 
+/* Minimap dots follow the category-accent families (mid-tone hexes chosen to
+   read on both the light and dark navigator surfaces): teal = image,
+   info blue = text, purple = video, pink = audio, cyan = 3D, stone = routing. */
 const MINIMAP_COLORS: Record<NodeType, string> = {
-  imageInput: "#47CBB3",
-  audioInput: "#6A70E8",
-  videoInput: "#5578F6",
-  prompt: "#5578F6",
-  array: "#528ADF",
-  promptConstructor: "#5578F6",
-  glbViewer: "#3DB9C4",
-  nanoBanana: "#47CBB3",
-  generateVideo: "#5578F6",
-  generateAudio: "#6A70E8",
-  llmGenerate: "#5578F6",
-  generate3d: "#3DB9C4",
-  annotation: "#528ADF",
-  splitGrid: "#47CBB3",
-  imageCompare: "#47CBB3",
-  videoStitch: "#5578F6",
-  easeCurve: "#528ADF",
-  videoTrim: "#528ADF",
-  videoFrameGrab: "#47CBB3",
-  removeBackground: "#47CBB3",
-  imageAction: "#47CBB3",
-  videoAction: "#528ADF",
-  router: "#528ADF",
-  switch: "#5578F6",
-  conditionalSwitch: "#3DB9C4",
-  output: "#47CBB3",
-  outputGallery: "#3DB9C4",
+  imageInput: "#0E93A6",
+  audioInput: "#E8479E",
+  videoInput: "#8B6FF0",
+  prompt: "#3D6BFF",
+  array: "#3D6BFF",
+  promptConstructor: "#3D6BFF",
+  glbViewer: "#2AA5B8",
+  nanoBanana: "#0E93A6",
+  generateVideo: "#8B6FF0",
+  generateAudio: "#E8479E",
+  llmGenerate: "#3D6BFF",
+  generate3d: "#2AA5B8",
+  annotation: "#0E93A6",
+  splitGrid: "#0E93A6",
+  imageCompare: "#0E93A6",
+  videoStitch: "#8B6FF0",
+  easeCurve: "#8B6FF0",
+  videoTrim: "#8B6FF0",
+  videoFrameGrab: "#0E93A6",
+  removeBackground: "#0E93A6",
+  imageAction: "#0E93A6",
+  videoAction: "#8B6FF0",
+  router: "#8A8D96",
+  switch: "#8A8D96",
+  conditionalSwitch: "#8A8D96",
+  output: "#0E93A6",
+  outputGallery: "#0E93A6",
 };
 
 export const CURRENT_MINIMAP_FALLBACK = "#8A8D96";

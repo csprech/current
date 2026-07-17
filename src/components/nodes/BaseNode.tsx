@@ -336,7 +336,7 @@ export function BaseNode({
   return (
     <div
       className={hasExpandedSettings
-        ? `relative flex flex-col w-full h-full overflow-visible rounded-xl ${materialClassName}`
+        ? `relative flex flex-col w-full h-full overflow-visible rounded-none ${materialClassName}`
         : "contents"}
       onDoubleClick={handleResizeHandleDblClick}
       data-tutorial={hasExpandedSettings ? dataTutorial : undefined}
@@ -357,8 +357,8 @@ export function BaseNode({
           ${hasExpandedSettings ? "flex-1 min-h-0 w-full" : "h-full w-full"} flex flex-col overflow-visible relative
           ${hasExpandedSettings
             /* Outer wrapper owns the material; inner is a transparent top segment. */
-            ? `${settingsExpanded ? "rounded-t-xl" : "rounded-xl"}`
-            : `${materialClassName} ${settingsExpanded ? "rounded-t-xl" : "rounded-xl"}`}
+            ? "rounded-none"
+            : `${materialClassName} rounded-none`}
           ${className}
         `}
         data-tutorial={!hasExpandedSettings ? dataTutorial : undefined}
