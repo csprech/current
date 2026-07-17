@@ -18,6 +18,9 @@ const mockCopySelectedNodes = vi.fn();
 const mockPasteNodes = vi.fn();
 const mockClearClipboard = vi.fn();
 const mockSetShowQuickstart = vi.fn();
+const mockClearWorkflow = vi.fn();
+const mockSetWorkflowMetadata = vi.fn();
+const mockSaveToFile = vi.fn();
 const mockUseWorkflowStore = vi.fn();
 
 vi.mock("@/store/workflowStore", () => ({
@@ -83,7 +86,28 @@ vi.mock("@/components/GroupsOverlay", () => ({
 }));
 
 vi.mock("@/components/workspace/Launchpad", () => ({
-  Launchpad: () => <main aria-label="Current launchpad" data-testid="launchpad" />,
+  Launchpad: ({ onNewCanvas }: { onNewCanvas: () => void }) => (
+    <main aria-label="Current launchpad" data-testid="launchpad">
+      <button type="button" onClick={onNewCanvas}>New canvas</button>
+    </main>
+  ),
+}));
+
+vi.mock("@/components/ProjectSetupModal", () => ({
+  ProjectSetupModal: ({
+    isOpen,
+    onSave,
+  }: {
+    isOpen: boolean;
+    onSave: (id: string, name: string, directoryPath: string) => boolean | Promise<boolean>;
+  }) => isOpen ? (
+    <button
+      type="button"
+      onClick={() => void onSave("workflow-1", "New Project", "/tmp/New Project")}
+    >
+      Create project
+    </button>
+  ) : null,
 }));
 
 vi.mock("@/utils/gridSplitter", () => ({
@@ -137,6 +161,8 @@ const createDefaultState = (overrides = {}) => ({
   isModalOpen: false,
   showQuickstart: false,
   setShowQuickstart: mockSetShowQuickstart,
+  clearWorkflow: mockClearWorkflow,
+  saveToFile: mockSaveToFile,
   copySelectedNodes: mockCopySelectedNodes,
   pasteNodes: mockPasteNodes,
   clearClipboard: mockClearClipboard,
@@ -153,7 +179,7 @@ const createDefaultState = (overrides = {}) => ({
   skippedNodeIds: new Set<string>(),
   captureSnapshot: vi.fn(),
   applyEditOperations: vi.fn(() => ({ applied: 0, skipped: [] })),
-  setWorkflowMetadata: vi.fn(),
+  setWorkflowMetadata: mockSetWorkflowMetadata,
   ...overrides,
 });
 
@@ -300,6 +326,25 @@ describe("WorkflowCanvas", () => {
   });
 
   describe("Launchpad", () => {
+    it("persists the initial empty workflow before opening a new canvas", async () => {
+      mockSaveToFile.mockResolvedValue(true);
+      mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
+
+      render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
+
+      fireEvent.click(screen.getByRole("button", { name: "New canvas" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create project" }));
+
+      await waitFor(() => {
+        expect(mockSetWorkflowMetadata).toHaveBeenCalledWith(
+          "workflow-1",
+          "New Project",
+          "/tmp/New Project",
+        );
+        expect(mockSaveToFile).toHaveBeenCalledTimes(1);
+      });
+    });
+
     it("shows the launchpad and makes the canvas inaccessible while quickstart is active", () => {
       mockUseWorkflowStore.mockImplementation((selector) => {
         return selector(createDefaultState({

@@ -353,6 +353,7 @@ export function WorkflowCanvas() {
   const captureSnapshot = useWorkflowStore((state) => state.captureSnapshot);
   const applyEditOperations = useWorkflowStore((state) => state.applyEditOperations);
   const setWorkflowMetadata = useWorkflowStore((state) => state.setWorkflowMetadata);
+  const saveToFile = useWorkflowStore((state) => state.saveToFile);
   const setShortcutsDialogOpen = useWorkflowStore((state) => state.setShortcutsDialogOpen);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const clearWorkflow = useWorkflowStore((state) => state.clearWorkflow);
@@ -2135,10 +2136,13 @@ export function WorkflowCanvas() {
         <ProjectSetupModal
           isOpen={showNewProjectSetup}
           mode="new"
-          onSave={(id, name, directoryPath) => {
+          onSave={async (id, name, directoryPath) => {
             setWorkflowMetadata(id, name, directoryPath);
-            setShowNewProjectSetup(false);
-            return true;
+            const saved = await saveToFile();
+            if (saved) {
+              setShowNewProjectSetup(false);
+            }
+            return saved;
           }}
           onClose={() => {
             setShowNewProjectSetup(false);
