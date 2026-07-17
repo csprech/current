@@ -17,6 +17,7 @@ import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
 import { InlinePromptField } from "./InlinePromptField";
 import { VariantCountPicker } from "./VariantCountPicker";
+import { useMediaViewerStore } from "@/store/mediaViewerStore";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
@@ -702,6 +703,8 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
               src={adaptiveOutputImage ?? undefined}
               alt="Generated"
               className="w-full h-full object-cover"
+              onDoubleClick={() => useMediaViewerStore.getState().open(id)}
+              title="Double-click to open the viewer"
             />
             {nodeData.__usedFallback && (
               <div
@@ -773,8 +776,21 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                 </svg>
               </div>
             )}
-            {/* Download + Clear buttons */}
+            {/* Viewer + Download + Clear buttons */}
             <div className="absolute top-1 right-1 flex items-center gap-0.5">
+              <button
+                onClick={() => useMediaViewerStore.getState().open(id)}
+                aria-label="Open media viewer"
+                className="current-media-action current-media-action--overlay"
+                title="Open media viewer (F)"
+              >
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <polyline points="15 3 21 3 21 9" />
+                  <polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+              </button>
               <button
                 onClick={() => downloadMedia(nodeData.outputImage!, "image").catch(() => {})}
                 aria-label="Download image"

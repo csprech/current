@@ -963,6 +963,63 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-node-header__menu-danger:hover,
 .current-node-header__menu-danger:focus-visible { background: color-mix(in srgb, var(--current-danger) 9%, var(--current-paper)); }
 
+/* Fullscreen media viewer (history grid + metadata). */
+.current-viewer__backdrop {
+  background: color-mix(in srgb, var(--current-paper) 78%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+.current-viewer__stage {
+  position: relative;
+  background: color-mix(in srgb, var(--current-surface-elevated) 60%, transparent);
+  border: 1px solid var(--current-border);
+}
+.current-viewer__rail {
+  position: relative;
+  background: var(--current-surface-elevated);
+  border: 1px solid var(--current-border);
+  box-shadow: 0 10px 32px -8px var(--current-shadow-strong);
+}
+.current-viewer__action {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--current-border);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--current-text-primary);
+  font-size: 0.72rem;
+  font-weight: 550;
+  text-align: center;
+  cursor: pointer;
+}
+.current-viewer__action:hover:not(:disabled) { background: color-mix(in srgb, var(--current-text-primary) 8%, transparent); }
+.current-viewer__action:disabled { opacity: 0.45; cursor: default; }
+.current-viewer__action--primary:not(:disabled) {
+  border-color: var(--current-blue);
+  background: color-mix(in srgb, var(--current-blue) 18%, transparent);
+}
+.current-viewer__thumb {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 1px solid var(--current-border);
+  border-radius: 0.4rem;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--current-text-primary) 5%, transparent);
+  cursor: pointer;
+}
+.current-viewer__thumb--selected { border-color: var(--current-blue); box-shadow: 0 0 0 1px var(--current-blue); }
+.current-viewer__thumb-placeholder { width: 100%; height: 100%; }
+.current-viewer__thumb-video {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  width: 100%;
+  height: 100%;
+  color: var(--current-text-primary);
+}
+
 /* Variations-per-run segmented control on generation nodes. */
 .current-variant-option {
   min-width: 1.55rem;

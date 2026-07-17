@@ -59,6 +59,8 @@ import { GroupBackgroundsPortal, GroupControlsOverlay } from "./GroupsOverlay";
 import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable, WorkflowNode, NodeGroup } from "@/types";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { FloatingNodeHeader } from "./nodes/FloatingNodeHeader";
+import { NodeMediaViewerModal } from "./modals/NodeMediaViewerModal";
+import { useMediaViewerStore } from "@/store/mediaViewerStore";
 import { getMinimapColor } from "./nodes/nodePresentation";
 import { detectAndSplitGrid } from "@/utils/gridSplitter";
 import { logger } from "@/utils/logger";
@@ -1737,6 +1739,17 @@ export function WorkflowCanvas() {
       }
 
       const selectedNodes = nodes.filter((node) => node.selected);
+
+      // F opens the fullscreen media viewer for a single selected media node
+      if ((event.key === "f" || event.key === "F") && selectedNodes.length === 1) {
+        const target = selectedNodes[0];
+        if (target.type === "nanoBanana" || target.type === "generateVideo") {
+          event.preventDefault();
+          useMediaViewerStore.getState().open(target.id);
+          return;
+        }
+      }
+
       if (selectedNodes.length < 2) return;
 
       const STACK_GAP = 20;
@@ -2390,6 +2403,9 @@ export function WorkflowCanvas() {
 
       {/* Edge toolbar */}
       <EdgeToolbar />
+
+      {/* Fullscreen media viewer (F on a selected media node) */}
+      <NodeMediaViewerModal />
 
       <WorkspacePanelHost assistantProps={{
         isOpen: true,

@@ -9,6 +9,7 @@ import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { copyImageToClipboard, getNodeImageSource } from "@/utils/clipboardMedia";
 import { estimateNodeRunCost, formatCost } from "@/utils/costCalculator";
 import { getVariantCount } from "@/store/execution/variantExecution";
+import { useMediaViewerStore } from "@/store/mediaViewerStore";
 import { useToast } from "@/components/Toast";
 import { ProviderBadge } from "./ProviderBadge";
 import { getNodeRole, type NodeRole } from "./nodePresentation";
@@ -736,6 +737,18 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                     }}
                   >
                     Copy Image
+                  </button>
+                )}
+                {(type === "nanoBanana" || type === "generateVideo") && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      closeMoreMenu();
+                      useMediaViewerStore.getState().open(id);
+                    }}
+                  >
+                    Open in Viewer
                   </button>
                 )}
                 <div className="current-node-header__menu-separator" role="separator" />
