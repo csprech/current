@@ -142,6 +142,30 @@ describe("applyEditOperations", () => {
       expect(added.id).toMatch(/^prompt-ai-\d+-0$/);
     });
 
+    it("creates nodes for the expanded catalog types with sensible defaults", () => {
+      const ops: EditOperation[] = [
+        { type: "addNode", nodeType: "videoTrim" },
+        { type: "addNode", nodeType: "removeBackground" },
+        { type: "addNode", nodeType: "conditionalSwitch" },
+        { type: "addNode", nodeType: "outputGallery" },
+      ];
+
+      const result = applyEditOperations(ops, { nodes: [], edges: [] });
+
+      expect(result.applied).toBe(4);
+      expect(result.skipped).toHaveLength(0);
+      expect(result.nodes.map((n) => n.type)).toEqual([
+        "videoTrim",
+        "removeBackground",
+        "conditionalSwitch",
+        "outputGallery",
+      ]);
+      // Each node received default data from the store's factory
+      for (const node of result.nodes) {
+        expect(node.data).toBeTruthy();
+      }
+    });
+
     it("uses provided position or defaults to {x:200, y:200}", () => {
       const opsWithPos: EditOperation[] = [
         { type: "addNode", nodeType: "output", position: { x: 500, y: 600 } },

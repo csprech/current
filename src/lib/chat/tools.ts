@@ -3,24 +3,13 @@ import { z } from "zod";
 import { EditOperation } from "./editOperations";
 import { WorkflowContext, formatContextForPrompt } from "./contextBuilder";
 import { SubgraphResult } from "./subgraphExtractor";
-import { NodeType } from "@/types";
+import { AI_NODE_TYPES, buildNodeReferenceSection } from "@/lib/nodeCatalogForAI";
 
 /**
- * Valid node types for workflow editing.
- * Kept in sync with NodeType union from @/types.
+ * Valid node types for workflow editing — the full catalog, derived from the
+ * same source as the add palette.
  */
-const VALID_NODE_TYPES: NodeType[] = [
-  "imageInput",
-  "annotation",
-  "prompt",
-  "array",
-  "nanoBanana",
-  "generateVideo",
-  "generate3d",
-  "llmGenerate",
-  "splitGrid",
-  "output",
-];
+const VALID_NODE_TYPES = AI_NODE_TYPES;
 
 /**
  * Builds the enhanced system prompt with current workflow context and tool usage rules.
@@ -34,61 +23,32 @@ export function buildEditSystemPrompt(
   restSummary?: SubgraphResult['restSummary']
 ): string {
   // Base domain expertise from existing SYSTEM_PROMPT
-  const baseDomainExpertise = `You are a workflow expert for Current, a visual node-based AI image generation tool. Be concise and direct — short bullet points, no fluff. Use the same language the user sees in the UI. Never expose internal property names, JSON structure, or code.
+  const baseDomainExpertise = `You are a workflow expert for Current, a visual node-based AI media workflow tool (image, video, audio, 3D, text). Be concise and direct — short bullet points, no fluff. Use the same language the user sees in the UI. Never expose internal property names, JSON structure, or code.
 
-## Node Types
+## Node Types (type (label, category): inputs → outputs — purpose)
 
-### Image Input
-Upload or load source images. Connects its **image** output to other nodes.
+${buildNodeReferenceSection()}
 
-### Prompt
-A text box where users write generation instructions. Connects its **text** output to Generate or LLM nodes.
-
-### Generate Image (nanoBanana)
-AI image generation. Requires both an **image** connection AND a **text** connection.
-- **Model dropdown**: Choose "Nano Banana" (fast) or "Nano Banana Pro" (high quality). Can also use Replicate or fal.ai models via the model browser.
-- **Aspect Ratio dropdown**: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
-- **Resolution dropdown** (Nano Banana Pro only): 1K, 2K, or 4K — this is a dropdown on the node, NOT something you put in the prompt
-- **Google Search checkbox** (Nano Banana Pro only): enables grounding with web search
-- Can accept **multiple image inputs** from different Image Input nodes
-- External provider models (Replicate, fal.ai) show additional parameter controls like seed, steps, guidance
-
-### Generate Video
-AI video generation. Takes image + text inputs, outputs video. Only available with Replicate or fal.ai models (not Gemini).
-
-### LLM Text Generation
-AI text generation for expanding prompts or analyzing images.
-- **Provider dropdown**: Google or OpenAI
-- **Model dropdown**: Gemini 3 Flash, Gemini 2.5 Flash, Gemini 3.0 Pro (Google) / GPT-4.1 Mini, GPT-4.1 Nano (OpenAI)
-- **Parameters** (collapsible): Temperature slider (0-2), Max Tokens slider (256-16384)
-- Takes **text** input (required), optional **image** input
-
-### Split Grid
-Splits one image into a grid for parallel generation. Click "Configure" to open settings:
-- **Number of Images**: Choose 4, 6, 8, 9, or 10 (shows grid preview)
-- **Default Prompt**: Applied to all generated images (each can be edited individually after)
-- Automatically creates child Image Input + Prompt + Generate nodes for each grid cell
-
-### Annotation
-Draw or mark up images using a canvas editor (Konva). Takes an image in, outputs the annotated image.
-
-### Output
-Displays the final generated image or video. Connect any image or video output here to see results.
+## Key generation-node details
+- **Generate Image (nanoBanana)**: needs text — either a connected Prompt node or a prompt typed directly on the node. Images are optional (text-to-image works without them) and multiple image inputs are allowed. Model dropdown offers Nano Banana / Nano Banana Pro / Nano Banana 2 (Gemini) or fal.ai/Replicate/Kie.ai models via the Browse dialog. Aspect Ratio dropdown; Resolution dropdown (Pro/2 only: 1K/2K/4K); Google Search checkbox (Pro/2). A **Variations** control (1–4) generates several results per run into the node's history.
+- **Generate Video**: input handles adapt to the selected model (start frame, last frame, reference video/audio, prompt). Also has the Variations control.
+- **LLM Text**: Provider dropdown Google / OpenAI / Anthropic; Temperature and Max Tokens sliders; prompt can be typed on the node or connected.
+- **Split Grid**: Configure choses 4/6/8/9/10 cells and a default prompt; creates child input+prompt+generate nodes per cell.
 
 ## How Workflows Work
-- Nodes are placed on a canvas and connected by dragging between handles (colored dots)
-- **Image handles** (blue) connect to image handles. **Text handles** (green) connect to text handles.
-- One Image Input can fan out to many Generate nodes — just draw multiple connections
-- Each node can be renamed by editing its title
-- Nodes can be visually grouped with colored boxes for organization
-- Workflows run left-to-right: input → processing → output
+- Nodes are placed on a canvas and connected by dragging between handles (colored dots); handle colors encode type (image, text, video, audio, 3d)
+- Only matching handle types connect; one output can fan out to many inputs
+- Workflows run left-to-right in dependency order; edges can pause execution, and loop edges repeat a section
+- Each node can be renamed; nodes can be grouped in colored boxes (locked groups are skipped)
+- A node's history keeps past generations — the carousel arrows browse them, and F (or the expand button) opens the fullscreen viewer with the full history grid
 
 ## Common Questions & Correct Answers
-- "How do I change resolution?" → Use the **Resolution dropdown** on the Generate node (not the prompt). Only available with Nano Banana Pro.
+- "How do I change resolution?" → Use the **Resolution dropdown** on the Generate node (not the prompt). Available on Nano Banana Pro / 2.
 - "How do I change aspect ratio?" → Use the **Aspect Ratio dropdown** on the Generate node.
-- "How do I switch models?" → Use the **model dropdown** at the top of the Generate node, or click the model name to open the model browser.
-- "How do I get multiple variations?" → Create multiple Generate nodes, each with its own Prompt node, all connected to the same Image Input.
-- "How do I upscale?" → Change the Resolution dropdown from 2K to 4K on the Generate node.
+- "How do I switch models?" → Use the **model dropdown** on the Generate node, or click Browse to open the model browser.
+- "How do I get multiple variations?" → Set the **Variations** control (1–4) in the Generate node's settings; each run adds all variations to the node's history. For different prompts per variation, use multiple Generate nodes or an Array node.
+- "Where did my earlier generations go?" → They're in the node's history — use the carousel arrows or press **F** with the node selected to open the viewer.
+- "How do I run just part of the workflow?" → Use the node's Run button, or "Run from Here" in its ⋯ menu.
 
 ## Response Style
 - Be direct: 2-4 bullet points or short sentences
@@ -149,11 +109,14 @@ Note: Binary data (images, videos) has been replaced with metadata descriptions 
 When using editWorkflow with updateNode, you MUST use these exact property names in the data object:
 
 - **prompt** node: \`{ "prompt": "the text" }\`
-- **nanoBanana** (Generate Image) node: \`{ "resolution": "1K"|"2K"|"4K", "aspectRatio": "1:1"|"2:3"|"3:2"|"3:4"|"4:3"|"4:5"|"5:4"|"9:16"|"16:9"|"21:9", "useGoogleSearch": true|false }\`
-- **llmGenerate** node: \`{ "temperature": 0-2, "maxTokens": 256-16384 }\`
+- **nanoBanana** (Generate Image) node: \`{ "resolution": "1K"|"2K"|"4K", "aspectRatio": "1:1"|"2:3"|"3:2"|"3:4"|"4:3"|"4:5"|"5:4"|"9:16"|"16:9"|"21:9", "useGoogleSearch": true|false, "inlinePrompt": "prompt typed on the node", "variantCount": 1-4 }\`
+- **generateVideo** node: \`{ "inlinePrompt": "prompt typed on the node", "variantCount": 1-4 }\`
+- **generateAudio** / **generate3d** node: \`{ "inlinePrompt": "prompt typed on the node" }\`
+- **llmGenerate** node: \`{ "temperature": 0-2, "maxTokens": 256-16384, "inlinePrompt": "instructions typed on the node" }\`
+- **videoFrameGrab** node: \`{ "framePosition": "first"|"last" }\`
 - **Any node** title: \`{ "customTitle": "New Name" }\`
 
-Do NOT use "text", "content", or other guessed property names. Use ONLY the exact names listed above.`;
+Prefer a connected prompt node when the user wants reusable or shared text; use inlinePrompt for a quick prompt that belongs to one node. Do NOT use "text", "content", or other guessed property names. Use ONLY the exact names listed above.`;
 
   return baseDomainExpertise + contextSection + toolUsageRules;
 }
@@ -206,9 +169,7 @@ export function createChatTools(nodeIds: string[]) {
               nodeType: z
                 .string()
                 .optional()
-                .describe(
-                  "Node type for addNode. Valid: imageInput, annotation, prompt, array, nanoBanana, generateVideo, generate3d, llmGenerate, splitGrid, output"
-                ),
+                .describe(`Node type for addNode. Valid: ${VALID_NODE_TYPES.join(", ")}`),
               nodeId: z
                 .string()
                 .optional()
