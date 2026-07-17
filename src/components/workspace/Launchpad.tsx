@@ -97,7 +97,7 @@ export function Launchpad({ onNewCanvas, onWorkflowGenerated }: LaunchpadProps) 
       {currentView === "initial" ? (
         <div className="current-launchpad__home">
           <header className="current-launchpad__intro">
-            <CurrentMark showWordmark wordmarkTone="color" />
+            <CurrentMark />
             <p className="current-launchpad__eyebrow">Creative workflows in motion</p>
             <h1>Where will your next idea flow?</h1>
             <p className="current-launchpad__description">

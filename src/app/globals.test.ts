@@ -54,6 +54,17 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-inline-notice--info\s*\{[\s\S]*?var\(--current-status-info\)/);
   });
 
+  it("keeps media overlay actions legible instead of inheriting the adaptive paper color", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const overlayAction = css.match(/\.current-media-action--overlay\s*\{([^}]*)\}/)?.[1];
+
+    expect(overlayAction).toContain("color: var(--current-media-overlay-foreground)");
+    expect(overlayAction).toContain("var(--current-media-overlay)");
+    expect(overlayAction).toContain("var(--current-media-overlay-border)");
+    expect(overlayAction).toContain("opacity: 1");
+    expect(overlayAction).not.toContain("var(--current-paper)");
+  });
+
   it("uses adaptive semantic roles across the core workspace", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const commandBar = css.match(/\.current-command-bar\s*\{([^}]*)\}/)?.[1];
@@ -86,6 +97,18 @@ describe("Current Add Palette brand colors", () => {
     expect(inspectorField).toContain("background: var(--current-surface-control)");
     expect(inspectorRun).toContain("color: var(--current-action-foreground)");
     expect(inspectorRun).toContain("background: var(--current-action)");
+  });
+
+  it("centers the Current wordmark within the full command-bar height", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const identity = css.match(/\.current-command-bar__identity\s*\{([^}]*)\}/)?.[1];
+    const welcome = css.match(/\.current-command-bar__welcome\s*\{([^}]*)\}/)?.[1];
+
+    expect(identity).toContain("height: 100%");
+    expect(welcome).toContain("display: flex");
+    expect(welcome).toContain("height: 100%");
+    expect(welcome).toContain("align-items: center");
+    expect(welcome).toContain("line-height: 0");
   });
 
   it("uses adaptive semantic roles across secondary product surfaces", () => {
@@ -130,6 +153,22 @@ describe("Current Add Palette brand colors", () => {
     expect(runOptions).toContain("background: var(--current-action)");
     expect(runValidation).toContain("color: var(--current-status-danger)");
     expect(runValidation).toContain("var(--current-surface-elevated)");
+  });
+
+  it("gives add-palette category labels comfortable pill padding", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/\.current-add-palette__categories button\s*\{[^}]*padding:\s*8px 14px/);
+  });
+
+  it("bounds launchpad detail views so template results own vertical scrolling", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const launchpadDetail = css.match(/\.current-launchpad__detail\s*\{([^}]*)\}/)?.[1];
+    const templateResults = css.match(/\.current-template-explorer__results\s*\{([^}]*)\}/)?.[1];
+
+    expect(launchpadDetail).toMatch(/(?:^|;)\s*height:\s*calc\(100% - 96px\)/);
+    expect(templateResults).toContain("min-height: 0");
+    expect(templateResults).toContain("overflow-y: auto");
   });
 
   it("keeps adaptive chrome free of fixed light-only and dark-only color bypasses", () => {
@@ -192,6 +231,8 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/current-button--secondary\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
     expect(css).toMatch(/current-button--secondary:hover:not\(:disabled\)\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
     expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#172130/);
+    expect(css).toMatch(/\.current-canvas-shell\s*\{[^}]*background:\s*var\(--current-canvas\)/);
+    expect(css).toMatch(/\.current-canvas-flow\s*\{[^}]*--xy-background-color:\s*var\(--current-canvas\)/);
     expect(css).toMatch(/\.react-flow\s*\{[\s\S]*?var\(--current-canvas\)/);
     expect(css).toMatch(/\.react-flow__controls\s*\{[\s\S]*?background:\s*var\(--current-surface-elevated\)/);
     expect(css).toMatch(/\.react-flow__controls-button:hover\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
@@ -280,9 +321,11 @@ describe("Current Add Palette brand colors", () => {
   it("adapts the supplied Current assets to the active appearance", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/\.current-brand-asset--white\s*\{[\s\S]*?display:\s*none/);
-    expect(css).toMatch(/\.current-brand-wordmark--color \.current-brand-asset--black\s*\{[\s\S]*?display:\s*none/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--icon-color,[\s\S]*?display:\s*none/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--white\s*\{[\s\S]*?display:\s*block/);
+    expect(css).toMatch(/\.current-brand-asset--wordmark-white\s*\{[\s\S]*?display:\s*none/);
+    expect(css).toMatch(/\.current-brand-asset--wordmark-white\s*\{[\s\S]*?height:\s*15px/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--wordmark-black\s*\{[\s\S]*?display:\s*none/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--wordmark-white\s*\{[\s\S]*?display:\s*block/);
+    expect(css).not.toContain("current-brand-asset--icon-color");
+    expect(css).not.toContain("current-brand-asset--wordmark-color");
   });
 });
