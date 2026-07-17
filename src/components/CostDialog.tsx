@@ -24,6 +24,7 @@ function ProviderIcon({ provider }: { provider: ProviderType }) {
     anthropic: "A",
     kie: "K",
     wavespeed: "W",
+    ollama: "L",
   };
 
   return (
@@ -45,6 +46,7 @@ function getProviderDisplayName(provider: ProviderType): string {
     anthropic: "Anthropic",
     kie: "Kie.ai",
     wavespeed: "WaveSpeed",
+    ollama: "Ollama",
   };
   return names[provider] || provider;
 }

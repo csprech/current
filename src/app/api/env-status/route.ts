@@ -8,6 +8,7 @@ export interface EnvStatusResponse {
   fal: boolean;
   kie: boolean;
   wavespeed: boolean;
+  ollama: boolean;
 }
 
 export async function GET() {
@@ -20,6 +21,8 @@ export async function GET() {
     fal: !!process.env.FAL_API_KEY,
     kie: !!process.env.KIE_API_KEY,
     wavespeed: !!process.env.WAVESPEED_API_KEY,
+    // Ollama needs no key; this reports an explicit OLLAMA_URL override
+    ollama: !!process.env.OLLAMA_URL,
   };
 
   return NextResponse.json(status);

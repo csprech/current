@@ -18,6 +18,7 @@ const PROVIDER_HEADER_MAP: Record<ProviderType, string> = {
   wavespeed: "X-WaveSpeed-Key",
   openai: "X-OpenAI-API-Key",
   anthropic: "X-Anthropic-API-Key",
+  ollama: "", // local daemon — configured by URL (X-Ollama-URL), not a key
 };
 
 /**
@@ -70,6 +71,11 @@ export function buildLlmHeaders(
     const anthropicConfig = providerSettings.providers.anthropic;
     if (anthropicConfig?.apiKey) {
       headers["X-Anthropic-API-Key"] = anthropicConfig.apiKey;
+    }
+  } else if (llmProvider === "ollama") {
+    const ollamaConfig = providerSettings.providers.ollama;
+    if (ollamaConfig?.baseUrl) {
+      headers["X-Ollama-URL"] = ollamaConfig.baseUrl;
     }
   }
 

@@ -29,6 +29,13 @@ const ANTHROPIC_MODEL_MAP: Record<string, string> = {
   "claude-opus-4.6": "claude-opus-4-6",
 };
 
+/** Default Ollama daemon address; override via X-Ollama-URL header or OLLAMA_URL env. */
+export const DEFAULT_OLLAMA_URL = "http://localhost:11434";
+
+export function resolveOllamaBaseUrl(headerUrl?: string | null): string {
+  return (headerUrl || process.env.OLLAMA_URL || DEFAULT_OLLAMA_URL).replace(/\/+$/, "");
+}
+
 async function generateWithGoogle(
   prompt: string,
   model: LLMModelType,
@@ -289,6 +296,90 @@ async function generateWithAnthropic(
   return text;
 }
 
+async function generateWithOllama(
+  prompt: string,
+  model: LLMModelType,
+  temperature: number,
+  maxTokens: number,
+  images?: string[],
+  requestId?: string,
+  baseUrlOverride?: string | null
+): Promise<string> {
+  const baseUrl = resolveOllamaBaseUrl(baseUrlOverride);
+
+  logger.info('api.llm', 'Calling local Ollama daemon', {
+    requestId,
+    baseUrl,
+    model,
+    temperature,
+    maxTokens,
+    imageCount: images?.length || 0,
+    promptLength: prompt.length,
+  });
+
+  // Ollama takes raw base64 (no data-URL prefix) on the message's images field
+  const imageData = (images ?? []).map((img) => {
+    const matches = img.match(/^data:.+?;base64,(.+)$/);
+    return matches ? matches[1] : img;
+  });
+
+  const startTime = Date.now();
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+            ...(imageData.length > 0 ? { images: imageData } : {}),
+          },
+        ],
+        stream: false,
+        options: {
+          temperature,
+          num_predict: maxTokens,
+        },
+      }),
+    });
+  } catch (fetchError) {
+    logger.error('api.error', 'Could not reach Ollama daemon', { requestId, baseUrl }, fetchError instanceof Error ? fetchError : undefined);
+    throw new Error(
+      `Could not reach Ollama at ${baseUrl}. Start it with \`ollama serve\`, or set the URL in Settings.`
+    );
+  }
+  const duration = Date.now() - startTime;
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({} as { error?: string }));
+    logger.error('api.error', 'Ollama request failed', {
+      requestId,
+      status: response.status,
+      error: error.error,
+    });
+    throw new Error(error.error || `Ollama error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const text = data.message?.content;
+
+  if (!text) {
+    logger.error('api.error', 'No text in Ollama response', { requestId });
+    throw new Error("No text in Ollama response");
+  }
+
+  logger.info('api.llm', 'Ollama response received', {
+    requestId,
+    duration,
+    responseLength: text.length,
+  });
+
+  return text;
+}
+
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
 
@@ -297,6 +388,7 @@ export async function POST(request: NextRequest) {
     const geminiApiKey = request.headers.get("X-Gemini-API-Key");
     const openaiApiKey = request.headers.get("X-OpenAI-API-Key");
     const anthropicApiKey = request.headers.get("X-Anthropic-API-Key");
+    const ollamaUrl = request.headers.get("X-Ollama-URL");
 
     const body: LLMGenerateRequest = await request.json();
     const {
@@ -335,6 +427,8 @@ export async function POST(request: NextRequest) {
       text = await generateWithOpenAI(prompt, model, temperature, maxTokens, images, requestId, openaiApiKey);
     } else if (provider === "anthropic") {
       text = await generateWithAnthropic(prompt, model, temperature, maxTokens, images, requestId, anthropicApiKey);
+    } else if (provider === "ollama") {
+      text = await generateWithOllama(prompt, model, temperature, maxTokens, images, requestId, ollamaUrl);
     } else {
       logger.warn('api.llm', 'Unknown provider requested', { requestId, provider });
       return NextResponse.json<LLMGenerateResponse>(

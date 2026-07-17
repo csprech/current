@@ -2,18 +2,22 @@ import { describe, it, expect } from "vitest";
 import { buildGenerateHeaders, buildLlmHeaders } from "../buildApiHeaders";
 import type { ProviderSettings } from "@/types";
 
-function makeSettings(overrides: Partial<Record<string, { apiKey: string | null }>> = {}): ProviderSettings {
-  const defaults: Record<string, { id: string; name: string; enabled: boolean; apiKey: string | null }> = {
+function makeSettings(
+  overrides: Partial<Record<string, { apiKey?: string | null; baseUrl?: string | null }>> = {}
+): ProviderSettings {
+  const defaults: Record<string, { id: string; name: string; enabled: boolean; apiKey: string | null; baseUrl?: string | null }> = {
     gemini: { id: "gemini", name: "Gemini", enabled: true, apiKey: null },
     replicate: { id: "replicate", name: "Replicate", enabled: true, apiKey: null },
     fal: { id: "fal", name: "fal.ai", enabled: true, apiKey: null },
     kie: { id: "kie", name: "Kie.ai", enabled: true, apiKey: null },
     wavespeed: { id: "wavespeed", name: "WaveSpeed", enabled: true, apiKey: null },
     openai: { id: "openai", name: "OpenAI", enabled: true, apiKey: null },
+    ollama: { id: "ollama", name: "Ollama (local)", enabled: true, apiKey: null, baseUrl: null },
   };
   for (const [key, val] of Object.entries(overrides)) {
     if (defaults[key]) {
-      defaults[key].apiKey = val.apiKey;
+      if (val.apiKey !== undefined) defaults[key].apiKey = val.apiKey;
+      if (val.baseUrl !== undefined) defaults[key].baseUrl = val.baseUrl;
     }
   }
   return { providers: defaults } as unknown as ProviderSettings;
@@ -92,5 +96,23 @@ describe("buildLlmHeaders", () => {
   it("should handle unknown LLM provider gracefully", () => {
     const headers = buildLlmHeaders("unknown", makeSettings());
     expect(headers).toEqual({ "Content-Type": "application/json" });
+  });
+
+  it("should add X-Ollama-URL for ollama provider when a base URL is set", () => {
+    const settings = makeSettings({ ollama: { baseUrl: "http://192.168.1.20:11434" } });
+    const headers = buildLlmHeaders("ollama", settings);
+    expect(headers["X-Ollama-URL"]).toBe("http://192.168.1.20:11434");
+  });
+
+  it("should not add X-Ollama-URL when no base URL is configured", () => {
+    const headers = buildLlmHeaders("ollama", makeSettings());
+    expect(headers).toEqual({ "Content-Type": "application/json" });
+  });
+
+  it("should never send an API key header for ollama", () => {
+    const settings = makeSettings({ ollama: { baseUrl: "http://localhost:11434" } });
+    const headers = buildLlmHeaders("ollama", settings);
+    const keyHeaders = Object.keys(headers).filter((h) => h.toLowerCase().includes("key"));
+    expect(keyHeaders).toEqual([]);
   });
 });

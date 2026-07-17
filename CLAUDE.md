@@ -38,6 +38,7 @@ REPLICATE_API_KEY=...   # Replicate models
 FAL_API_KEY=...         # fal.ai models
 KIE_API_KEY=...         # Kie.ai models (Sora, Veo, Kling, ...)
 WAVESPEED_API_KEY=...   # WaveSpeed models
+OLLAMA_URL=...          # Local Ollama daemon (defaults to http://localhost:11434; no key needed)
 ```
 
 ## Architecture Overview
@@ -105,6 +106,7 @@ LLM models:
 - Google: `gemini-2.5-flash`, `gemini-3-flash-preview`, `gemini-3-pro-preview`
 - OpenAI: `gpt-4.1-mini`, `gpt-4.1-nano`
 - Anthropic via provider settings
+- Ollama (local, free, no key): free-text model name; installed models are discovered from the daemon via `/api/ollama/models` (`GET {base}/api/tags`). The shared provider/model catalog lives in `src/lib/llmCatalog.ts` — LLM UI surfaces import it instead of hardcoding lists. Base URL precedence: `X-Ollama-URL` header → `OLLAMA_URL` env → `http://localhost:11434`. Ollama LLM runs cost $0 in estimation.
 
 Additional providers (Replicate, fal.ai, Kie.ai, WaveSpeed) expose their catalogs through `/api/models`; the model browser and MCP `list_models` tool read from it.
 

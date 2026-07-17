@@ -11,30 +11,7 @@ import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { CurrentButton, CurrentSheet, InlineNotice } from "@/components/current";
 
-// LLM provider and model options (mirrored from LLMGenerateNode)
-const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
-  { value: "google", label: "Google" },
-  { value: "openai", label: "OpenAI" },
-  { value: "anthropic", label: "Anthropic" },
-];
-
-const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
-  google: [
-    { value: "gemini-3-flash-preview", label: "Gemini 3 Flash" },
-    { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-    { value: "gemini-3-pro-preview", label: "Gemini 3.0 Pro" },
-    { value: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro" },
-  ],
-  openai: [
-    { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
-    { value: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
-  ],
-  anthropic: [
-    { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
-    { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
-    { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
-  ],
-};
+import { LLM_PROVIDERS, LLM_MODELS, getDefaultModelForProvider } from "@/lib/llmCatalog";
 
 // Provider icons
 const GeminiIcon = () => (
@@ -139,6 +116,7 @@ export function ProjectSetupModal({
     setUseExternalImageStorage,
     providerSettings,
     updateProviderApiKey,
+    updateProviderBaseUrl,
     toggleProvider,
     maxConcurrentCalls,
     setMaxConcurrentCalls,
@@ -170,6 +148,7 @@ export function ProjectSetupModal({
     fal: false,
     kie: false,
     wavespeed: false,
+    ollama: false,
   });
   const [overrideActive, setOverrideActive] = useState<Record<ProviderType, boolean>>({
     gemini: false,
@@ -179,6 +158,7 @@ export function ProjectSetupModal({
     fal: false,
     kie: false,
     wavespeed: false,
+    ollama: false,
   });
   const [envStatus, setEnvStatus] = useState<EnvStatusResponse | null>(null);
 
@@ -222,7 +202,7 @@ export function ProjectSetupModal({
 
       // Sync local providers state
       setLocalProviders(providerSettings);
-      setShowApiKey({ gemini: false, openai: false, anthropic: false, replicate: false, fal: false, kie: false, wavespeed: false });
+      setShowApiKey({ gemini: false, openai: false, anthropic: false, replicate: false, fal: false, kie: false, wavespeed: false, ollama: false });
       // Initialize override as active if user already has a key set
       setOverrideActive({
         gemini: !!providerSettings.providers.gemini?.apiKey,
@@ -232,6 +212,7 @@ export function ProjectSetupModal({
         fal: !!providerSettings.providers.fal?.apiKey,
         kie: !!providerSettings.providers.kie?.apiKey,
         wavespeed: !!providerSettings.providers.wavespeed?.apiKey,
+        ollama: false,
       });
       setError(null);
 
@@ -340,7 +321,7 @@ export function ProjectSetupModal({
 
   const handleSaveProviders = () => {
     // Save each provider's settings
-    const providerIds: ProviderType[] = ["gemini", "openai", "anthropic", "replicate", "fal", "kie", "wavespeed"];
+    const providerIds: ProviderType[] = ["gemini", "openai", "anthropic", "replicate", "fal", "kie", "wavespeed", "ollama"];
     for (const providerId of providerIds) {
       const local = localProviders.providers[providerId];
       const current = providerSettings.providers[providerId];
@@ -355,6 +336,11 @@ export function ProjectSetupModal({
       // Update API key if changed
       if (local.apiKey !== current.apiKey) {
         updateProviderApiKey(providerId, local.apiKey);
+      }
+
+      // Update base URL if changed (Ollama daemon address)
+      if ((local.baseUrl ?? null) !== (current.baseUrl ?? null)) {
+        updateProviderBaseUrl(providerId, local.baseUrl ?? null);
       }
     }
     onClose();
@@ -390,7 +376,7 @@ export function ProjectSetupModal({
 
   const updateLocalProvider = (
     providerId: ProviderType,
-    updates: { enabled?: boolean; apiKey?: string | null }
+    updates: { enabled?: boolean; apiKey?: string | null; baseUrl?: string | null }
   ) => {
     setLocalProviders((prev) => ({
       providers: {
@@ -874,6 +860,24 @@ export function ProjectSetupModal({
               </div>
             </div>
 
+            {/* Ollama Provider (local — base URL instead of API key) */}
+            <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-sm font-medium text-neutral-100">Ollama</span>
+                  <p className="text-xs text-neutral-400">Local models — free, private, no API key.</p>
+                </div>
+                <input
+                  type="text"
+                  value={localProviders.providers.ollama?.baseUrl || ""}
+                  onChange={(e) => updateLocalProvider("ollama", { baseUrl: e.target.value || null })}
+                  placeholder="http://localhost:11434"
+                  aria-label="Ollama base URL"
+                  className="w-48 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded-lg text-neutral-100 text-xs focus:outline-none focus:border-neutral-500"
+                />
+              </div>
+            </div>
+
             <p className="text-xs text-neutral-400 mt-2">
               Add API keys via <code className="px-1 py-0.5 bg-neutral-800 rounded">.env.local</code> for better security. Keys added here override .env and are stored in your browser.
             </p>
@@ -1007,7 +1011,7 @@ export function ProjectSetupModal({
                     value={localNodeDefaults.llm?.provider || "google"}
                     onChange={(e) => {
                       const newProvider = e.target.value as LLMProvider;
-                      const firstModelForProvider = LLM_MODELS[newProvider][0].value;
+                      const firstModelForProvider = getDefaultModelForProvider(newProvider);
                       const currentTemp = localNodeDefaults.llm?.temperature ?? 0.7;
                       setLocalNodeDefaults(prev => ({
                         ...prev,
@@ -1028,23 +1032,38 @@ export function ProjectSetupModal({
                   </select>
                 </div>
 
-                {/* Model dropdown */}
+                {/* Model dropdown (free text for Ollama's local models) */}
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-neutral-400 w-20">Model</label>
-                  <select
-                    value={localNodeDefaults.llm?.model || LLM_MODELS[localNodeDefaults.llm?.provider || "google"][0].value}
-                    onChange={(e) => {
-                      setLocalNodeDefaults(prev => ({
-                        ...prev,
-                        llm: { ...prev.llm, model: e.target.value as LLMModelType }
-                      }));
-                    }}
-                    className="flex-1 px-2 py-1 text-xs bg-neutral-800 border border-neutral-600 rounded text-neutral-100 focus:outline-none focus:border-neutral-500"
-                  >
-                    {LLM_MODELS[localNodeDefaults.llm?.provider || "google"].map((m) => (
-                      <option key={m.value} value={m.value}>{m.label}</option>
-                    ))}
-                  </select>
+                  {(localNodeDefaults.llm?.provider || "google") === "ollama" ? (
+                    <input
+                      type="text"
+                      value={localNodeDefaults.llm?.model || ""}
+                      placeholder="llama3.2"
+                      onChange={(e) => {
+                        setLocalNodeDefaults(prev => ({
+                          ...prev,
+                          llm: { ...prev.llm, model: e.target.value as LLMModelType }
+                        }));
+                      }}
+                      className="flex-1 px-2 py-1 text-xs bg-neutral-800 border border-neutral-600 rounded text-neutral-100 focus:outline-none focus:border-neutral-500"
+                    />
+                  ) : (
+                    <select
+                      value={localNodeDefaults.llm?.model || getDefaultModelForProvider(localNodeDefaults.llm?.provider || "google")}
+                      onChange={(e) => {
+                        setLocalNodeDefaults(prev => ({
+                          ...prev,
+                          llm: { ...prev.llm, model: e.target.value as LLMModelType }
+                        }));
+                      }}
+                      className="flex-1 px-2 py-1 text-xs bg-neutral-800 border border-neutral-600 rounded text-neutral-100 focus:outline-none focus:border-neutral-500"
+                    >
+                      {LLM_MODELS[localNodeDefaults.llm?.provider || "google"].map((m) => (
+                        <option key={m.value} value={m.value}>{m.label}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 {/* Temperature slider */}

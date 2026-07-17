@@ -5,8 +5,8 @@
  * providers and LLM providers.
  */
 
-// Provider Types for multi-provider support (image/video generation)
-export type ProviderType = "gemini" | "openai" | "anthropic" | "replicate" | "fal" | "kie" | "wavespeed";
+// Provider Types for multi-provider support (image/video generation + local LLMs)
+export type ProviderType = "gemini" | "openai" | "anthropic" | "replicate" | "fal" | "kie" | "wavespeed" | "ollama";
 
 // Model pricing info (stored when model is selected)
 export interface SelectedModelPricing {
@@ -29,16 +29,20 @@ export interface ProviderConfig {
   enabled: boolean;
   apiKey: string | null;
   apiKeyEnvVar?: string; // For providers using environment variables (e.g., Gemini)
+  /** For local providers (Ollama): daemon base URL instead of an API key. */
+  baseUrl?: string | null;
 }
 
 export interface ProviderSettings {
   providers: Record<ProviderType, ProviderConfig>;
 }
 
-// LLM Provider Options
-export type LLMProvider = "google" | "openai" | "anthropic";
+// LLM Provider Options ("ollama" runs against a local daemon — no key, no cloud)
+export type LLMProvider = "google" | "openai" | "anthropic" | "ollama";
 
-// LLM Model Options
+// LLM Model Options. Cloud models are a closed set; Ollama model names are
+// whatever the user has pulled locally, hence the open string escape hatch
+// ((string & {}) keeps literal autocompletion working).
 export type LLMModelType =
   | "gemini-2.5-flash"
   | "gemini-3-flash-preview"
@@ -48,7 +52,8 @@ export type LLMModelType =
   | "gpt-4.1-nano"
   | "claude-opus-4.6"
   | "claude-sonnet-4.5"
-  | "claude-haiku-4.5";
+  | "claude-haiku-4.5"
+  | (string & {});
 
 // Recently used models tracking
 export interface RecentModel {

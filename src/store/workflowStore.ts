@@ -374,6 +374,7 @@ interface WorkflowStore {
   // Provider settings actions
   updateProviderSettings: (settings: ProviderSettings) => void;
   updateProviderApiKey: (providerId: ProviderType, apiKey: string | null) => void;
+  updateProviderBaseUrl: (providerId: ProviderType, baseUrl: string | null) => void;
   toggleProvider: (providerId: ProviderType, enabled: boolean) => void;
 
   // Model search dialog state
@@ -2823,6 +2824,21 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
         [providerId]: {
           ...providerSettings.providers[providerId],
           apiKey,
+        },
+      },
+    };
+    set({ providerSettings: updated });
+    saveProviderSettings(updated);
+  },
+
+  updateProviderBaseUrl: (providerId: ProviderType, baseUrl: string | null) => {
+    const { providerSettings } = get();
+    const updated: ProviderSettings = {
+      providers: {
+        ...providerSettings.providers,
+        [providerId]: {
+          ...providerSettings.providers[providerId],
+          baseUrl,
         },
       },
     };

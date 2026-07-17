@@ -22,6 +22,7 @@ const FORWARDED_KEY_HEADERS = [
   "x-wavespeed-key",
   "x-openai-key",
   "x-anthropic-key",
+  "x-ollama-url", // not a key — the local daemon address for ollama LLM nodes
 ];
 
 interface RunRequestBody {

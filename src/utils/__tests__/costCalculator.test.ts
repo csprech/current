@@ -57,6 +57,16 @@ describe("estimateNodeRunCost", () => {
     });
     expect(estimateNodeRunCost(node)).toBeNull();
   });
+
+  it("returns 0 for llmGenerate on Ollama (local daemon, free)", () => {
+    const node = makeNode("1", "llmGenerate", { provider: "ollama", model: "llama3.2" });
+    expect(estimateNodeRunCost(node)).toBe(0);
+  });
+
+  it("still returns null for cloud llmGenerate providers", () => {
+    const node = makeNode("1", "llmGenerate", { provider: "google", model: "gemini-3-flash-preview" });
+    expect(estimateNodeRunCost(node)).toBeNull();
+  });
 });
 
 describe("calculatePredictedCost with carried model pricing", () => {
