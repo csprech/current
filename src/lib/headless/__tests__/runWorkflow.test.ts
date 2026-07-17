@@ -141,6 +141,30 @@ describe("runWorkflowHeadless", () => {
     expect(result.outputs[0].data).toBe("data:image/png;base64,polled");
   });
 
+  it("validates without executing when validateOnly is set", async () => {
+    const fetchImpl = vi.fn();
+    const result = await runWorkflowHeadless(
+      {
+        workflow: {
+          nodes: [
+            node("gen-1", "nanoBanana", {
+              model: "nano-banana",
+              inlinePrompt: "x",
+              selectedModel: { provider: "gemini", modelId: "nano-banana", displayName: "Nano Banana" },
+            }),
+          ],
+          edges: [],
+        },
+        validateOnly: true,
+      },
+      { ...baseCtx, fetchImpl }
+    );
+
+    expect(result.success).toBe(true);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(result.outputs).toEqual([]);
+  });
+
   it("rejects workflows containing node types the headless engine cannot run", async () => {
     const result = await runWorkflowHeadless(
       {

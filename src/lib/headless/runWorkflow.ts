@@ -25,7 +25,7 @@ import type {
 import { getConnectedInputsPure, validateWorkflowPure } from "@/store/utils/connectedInputs";
 import { groupNodesByLevel } from "@/store/utils/executionUtils";
 
-const SUPPORTED_NODE_TYPES = new Set([
+export const SUPPORTED_NODE_TYPES = new Set([
   "imageInput",
   "videoInput",
   "audioInput",
@@ -49,6 +49,8 @@ export interface HeadlessRunRequest {
   workflow: { nodes: WorkflowNode[]; edges: WorkflowEdge[] };
   /** Overrides keyed by node id or customTitle: text for prompt nodes, media for input nodes. */
   inputs?: Record<string, HeadlessInputValue>;
+  /** Check supported types, edges, inputs, and structure without executing anything. */
+  validateOnly?: boolean;
 }
 
 export interface HeadlessOutput {
@@ -366,6 +368,10 @@ export async function runWorkflowHeadless(
   const validation = validateWorkflowPure(nodes, edges);
   if (!validation.valid) {
     return { success: false, error: validation.errors.join("; "), outputs: [], nodeResults };
+  }
+
+  if (request.validateOnly) {
+    return { success: true, outputs: [], nodeResults };
   }
 
   const levels = groupNodesByLevel(nodes, edges);

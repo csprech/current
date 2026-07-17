@@ -60,3 +60,22 @@ export function buildNodeReferenceSection(): string {
   });
   return lines.join("\n");
 }
+
+export interface AINodeCatalogEntry {
+  type: NodeType;
+  label: string;
+  category: string;
+  io: string;
+  purpose: string;
+}
+
+/** Structured node catalog for machine consumers (MCP, /api/node-types). */
+export function getAINodeCatalog(): AINodeCatalogEntry[] {
+  return NODE_CATALOG.map((item) => ({
+    type: item.type,
+    label: item.label,
+    category: item.category,
+    io: AI_NODE_DOCS[item.type].io,
+    purpose: AI_NODE_DOCS[item.type].purpose,
+  }));
+}

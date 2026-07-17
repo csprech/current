@@ -10,7 +10,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "workflow": "node scripts/run-workflow.mjs"
+    "workflow": "node scripts/run-workflow.mjs",
+    "mcp": "node scripts/mcp-server.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.13",

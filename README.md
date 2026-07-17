@@ -93,6 +93,26 @@ Inputs are matched by node title or id: `name=@file` loads media into an input n
 
 Supported headlessly today: input nodes, prompts, image/video/audio generation, LLM text, and outputs. Canvas-coupled nodes (annotation, image actions, video editing, routing, loops) report a clear unsupported error rather than failing silently.
 
+## MCP server (drive Current from AI agents)
+
+Current ships an MCP server so Claude Code, Claude Desktop, Cursor, or any MCP client can validate and run your local workflows and browse the node/model catalogs — no cloud, no seat license. With the app running:
+
+```bash
+claude mcp add current -- node scripts/mcp-server.mjs
+```
+
+or add it to a client config:
+
+```json
+{
+  "command": "node",
+  "args": ["scripts/mcp-server.mjs"],
+  "env": { "CURRENT_SERVER": "http://localhost:3000" }
+}
+```
+
+Tools exposed: `run_workflow` (execute a workflow file or inline graph with typed inputs, outputs saved to disk), `validate_workflow`, `list_node_types`, and `list_models`.
+
 ## Included node families
 
 | Family | Examples |

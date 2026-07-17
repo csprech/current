@@ -29,6 +29,7 @@ interface RunRequestBody {
   nodes?: unknown;
   edges?: unknown;
   inputs?: HeadlessRunRequest["inputs"];
+  validateOnly?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await runWorkflowHeadless(
-    { workflow: { nodes, edges }, inputs: body.inputs },
+    { workflow: { nodes, edges }, inputs: body.inputs, validateOnly: body.validateOnly === true },
     { origin: request.nextUrl.origin, headers }
   );
 
