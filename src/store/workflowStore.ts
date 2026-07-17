@@ -89,6 +89,7 @@ import {
   executeVideoFrameGrab,
   executeRemoveBackground,
   executeImageAction,
+  executeVideoAction,
   executeGlbViewer,
   executeRouter,
   executeSwitch,
@@ -1509,6 +1510,9 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
           case "imageAction":
             await executeImageAction(executionCtx);
             break;
+          case "videoAction":
+            await executeVideoAction(executionCtx);
+            break;
           case "router":
             await executeRouter(executionCtx);
             break;
@@ -1899,6 +1903,11 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
         set({ isRunning: false, currentNodeIds: [], _abortController: null });
         await logger.endSession();
         return;
+      } else if (node.type === "videoAction") {
+        await executeVideoAction(executionCtx);
+        set({ isRunning: false, currentNodeIds: [], _abortController: null });
+        await logger.endSession();
+        return;
       } else if (node.type === "output") {
         await executeOutput(executionCtx);
         set({ isRunning: false, currentNodeIds: [], _abortController: null });
@@ -2086,6 +2095,9 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
           break;
         case "imageAction":
           await executeImageAction(executionCtx);
+          break;
+        case "videoAction":
+          await executeVideoAction(executionCtx);
           break;
         case "router":
           await executeRouter(executionCtx);

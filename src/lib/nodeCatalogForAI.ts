@@ -41,6 +41,7 @@ const AI_NODE_DOCS: Record<NodeType, AINodeDoc> = {
   videoFrameGrab: { io: "video → image", purpose: "Extract the first or last frame as an image" },
   removeBackground: { io: "image → image", purpose: "Remove the image background on-device (free, no API cost)" },
   imageAction: { io: "image(s) → image", purpose: "Local image ops — rotate, flip, blur, adjust colors, aspect crop/pad, side-by-side, add text — free, no API cost" },
+  videoAction: { io: "video → video", purpose: "Local video ops — reverse, change speed (0.25–4x), boomerang, mute — free on-device re-encode, output is silent" },
   imageCompare: { io: "image, image → (display)", purpose: "Before/after slider comparing two images" },
   router: { io: "any → same type", purpose: "Pass-through hub for organizing many connections of one type" },
   switch: { io: "one input → toggled outputs", purpose: "Route one input to named outputs toggled on/off manually" },

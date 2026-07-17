@@ -22,6 +22,7 @@ import {
   VideoFrameGrabNodeData,
   RemoveBackgroundNodeData,
   ImageActionNodeData,
+  VideoActionNodeData,
   PromptNodeData,
   ArrayNodeData,
   PromptConstructorNodeData,
@@ -94,6 +95,8 @@ export function getSourceOutput(
     return { type: "video", value: (sourceNode.data as EaseCurveNodeData).outputVideo };
   } else if (sourceNode.type === "videoTrim") {
     return { type: "video", value: (sourceNode.data as VideoTrimNodeData).outputVideo };
+  } else if (sourceNode.type === "videoAction") {
+    return { type: "video", value: (sourceNode.data as VideoActionNodeData).outputVideo };
   } else if (sourceNode.type === "prompt") {
     return { type: "text", value: (sourceNode.data as PromptNodeData).prompt };
   } else if (sourceNode.type === "array") {

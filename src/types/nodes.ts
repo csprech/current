@@ -44,6 +44,7 @@ export type NodeType =
   | "videoFrameGrab"
   | "removeBackground"
   | "imageAction"
+  | "videoAction"
   | "router"
   | "switch"
   | "conditionalSwitch"
@@ -452,6 +453,20 @@ export interface ImageActionNodeData extends BaseNodeData {
 }
 
 /**
+ * Video Action node - deterministic local video operations (reverse, speed,
+ * boomerang, mute). Re-encodes on-device via WebCodecs at no cost.
+ */
+export interface VideoActionNodeData extends BaseNodeData {
+  operation: string; // VideoActionOperation from utils/videoOps
+  params: Record<string, unknown>;
+  outputVideo: string | null;
+  status: NodeStatus;
+  error: string | null;
+  progress: number;
+  encoderSupported: boolean | null;
+}
+
+/**
  * Router node - pure passthrough routing node with dynamic multi-type handles
  */
 export interface RouterNodeData extends BaseNodeData {
@@ -558,6 +573,7 @@ export type WorkflowNodeData =
   | VideoFrameGrabNodeData
   | RemoveBackgroundNodeData
   | ImageActionNodeData
+  | VideoActionNodeData
   | RouterNodeData
   | SwitchNodeData
   | ConditionalSwitchNodeData

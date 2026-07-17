@@ -30,6 +30,7 @@ export const NODE_CONNECTION_CAPABILITIES: Record<NodeType, NodeConnectionCapabi
   videoFrameGrab: { inputs: ["video"], outputs: ["image"] },
   removeBackground: { inputs: ["image"], outputs: ["image"] },
   imageAction: { inputs: ["image"], outputs: ["image"] },
+  videoAction: { inputs: ["video"], outputs: ["video"] },
   router: { inputs: ["image", "text", "video", "audio", "3d", "easeCurve", "reference"], outputs: ["image", "text", "video", "audio", "3d", "easeCurve", "reference"] },
   switch: { inputs: ["image", "text", "video", "audio", "3d", "easeCurve"], outputs: ["image", "text", "video", "audio", "3d", "easeCurve"] },
   conditionalSwitch: { inputs: ["text"], outputs: ["text"] },

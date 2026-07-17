@@ -45,6 +45,7 @@ import {
   VideoFrameGrabNode,
   RemoveBackgroundNode,
   ImageActionNode,
+  VideoActionNode,
   RouterNode,
   SwitchNode,
   ConditionalSwitchNode,
@@ -113,6 +114,7 @@ const nodeTypes: NodeTypes = {
   videoFrameGrab: VideoFrameGrabNode,
   removeBackground: RemoveBackgroundNode,
   imageAction: ImageActionNode,
+  videoAction: VideoActionNode,
   router: RouterNode,
   switch: SwitchNode,
   conditionalSwitch: ConditionalSwitchNode,
@@ -194,6 +196,10 @@ const getNodeHandles = (nodeType: string): { inputs: string[]; outputs: string[]
       return { inputs: ["video"], outputs: ["image"] };
     case "removeBackground":
       return { inputs: ["image"], outputs: ["image"] };
+    case "imageAction":
+      return { inputs: ["image"], outputs: ["image"] };
+    case "videoAction":
+      return { inputs: ["video"], outputs: ["video"] };
     case "router":
       return { inputs: ["image", "text", "video", "audio", "3d", "easeCurve", "generic-input"], outputs: ["image", "text", "video", "audio", "3d", "easeCurve", "generic-output"] };
     case "switch":
@@ -502,6 +508,7 @@ export function WorkflowCanvas() {
     videoFrameGrab: 'Frame Grab',
     removeBackground: 'Remove Background',
     imageAction: 'Image Action',
+    videoAction: 'Video Action',
     router: 'Router',
     switch: 'Switch',
     conditionalSwitch: 'Conditional Switch',
@@ -647,7 +654,7 @@ export function WorkflowCanvas() {
         if (!targetNode) return false;
 
         const targetNodeType = targetNode.type;
-        if (targetNodeType === "generateVideo" || targetNodeType === "videoStitch" || targetNodeType === "easeCurve" || targetNodeType === "videoTrim" || targetNodeType === "videoFrameGrab" || targetNodeType === "videoInput" || targetNodeType === "output" || targetNodeType === "outputGallery" || targetNodeType === "router") {
+        if (targetNodeType === "generateVideo" || targetNodeType === "videoStitch" || targetNodeType === "easeCurve" || targetNodeType === "videoTrim" || targetNodeType === "videoFrameGrab" || targetNodeType === "videoAction" || targetNodeType === "videoInput" || targetNodeType === "output" || targetNodeType === "outputGallery" || targetNodeType === "router") {
           // For output node, we allow video even though its handle is typed as "image"
           // because output node can display both images and videos
           return true;
@@ -1332,6 +1339,10 @@ export function WorkflowCanvas() {
           // VideoFrameGrab accepts video input and outputs image
           targetHandleId = "video";
           sourceHandleIdForNewNode = "image";
+        } else if (nodeType === "videoAction") {
+          // VideoAction accepts video input and outputs video
+          targetHandleId = "video";
+          sourceHandleIdForNewNode = "video";
         } else if (nodeType === "generateVideo") {
           // GenerateVideo outputs video
           sourceHandleIdForNewNode = "video";
@@ -1652,6 +1663,7 @@ export function WorkflowCanvas() {
             videoFrameGrab: { width: 320, height: 320 },
             removeBackground: { width: 320, height: 320 },
             imageAction: { width: 320, height: 340 },
+            videoAction: { width: 320, height: 340 },
             router: { width: 200, height: 80 },
             switch: { width: 220, height: 120 },
             conditionalSwitch: { width: 260, height: 180 },

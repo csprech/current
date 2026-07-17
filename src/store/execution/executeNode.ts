@@ -25,6 +25,7 @@ import { executeSplitGrid } from "./splitGridExecutor";
 import { executeVideoStitch, executeEaseCurve, executeVideoTrim, executeVideoFrameGrab } from "./videoProcessingExecutors";
 import { executeRemoveBackground } from "./removeBackgroundExecutor";
 import { executeImageAction } from "./imageActionExecutor";
+import { executeVideoAction } from "./videoActionExecutor";
 import { executeGenerateAudio } from "./generateAudioExecutor";
 
 export interface ExecuteNodeOptions {
@@ -122,6 +123,9 @@ export async function executeNode(
       break;
     case "imageAction":
       await executeImageAction(ctx);
+      break;
+    case "videoAction":
+      await executeVideoAction(ctx);
       break;
   }
 }

@@ -8,9 +8,9 @@
  *
  * v1 scope: input nodes, prompt, nanoBanana, llmGenerate, generateVideo,
  * generateAudio, output, outputGallery. Canvas-coupled nodes (annotation,
- * imageAction, removeBackground, video processing, routing, splitGrid,
- * loops/pause edges, batching, variants, fallback models) report a clear
- * unsupported error instead of failing mysteriously.
+ * imageAction, videoAction, removeBackground, video processing, routing,
+ * splitGrid, loops/pause edges, batching, variants, fallback models) report
+ * a clear unsupported error instead of failing mysteriously.
  */
 
 import type {

@@ -29,6 +29,7 @@ const RUNNABLE_TYPES = new Set([
   'llmGenerate',
   'removeBackground',
   'imageAction',
+  'videoAction',
 ]);
 const EXPANDABLE_TYPES = new Set(['prompt', 'promptConstructor', 'splitGrid', 'annotation']);
 

@@ -76,6 +76,7 @@ const NODE_ROLES: Record<NodeType, NodeRole> = {
   videoFrameGrab: "processor",
   removeBackground: "processor",
   imageAction: "processor",
+  videoAction: "processor",
   router: "router",
   switch: "router",
   conditionalSwitch: "router",
@@ -105,6 +106,7 @@ const MINIMAP_COLORS: Record<NodeType, string> = {
   videoFrameGrab: "#47CBB3",
   removeBackground: "#47CBB3",
   imageAction: "#47CBB3",
+  videoAction: "#528ADF",
   router: "#528ADF",
   switch: "#5578F6",
   conditionalSwitch: "#3DB9C4",
@@ -151,6 +153,7 @@ const PROCESSOR_METADATA: Partial<Record<NodeType, [operation: string, format: s
   videoFrameGrab: ["Extract frame", "PNG"],
   removeBackground: ["Remove background", "PNG"],
   imageAction: ["Image action", "Local"],
+  videoAction: ["Video action", "Local"],
 };
 
 function hasValue(value: unknown): boolean {
@@ -184,7 +187,8 @@ function hasCompletionEvidence(nodeType: NodeType | undefined, record: Record<st
     case "generateVideo":
     case "videoStitch":
     case "easeCurve":
-    case "videoTrim": return hasValue(record.outputVideo) || hasValue(record.outputVideoRef);
+    case "videoTrim":
+    case "videoAction": return hasValue(record.outputVideo) || hasValue(record.outputVideoRef);
     case "generateAudio": return hasValue(record.outputAudio) || hasValue(record.outputAudioRef);
     case "llmGenerate": return hasValue(record.outputText);
     case "generate3d": return hasValue(record.output3dUrl);

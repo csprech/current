@@ -577,6 +577,13 @@ async function externalizeNodeMedia(
       break;
     }
 
+    case "videoAction": {
+      const d = data as import("@/types").VideoActionNodeData;
+      // Clear output video (derived from input video, regenerated on run)
+      newData = { ...d, outputVideo: null };
+      break;
+    }
+
     case "glbViewer": {
       const d = data as import("@/types").GLBViewerNodeData;
       // Externalize captured viewport image
@@ -1166,6 +1173,12 @@ async function hydrateNodeMedia(
 
     case "imageAction": {
       // imageAction output is not persisted - it's regenerated on each workflow run
+      newData = data;
+      break;
+    }
+
+    case "videoAction": {
+      // videoAction output is not persisted - it's regenerated on each workflow run
       newData = data;
       break;
     }

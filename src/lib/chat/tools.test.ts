@@ -129,6 +129,7 @@ describe("buildEditSystemPrompt", () => {
         "promptConstructor", "nanoBanana", "generateVideo", "generate3d",
         "generateAudio", "llmGenerate", "annotation", "splitGrid", "videoStitch",
         "videoTrim", "easeCurve", "videoFrameGrab", "removeBackground",
+        "imageAction", "videoAction",
         "imageCompare", "router", "switch", "conditionalSwitch", "output",
         "outputGallery",
       ]) {
