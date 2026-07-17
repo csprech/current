@@ -149,6 +149,16 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-add-palette__categories button\s*\{[^}]*padding:\s*8px 14px/);
   });
 
+  it("bounds launchpad detail views so template results own vertical scrolling", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const launchpadDetail = css.match(/\.current-launchpad__detail\s*\{([^}]*)\}/)?.[1];
+    const templateResults = css.match(/\.current-template-explorer__results\s*\{([^}]*)\}/)?.[1];
+
+    expect(launchpadDetail).toMatch(/(?:^|;)\s*height:\s*calc\(100% - 96px\)/);
+    expect(templateResults).toContain("min-height: 0");
+    expect(templateResults).toContain("overflow-y: auto");
+  });
+
   it("keeps adaptive chrome free of fixed light-only and dark-only color bypasses", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 

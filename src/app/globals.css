@@ -1605,7 +1605,7 @@ body {
 
 .current-launchpad__detail {
   width: min(1160px, calc(100vw - 96px));
-  min-height: calc(100% - 96px);
+  height: calc(100% - 96px);
   margin: 48px auto;
   overflow: hidden;
   border: 1px solid var(--current-border);
