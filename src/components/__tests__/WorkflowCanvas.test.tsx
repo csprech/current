@@ -162,6 +162,12 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
   return <ReactFlowProvider>{children}</ReactFlowProvider>;
 }
 
+function getCanvasShell() {
+  const shell = screen.getByTestId("canvas-workspace").parentElement;
+  if (!shell) throw new Error("Missing workflow canvas shell");
+  return shell;
+}
+
 describe("WorkflowCanvas", () => {
   it("decorates render nodes from skipped, disabled, and locked workflow sources", () => {
     const node = createMockNode("node-1", "prompt", { groupId: "group-1" });
@@ -213,6 +219,18 @@ describe("WorkflowCanvas", () => {
 
       // ReactFlow container should be present
       expect(document.querySelector(".react-flow")).toBeInTheDocument();
+    });
+
+    it("binds the canvas shell and React Flow surface to semantic appearance classes", () => {
+      render(
+        <TestWrapper>
+          <WorkflowCanvas />
+        </TestWrapper>
+      );
+
+      expect(getCanvasShell()).toHaveClass("current-canvas-shell");
+      expect(getCanvasShell()).not.toHaveClass("bg-canvas-bg");
+      expect(document.querySelector(".react-flow")).toHaveClass("current-canvas-flow");
     });
 
     it("should render Background component", () => {
@@ -326,7 +344,7 @@ describe("WorkflowCanvas", () => {
     it("ignores node and history-media drops while the launchpad is active", () => {
       mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
       render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
-      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const root = getCanvasShell();
 
       fireEvent.dragOver(root, {
         dataTransfer: {
@@ -358,7 +376,7 @@ describe("WorkflowCanvas", () => {
     it("ignores workflow file drops while the launchpad is active", async () => {
       mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
       render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
-      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const root = getCanvasShell();
       const workflowFile = new File([
         JSON.stringify({ version: 1, nodes: [], edges: [] }),
       ], "workflow.json", { type: "application/json" });
@@ -418,7 +436,7 @@ describe("WorkflowCanvas", () => {
     it("reports workflow import failure without a browser alert", async () => {
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
       render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
-      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const root = getCanvasShell();
       const invalidWorkflow = new File(["not-json"], "broken.json", { type: "application/json" });
 
       fireEvent.drop(root, {
@@ -474,7 +492,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       // Simulate drag over with node type data
       const mockDataTransfer = {
@@ -501,7 +519,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       // Simulate drag over with image file
       const mockDataTransfer = {
@@ -528,7 +546,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       // Simulate drag over with JSON file
       const mockDataTransfer = {
@@ -555,7 +573,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       // First drag over
       const mockDataTransfer = {
@@ -587,7 +605,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       const mockDataTransfer = {
         types: ["application/node-type"],

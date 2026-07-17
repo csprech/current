@@ -722,6 +722,14 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
    ============================================================ */
 
 /* The stage stays visually quiet so the workflow remains the primary object. */
+.current-canvas-shell {
+  background: var(--current-canvas);
+}
+
+.current-canvas-flow {
+  --xy-background-color: var(--current-canvas);
+}
+
 .react-flow {
   background:
     radial-gradient(130% 90% at 50% -25%, color-mix(in srgb, var(--current-surface-elevated) 46%, transparent) 0%, transparent 55%),

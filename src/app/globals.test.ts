@@ -192,6 +192,8 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/current-button--secondary\s*\{[\s\S]*?background:\s*var\(--current-surface-control\)/);
     expect(css).toMatch(/current-button--secondary:hover:not\(:disabled\)\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
     expect(css).toMatch(/:root\[data-appearance="dark"\]\s*\{[\s\S]*?--current-canvas:\s*#172130/);
+    expect(css).toMatch(/\.current-canvas-shell\s*\{[^}]*background:\s*var\(--current-canvas\)/);
+    expect(css).toMatch(/\.current-canvas-flow\s*\{[^}]*--xy-background-color:\s*var\(--current-canvas\)/);
     expect(css).toMatch(/\.react-flow\s*\{[\s\S]*?var\(--current-canvas\)/);
     expect(css).toMatch(/\.react-flow__controls\s*\{[\s\S]*?background:\s*var\(--current-surface-elevated\)/);
     expect(css).toMatch(/\.react-flow__controls-button:hover\s*\{[\s\S]*?background:\s*var\(--current-surface-control-hover\)/);
