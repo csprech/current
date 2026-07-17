@@ -2232,6 +2232,7 @@ export function WorkflowCanvas() {
         <GroupControlsOverlay />
         <Background
           color="var(--current-border)"
+          bgColor="var(--current-canvas)"
           gap={26}
           size={1}
           className={tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}

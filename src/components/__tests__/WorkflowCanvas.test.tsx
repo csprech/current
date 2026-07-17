@@ -241,7 +241,9 @@ describe("WorkflowCanvas", () => {
       );
 
       // Background pattern should be rendered
-      expect(document.querySelector(".react-flow__background")).toBeInTheDocument();
+      const background = document.querySelector(".react-flow__background");
+      expect(background).toBeInTheDocument();
+      expect(background).toHaveStyle({ "--xy-background-color-props": "var(--current-canvas)" });
     });
 
     it("should render Controls component", () => {
