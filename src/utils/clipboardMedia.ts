@@ -20,6 +20,7 @@ export function getNodeImageSource(type: string | undefined, data: unknown): str
     case "nanoBanana":
     case "annotation":
     case "removeBackground":
+    case "imageAction":
     case "videoFrameGrab":
       return pick("outputImage");
     default:

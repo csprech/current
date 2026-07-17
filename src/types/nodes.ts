@@ -43,6 +43,7 @@ export type NodeType =
   | "videoTrim"
   | "videoFrameGrab"
   | "removeBackground"
+  | "imageAction"
   | "router"
   | "switch"
   | "conditionalSwitch"
@@ -438,6 +439,19 @@ export interface RemoveBackgroundNodeData extends BaseNodeData {
 }
 
 /**
+ * Image Action node - deterministic local image operations (rotate, flip,
+ * blur, adjust, aspect change, composite, text). Runs on-device at no cost.
+ */
+export interface ImageActionNodeData extends BaseNodeData {
+  operation: string; // ImageActionOperation from utils/imageOps
+  params: Record<string, unknown>;
+  outputImage: string | null;
+  outputImageRef?: string;
+  status: NodeStatus;
+  error: string | null;
+}
+
+/**
  * Router node - pure passthrough routing node with dynamic multi-type handles
  */
 export interface RouterNodeData extends BaseNodeData {
@@ -543,6 +557,7 @@ export type WorkflowNodeData =
   | VideoTrimNodeData
   | VideoFrameGrabNodeData
   | RemoveBackgroundNodeData
+  | ImageActionNodeData
   | RouterNodeData
   | SwitchNodeData
   | ConditionalSwitchNodeData

@@ -27,11 +27,11 @@ describe("node catalog", () => {
       "imageInput", "audioInput", "videoInput", "annotation", "prompt", "array",
       "promptConstructor", "nanoBanana", "generateVideo", "generate3d", "generateAudio",
       "llmGenerate", "splitGrid", "output", "outputGallery", "imageCompare", "videoStitch",
-      "easeCurve", "videoTrim", "videoFrameGrab", "removeBackground", "router", "switch",
-      "conditionalSwitch", "glbViewer",
+      "easeCurve", "videoTrim", "videoFrameGrab", "removeBackground", "imageAction", "router",
+      "switch", "conditionalSwitch", "glbViewer",
     ];
     expect(NODE_CATALOG.map((item) => item.type).sort()).toEqual(registered.sort());
-    expect(new Set(NODE_CATALOG.map((item) => item.type))).toHaveProperty("size", 25);
+    expect(new Set(NODE_CATALOG.map((item) => item.type))).toHaveProperty("size", 26);
     expect(NODE_CATALOG.every((item) => item.label && ["Input", "Generate", "Process", "Route", "Output"].includes(item.category))).toBe(true);
   });
 

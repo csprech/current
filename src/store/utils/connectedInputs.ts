@@ -21,6 +21,7 @@ import {
   VideoTrimNodeData,
   VideoFrameGrabNodeData,
   RemoveBackgroundNodeData,
+  ImageActionNodeData,
   PromptNodeData,
   ArrayNodeData,
   PromptConstructorNodeData,
@@ -120,6 +121,8 @@ export function getSourceOutput(
     return { type: "image", value: (sourceNode.data as VideoFrameGrabNodeData).outputImage };
   } else if (sourceNode.type === "removeBackground") {
     return { type: "image", value: (sourceNode.data as RemoveBackgroundNodeData).outputImage };
+  } else if (sourceNode.type === "imageAction") {
+    return { type: "image", value: (sourceNode.data as ImageActionNodeData).outputImage };
   } else if (sourceNode.type === "glbViewer") {
     return { type: "image", value: (sourceNode.data as GLBViewerNodeData).capturedImage };
   }

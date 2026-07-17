@@ -570,6 +570,13 @@ async function externalizeNodeMedia(
       break;
     }
 
+    case "imageAction": {
+      const d = data as import("@/types").ImageActionNodeData;
+      // Clear output image (derived from input image, regenerated on run)
+      newData = { ...d, outputImage: null };
+      break;
+    }
+
     case "glbViewer": {
       const d = data as import("@/types").GLBViewerNodeData;
       // Externalize captured viewport image
@@ -1153,6 +1160,12 @@ async function hydrateNodeMedia(
 
     case "removeBackground": {
       // removeBackground content is not persisted - it's regenerated on each workflow run
+      newData = data;
+      break;
+    }
+
+    case "imageAction": {
+      // imageAction output is not persisted - it's regenerated on each workflow run
       newData = data;
       break;
     }

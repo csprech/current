@@ -83,7 +83,7 @@ function getGeminiPricing(
  * and 0 for nodes that run locally at no cost.
  */
 export function estimateNodeRunCost(node: WorkflowNode): number | null {
-  if (node.type === "removeBackground") {
+  if (node.type === "removeBackground" || node.type === "imageAction") {
     return 0; // runs on-device
   }
 

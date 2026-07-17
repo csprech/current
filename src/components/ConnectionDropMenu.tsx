@@ -93,6 +93,16 @@ const IMAGE_TARGET_OPTIONS: MenuOption[] = [
     ),
   },
   {
+    type: "imageAction",
+    label: "Image Action",
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M8 12h8M12 8v8" />
+      </svg>
+    ),
+  },
+  {
     type: "imageCompare",
     label: "Image Compare",
     icon: (
@@ -267,6 +277,16 @@ const IMAGE_SOURCE_OPTIONS: MenuOption[] = [
         <path d="M16 5h6" />
         <circle cx="9" cy="9" r="2" />
         <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+      </svg>
+    ),
+  },
+  {
+    type: "imageAction",
+    label: "Image Action",
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M8 12h8M12 8v8" />
       </svg>
     ),
   },

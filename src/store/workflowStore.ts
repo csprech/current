@@ -88,6 +88,7 @@ import {
   executeVideoTrim,
   executeVideoFrameGrab,
   executeRemoveBackground,
+  executeImageAction,
   executeGlbViewer,
   executeRouter,
   executeSwitch,
@@ -492,7 +493,7 @@ export { GROUP_COLORS } from "./utils/nodeDefaults";
 
 /** Node types whose output carries image data */
 const IMAGE_SOURCE_NODE_TYPES = new Set<string>([
-  "imageInput", "annotation", "nanoBanana", "glbViewer", "videoFrameGrab", "removeBackground",
+  "imageInput", "annotation", "nanoBanana", "glbViewer", "videoFrameGrab", "removeBackground", "imageAction",
 ]);
 
 /**
@@ -1505,6 +1506,9 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
           case "removeBackground":
             await executeRemoveBackground(executionCtx);
             break;
+          case "imageAction":
+            await executeImageAction(executionCtx);
+            break;
           case "router":
             await executeRouter(executionCtx);
             break;
@@ -1890,6 +1894,8 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
         return;
       } else if (node.type === "removeBackground") {
         await executeRemoveBackground(executionCtx);
+      } else if (node.type === "imageAction") {
+        await executeImageAction(executionCtx);
         set({ isRunning: false, currentNodeIds: [], _abortController: null });
         await logger.endSession();
         return;
@@ -2077,6 +2083,9 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
           break;
         case "removeBackground":
           await executeRemoveBackground(executionCtx);
+          break;
+        case "imageAction":
+          await executeImageAction(executionCtx);
           break;
         case "router":
           await executeRouter(executionCtx);

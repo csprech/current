@@ -75,6 +75,7 @@ const NODE_ROLES: Record<NodeType, NodeRole> = {
   videoTrim: "processor",
   videoFrameGrab: "processor",
   removeBackground: "processor",
+  imageAction: "processor",
   router: "router",
   switch: "router",
   conditionalSwitch: "router",
@@ -103,6 +104,7 @@ const MINIMAP_COLORS: Record<NodeType, string> = {
   videoTrim: "#528ADF",
   videoFrameGrab: "#47CBB3",
   removeBackground: "#47CBB3",
+  imageAction: "#47CBB3",
   router: "#528ADF",
   switch: "#5578F6",
   conditionalSwitch: "#3DB9C4",
@@ -148,6 +150,7 @@ const PROCESSOR_METADATA: Partial<Record<NodeType, [operation: string, format: s
   videoTrim: ["Trim video", "MP4"],
   videoFrameGrab: ["Extract frame", "PNG"],
   removeBackground: ["Remove background", "PNG"],
+  imageAction: ["Image action", "Local"],
 };
 
 function hasValue(value: unknown): boolean {
@@ -177,6 +180,7 @@ function hasCompletionEvidence(nodeType: NodeType | undefined, record: Record<st
     case "annotation":
     case "videoFrameGrab":
     case "removeBackground": return hasValue(record.outputImage) || hasValue(record.outputImageRef);
+    case "imageAction": return hasValue(record.outputImage) || hasValue(record.outputImageRef);
     case "generateVideo":
     case "videoStitch":
     case "easeCurve":
