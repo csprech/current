@@ -4,6 +4,14 @@ Current is a desktop-first visual workspace for building AI media workflows. Arr
 
 It is designed for creative work that benefits from seeing the entire process: reference images, prompts, generations, edits, audio, video, and final outputs all stay in one place.
 
+## See it in action
+
+<p align="center">
+  <img src="public/screenshots/current-launchpad.png" alt="Current launchpad with options to start a new canvas, describe a workflow, browse templates, or open a project" width="100%" style="max-width: 1440px;" />
+  <br />
+  <img src="public/screenshots/product-shot-workflow.png" alt="Current product-shot workflow with reference images, connected generator, prompt, and output node" width="100%" style="max-width: 1440px;" />
+</p>
+
 ## What you can build
 
 - Image generation and editing workflows
