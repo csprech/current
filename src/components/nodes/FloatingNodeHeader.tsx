@@ -6,6 +6,8 @@ import { useReactFlow } from "@xyflow/react";
 import { NodeType, ProviderType } from "@/types";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
+import { copyImageToClipboard, getNodeImageSource } from "@/utils/clipboardMedia";
+import { useToast } from "@/components/Toast";
 import { ProviderBadge } from "./ProviderBadge";
 import { getNodeRole, type NodeRole } from "./nodePresentation";
 
@@ -105,8 +107,12 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
   const [editCommentValue, setEditCommentValue] = useState(comment || "");
   const [showCommentTooltip, setShowCommentTooltip] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [menuImageSrc, setMenuImageSrc] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number } | null>(null);
   const removeNode = useWorkflowStore((state) => state.removeNode);
+  const duplicateNodes = useWorkflowStore((state) => state.duplicateNodes);
+  const executeWorkflow = useWorkflowStore((state) => state.executeWorkflow);
+  const isWorkflowRunning = useWorkflowStore((state) => state.isRunning);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
   const commentPopoverRef = useRef<HTMLDivElement>(null);
@@ -249,6 +255,13 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
     setIsMoreOpen(false);
   }, []);
 
+  const openMoreMenu = useCallback(() => {
+    // Resolve the copyable image lazily so headers never subscribe to node data.
+    const node = useWorkflowStore.getState().nodes.find((n) => n.id === id);
+    setMenuImageSrc(node ? getNodeImageSource(node.type, node.data) : null);
+    setIsMoreOpen(true);
+  }, [id]);
+
   const handleMoreMenuKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -259,9 +272,33 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
 
     if (event.key === "Home" || event.key === "End" || event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
-      moreMenuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
+      const items = Array.from(
+        moreMenuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)') ?? []
+      );
+      if (items.length === 0) return;
+
+      const activeIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+      let nextIndex = 0;
+      if (event.key === "End") {
+        nextIndex = items.length - 1;
+      } else if (event.key === "ArrowDown") {
+        nextIndex = activeIndex === -1 ? 0 : (activeIndex + 1) % items.length;
+      } else if (event.key === "ArrowUp") {
+        nextIndex = activeIndex === -1 ? items.length - 1 : (activeIndex - 1 + items.length) % items.length;
+      }
+      items[nextIndex]?.focus();
     }
   }, [closeMoreMenu]);
+
+  const handleCopyImage = useCallback(async () => {
+    if (!menuImageSrc) return;
+    try {
+      await copyImageToClipboard(menuImageSrc);
+      useToast.getState().show("Image copied to clipboard", "success");
+    } catch {
+      useToast.getState().show("Couldn't copy image to clipboard", "error");
+    }
+  }, [menuImageSrc]);
 
   // Determine if controls should be visible
   const showControls = isHovered || selected;
@@ -391,7 +428,8 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
         left: `${position.x}px`,
         top: `${position.y - 26}px`,
         width: `${width}px`,
-        zIndex: selected ? 10000 : 9000,
+        // Keep an open contextual menu above every sibling header, including selected ones
+        zIndex: isMoreOpen ? 11000 : selected ? 10000 : 9000,
       }}
     >
       <div
@@ -627,11 +665,11 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
               aria-expanded={isMoreOpen}
               aria-controls={isMoreOpen ? `node-actions-${id}` : undefined}
               title="More node actions"
-              onClick={() => setIsMoreOpen((open) => !open)}
+              onClick={() => (isMoreOpen ? closeMoreMenu() : openMoreMenu())}
               onKeyDown={(event) => {
                 if (event.key === "ArrowDown") {
                   event.preventDefault();
-                  setIsMoreOpen(true);
+                  openMoreMenu();
                 }
               }}
             >
@@ -653,9 +691,44 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                 <button
                   type="button"
                   role="menuitem"
+                  onClick={() => {
+                    closeMoreMenu();
+                    duplicateNodes([id]);
+                  }}
+                >
+                  Duplicate
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={isWorkflowRunning}
+                  title={isWorkflowRunning ? "A workflow is already running" : "Run this node and everything after it"}
+                  onClick={() => {
+                    closeMoreMenu();
+                    executeWorkflow(id);
+                  }}
+                >
+                  Run from Here
+                </button>
+                {menuImageSrc && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      closeMoreMenu();
+                      handleCopyImage();
+                    }}
+                  >
+                    Copy Image
+                  </button>
+                )}
+                <div className="current-node-header__menu-separator" role="separator" />
+                <button
+                  type="button"
+                  role="menuitem"
                   className="current-node-header__menu-danger"
                   onClick={() => {
-                    setIsMoreOpen(false);
+                    closeMoreMenu();
                     removeNode(id);
                   }}
                 >

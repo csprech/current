@@ -270,6 +270,7 @@ interface WorkflowStore {
   // Copy/Paste operations
   copySelectedNodes: () => void;
   pasteNodes: (offset?: XYPosition) => void;
+  duplicateNodes: (nodeIds: string[]) => void;
   clearClipboard: () => void;
 
   // Group operations
@@ -521,6 +522,67 @@ function clearStaleInputImages(
 }
 
 /** Capture current undoable state as a deep-cloned snapshot */
+/**
+ * Clone a set of nodes (and the edges between them) with fresh IDs and an
+ * offset position. Shared by paste and duplicate.
+ */
+function cloneSubgraphWithNewIds(
+  sourceNodes: WorkflowNode[],
+  sourceEdges: WorkflowEdge[],
+  offset: XYPosition
+): { newNodes: WorkflowNode[]; newEdges: WorkflowEdge[] } {
+  const idMapping = new Map<string, string>();
+  sourceNodes.forEach((node) => {
+    idMapping.set(node.id, `${node.type}-${++nodeIdCounter}`);
+  });
+
+  const newNodes: WorkflowNode[] = sourceNodes.map((node) => {
+    const defaults = defaultNodeDimensions[node.type as NodeType] || { width: 300, height: 280 };
+    return {
+      ...node,
+      id: idMapping.get(node.id)!,
+      position: {
+        x: node.position.x + offset.x,
+        y: node.position.y + offset.y,
+      },
+      selected: true, // Select newly created nodes
+      // Reset height to defaults so BaseNode's ResizeObserver
+      // can correctly add settings panel height from the right baseline
+      style: { width: node.style?.width ?? defaults.width, height: defaults.height },
+      width: undefined,
+      height: undefined,
+      measured: undefined,
+      data: clonePreservingStrings(node.data),
+    };
+  });
+
+  const newEdges: WorkflowEdge[] = sourceEdges.map((edge) => ({
+    ...edge,
+    id: `edge-${idMapping.get(edge.source)}-${idMapping.get(edge.target)}-${edge.sourceHandle || "default"}-${edge.targetHandle || "default"}`,
+    source: idMapping.get(edge.source)!,
+    target: idMapping.get(edge.target)!,
+  }));
+
+  return { newNodes, newEdges };
+}
+
+/**
+ * Fix React Flow selection race condition: after inserting nodes, React Flow's
+ * internal reconciliation may fire onNodesChange with stale selection state that
+ * re-selects prior nodes. Schedule an explicit selection correction afterwards.
+ */
+function scheduleExclusiveSelection(get: () => WorkflowStore, selectedIds: Set<string>): void {
+  requestAnimationFrame(() => {
+    const currentNodes = get().nodes;
+    const selectionChanges: NodeChange<WorkflowNode>[] = currentNodes.map((n) => ({
+      type: 'select' as const,
+      id: n.id,
+      selected: selectedIds.has(n.id),
+    }));
+    get().onNodesChange(selectionChanges);
+  });
+}
+
 function captureUndoSnapshot(state: WorkflowStore): UndoSnapshot {
   const cloned = clonePreservingStrings({
     nodes: state.nodes,
@@ -993,43 +1055,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
 
     pushUndoCheckpoint(get, set);
 
-    // Create a mapping from old node IDs to new node IDs
-    const idMapping = new Map<string, string>();
-
-    // Generate new IDs for all pasted nodes
-    clipboard.nodes.forEach((node) => {
-      const newId = `${node.type}-${++nodeIdCounter}`;
-      idMapping.set(node.id, newId);
-    });
-
-    // Create new nodes with updated IDs and offset positions
-    const newNodes: WorkflowNode[] = clipboard.nodes.map((node) => {
-      const defaults = defaultNodeDimensions[node.type as NodeType] || { width: 300, height: 280 };
-      return {
-        ...node,
-        id: idMapping.get(node.id)!,
-        position: {
-          x: node.position.x + offset.x,
-          y: node.position.y + offset.y,
-        },
-        selected: true, // Select newly pasted nodes
-        // Reset height to defaults so BaseNode's ResizeObserver
-        // can correctly add settings panel height from the right baseline
-        style: { width: node.style?.width ?? defaults.width, height: defaults.height },
-        width: undefined,
-        height: undefined,
-        measured: undefined,
-        data: clonePreservingStrings(node.data),
-      };
-    });
-
-    // Create new edges with updated source/target IDs
-    const newEdges: WorkflowEdge[] = clipboard.edges.map((edge) => ({
-      ...edge,
-      id: `edge-${idMapping.get(edge.source)}-${idMapping.get(edge.target)}-${edge.sourceHandle || "default"}-${edge.targetHandle || "default"}`,
-      source: idMapping.get(edge.source)!,
-      target: idMapping.get(edge.target)!,
-    }));
+    const { newNodes, newEdges } = cloneSubgraphWithNewIds(clipboard.nodes, clipboard.edges, offset);
 
     // Deselect existing nodes and add new ones
     const updatedNodes = nodes.map((node) => ({
@@ -1043,19 +1069,34 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       hasUnsavedChanges: true,
     });
 
-    // Fix React Flow selection race condition: After paste, React Flow's internal
-    // reconciliation may fire onNodesChange with stale selection state that re-selects
-    // original nodes. Schedule an explicit selection correction after reconciliation.
-    const newNodeIdSet = new Set(newNodes.map(n => n.id));
-    requestAnimationFrame(() => {
-      const currentNodes = get().nodes;
-      const selectionChanges: NodeChange<WorkflowNode>[] = currentNodes.map(n => ({
-        type: 'select' as const,
-        id: n.id,
-        selected: newNodeIdSet.has(n.id),
-      }));
-      get().onNodesChange(selectionChanges);
+    scheduleExclusiveSelection(get, new Set(newNodes.map((n) => n.id)));
+  },
+
+  duplicateNodes: (nodeIds: string[]) => {
+    const { nodes, edges } = get();
+    const idSet = new Set(nodeIds);
+    const targets = nodes.filter((node) => idSet.has(node.id));
+
+    if (targets.length === 0) return;
+
+    pushUndoCheckpoint(get, set);
+
+    // Duplicate edges that connect the duplicated nodes to each other
+    const innerEdges = edges.filter(
+      (edge) => idSet.has(edge.source) && idSet.has(edge.target)
+    );
+    const { newNodes, newEdges } = cloneSubgraphWithNewIds(targets, innerEdges, { x: 40, y: 40 });
+
+    set({
+      nodes: [
+        ...nodes.map((node) => ({ ...node, selected: false })),
+        ...newNodes,
+      ] as WorkflowNode[],
+      edges: [...edges, ...newEdges],
+      hasUnsavedChanges: true,
     });
+
+    scheduleExclusiveSelection(get, new Set(newNodes.map((n) => n.id)));
   },
 
   clearClipboard: () => {

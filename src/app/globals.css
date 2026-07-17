@@ -955,6 +955,10 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   font-weight: 550;
   cursor: pointer;
 }
+.current-node-header__menu button:not(.current-node-header__menu-danger):not(:disabled):hover,
+.current-node-header__menu button:not(.current-node-header__menu-danger):not(:disabled):focus-visible { background: color-mix(in srgb, var(--current-text-primary) 8%, transparent); }
+.current-node-header__menu button:disabled { opacity: 0.45; cursor: default; }
+.current-node-header__menu-separator { height: 1px; margin: 0.25rem 0.3rem; background: var(--current-border); }
 .current-node-header__menu-danger { color: var(--current-danger); }
 .current-node-header__menu-danger:hover,
 .current-node-header__menu-danger:focus-visible { background: color-mix(in srgb, var(--current-danger) 9%, var(--current-paper)); }
