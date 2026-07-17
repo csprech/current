@@ -1,235 +1,127 @@
 import { describe, it, expect } from "vitest";
-import { hasNonGeminiProviders } from "@/utils/costCalculator";
+import { calculatePredictedCost, estimateNodeRunCost, PRICING } from "@/utils/costCalculator";
 import { WorkflowNode } from "@/types";
 
-describe("hasNonGeminiProviders", () => {
-  it("should return false for empty nodes array", () => {
-    expect(hasNonGeminiProviders([])).toBe(false);
+function makeNode(id: string, type: string, data: Record<string, unknown>): WorkflowNode {
+  return {
+    id,
+    type,
+    position: { x: 0, y: 0 },
+    data,
+  } as WorkflowNode;
+}
+
+describe("estimateNodeRunCost", () => {
+  it("prices legacy Gemini nanoBanana nodes from the hardcoded table", () => {
+    const node = makeNode("1", "nanoBanana", { model: "nano-banana", resolution: "1K" });
+    expect(estimateNodeRunCost(node)).toBe(PRICING["nano-banana"]["1K"]);
   });
 
-  it("should return false for non-generation nodes only", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "prompt",
-        position: { x: 0, y: 0 },
-        data: { prompt: "test" },
-      },
-      {
-        id: "2",
-        type: "imageInput",
-        position: { x: 0, y: 0 },
-        data: {},
-      },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(false);
+  it("prices Gemini selectedModel by resolution", () => {
+    const node = makeNode("1", "nanoBanana", {
+      model: "nano-banana-pro",
+      resolution: "4K",
+      selectedModel: { provider: "gemini", modelId: "nano-banana-pro", displayName: "Nano Banana Pro" },
+    });
+    expect(estimateNodeRunCost(node)).toBe(PRICING["nano-banana-pro"]["4K"]);
   });
 
-  it("should return false for nanoBanana node with no selectedModel (legacy Gemini)", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "nanoBanana",
-        position: { x: 0, y: 0 },
-        data: { model: "nano-banana", resolution: "1K" },
+  it("uses pricing carried on the selected model for external providers", () => {
+    const node = makeNode("1", "generateVideo", {
+      selectedModel: {
+        provider: "kie",
+        modelId: "kling-video",
+        displayName: "Kling",
+        pricing: { type: "per-run", amount: 0.35 },
       },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(false);
+    });
+    expect(estimateNodeRunCost(node)).toBe(0.35);
   });
 
-  it("should return false for nanoBanana node with gemini selectedModel", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "nanoBanana",
-        position: { x: 0, y: 0 },
-        data: {
-          model: "nano-banana-pro",
-          resolution: "1K",
-          selectedModel: {
-            provider: "gemini",
-            modelId: "nano-banana-pro",
-            displayName: "Nano Banana Pro",
-          },
+  it("returns null for external models without pricing data", () => {
+    const node = makeNode("1", "nanoBanana", {
+      model: "nano-banana",
+      resolution: "1K",
+      selectedModel: { provider: "replicate", modelId: "some-model", displayName: "Some Model" },
+    });
+    expect(estimateNodeRunCost(node)).toBeNull();
+  });
+
+  it("returns 0 for removeBackground (runs locally)", () => {
+    expect(estimateNodeRunCost(makeNode("1", "removeBackground", {}))).toBe(0);
+  });
+
+  it("returns null for llmGenerate (token-based pricing)", () => {
+    const node = makeNode("1", "llmGenerate", {
+      selectedModel: { provider: "google", modelId: "gemini-3-flash", displayName: "Gemini 3 Flash" },
+    });
+    expect(estimateNodeRunCost(node)).toBeNull();
+  });
+});
+
+describe("calculatePredictedCost with carried model pricing", () => {
+  it("includes external models priced via selectedModel.pricing in the total", () => {
+    const nodes = [
+      makeNode("1", "nanoBanana", { model: "nano-banana", resolution: "1K" }),
+      makeNode("2", "generateVideo", {
+        selectedModel: {
+          provider: "kie",
+          modelId: "kling-video",
+          displayName: "Kling",
+          pricing: { type: "per-run", amount: 0.35 },
         },
-      },
+      }),
     ];
-    expect(hasNonGeminiProviders(nodes)).toBe(false);
+    const result = calculatePredictedCost(nodes);
+    expect(result.totalCost).toBeCloseTo(PRICING["nano-banana"]["1K"] + 0.35, 5);
+    expect(result.unknownPricingCount).toBe(0);
   });
 
-  it("should return true for nanoBanana node with fal provider", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "nanoBanana",
-        position: { x: 0, y: 0 },
-        data: {
-          model: "nano-banana",
-          resolution: "1K",
-          selectedModel: {
-            provider: "fal",
-            modelId: "fal-ai/flux",
-            displayName: "Flux",
-          },
+  it("counts unpriced external models instead of pricing them", () => {
+    const nodes = [
+      makeNode("1", "nanoBanana", {
+        model: "nano-banana",
+        resolution: "1K",
+        selectedModel: { provider: "replicate", modelId: "some-model", displayName: "Some Model" },
+      }),
+    ];
+    const result = calculatePredictedCost(nodes);
+    expect(result.totalCost).toBe(0);
+    expect(result.unknownPricingCount).toBe(1);
+  });
+
+  it("covers generateAudio and generate3d nodes with carried pricing", () => {
+    const nodes = [
+      makeNode("1", "generateAudio", {
+        selectedModel: {
+          provider: "fal",
+          modelId: "tts-model",
+          displayName: "TTS",
+          pricing: { type: "per-run", amount: 0.02 },
         },
-      },
+      }),
+      makeNode("2", "generate3d", {
+        selectedModel: { provider: "fal", modelId: "hunyuan3d", displayName: "Hunyuan 3D" },
+      }),
     ];
-    expect(hasNonGeminiProviders(nodes)).toBe(true);
+    const result = calculatePredictedCost(nodes);
+    expect(result.totalCost).toBeCloseTo(0.02, 5);
+    expect(result.unknownPricingCount).toBe(1);
+    expect(result.breakdown.find((b) => b.modelId === "tts-model")?.unit).toBe("audio");
   });
 
-  it("should return true for nanoBanana node with replicate provider", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "nanoBanana",
-        position: { x: 0, y: 0 },
-        data: {
-          model: "nano-banana",
-          resolution: "1K",
-          selectedModel: {
-            provider: "replicate",
-            modelId: "some-model",
-            displayName: "Some Model",
-          },
+  it("relabels per-run video pricing with a video unit", () => {
+    const nodes = [
+      makeNode("1", "generateVideo", {
+        selectedModel: {
+          provider: "kie",
+          modelId: "kling-video",
+          displayName: "Kling",
+          pricing: { type: "per-run", amount: 0.35 },
         },
-      },
+      }),
     ];
-    expect(hasNonGeminiProviders(nodes)).toBe(true);
-  });
-
-  it("should return true for nanoBanana node with kie provider", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "nanoBanana",
-        position: { x: 0, y: 0 },
-        data: {
-          model: "nano-banana",
-          resolution: "1K",
-          selectedModel: {
-            provider: "kie",
-            modelId: "kie-model",
-            displayName: "Kie Model",
-          },
-        },
-      },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(true);
-  });
-
-  it("should return true for nanoBanana node with wavespeed provider", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "nanoBanana",
-        position: { x: 0, y: 0 },
-        data: {
-          model: "nano-banana",
-          resolution: "1K",
-          selectedModel: {
-            provider: "wavespeed",
-            modelId: "ws-model",
-            displayName: "WaveSpeed Model",
-          },
-        },
-      },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(true);
-  });
-
-  it("should return true for generateVideo node with non-Gemini provider", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "generateVideo",
-        position: { x: 0, y: 0 },
-        data: {
-          selectedModel: {
-            provider: "kie",
-            modelId: "kling-video",
-            displayName: "Kling Video",
-          },
-          status: "idle",
-        },
-      },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(true);
-  });
-
-  it("should return false for generateVideo node with no selectedModel", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "generateVideo",
-        position: { x: 0, y: 0 },
-        data: { status: "idle" },
-      },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(false);
-  });
-
-  it("should return true for generate3d node with non-Gemini provider", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "generate3d",
-        position: { x: 0, y: 0 },
-        data: {
-          selectedModel: {
-            provider: "fal",
-            modelId: "fal-3d",
-            displayName: "Fal 3D",
-          },
-          status: "idle",
-        },
-      },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(true);
-  });
-
-  it("should return false for generate3d node with no selectedModel", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "generate3d",
-        position: { x: 0, y: 0 },
-        data: { status: "idle" },
-      },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(false);
-  });
-
-  it("should return true when mixed Gemini and non-Gemini nodes exist", () => {
-    const nodes: WorkflowNode[] = [
-      {
-        id: "1",
-        type: "nanoBanana",
-        position: { x: 0, y: 0 },
-        data: {
-          model: "nano-banana",
-          resolution: "1K",
-          selectedModel: {
-            provider: "gemini",
-            modelId: "nano-banana",
-            displayName: "Nano Banana",
-          },
-        },
-      },
-      {
-        id: "2",
-        type: "nanoBanana",
-        position: { x: 100, y: 0 },
-        data: {
-          model: "nano-banana",
-          resolution: "1K",
-          selectedModel: {
-            provider: "fal",
-            modelId: "fal-ai/flux",
-            displayName: "Flux",
-          },
-        },
-      },
-    ];
-    expect(hasNonGeminiProviders(nodes)).toBe(true);
+    const result = calculatePredictedCost(nodes);
+    expect(result.breakdown[0].unit).toBe("video");
   });
 });

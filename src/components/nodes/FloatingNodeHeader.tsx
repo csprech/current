@@ -7,6 +7,7 @@ import { NodeType, ProviderType } from "@/types";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { copyImageToClipboard, getNodeImageSource } from "@/utils/clipboardMedia";
+import { estimateNodeRunCost, formatCost } from "@/utils/costCalculator";
 import { useToast } from "@/components/Toast";
 import { ProviderBadge } from "./ProviderBadge";
 import { getNodeRole, type NodeRole } from "./nodePresentation";
@@ -113,6 +114,12 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
   const duplicateNodes = useWorkflowStore((state) => state.duplicateNodes);
   const executeWorkflow = useWorkflowStore((state) => state.executeWorkflow);
   const isWorkflowRunning = useWorkflowStore((state) => state.isRunning);
+  // Estimated cost of one run of this node (primitive selector — no object churn)
+  const runCost = useWorkflowStore((state) => {
+    if (!RUNNABLE_TYPES.has(type)) return null;
+    const node = state.nodes.find((n) => n.id === id);
+    return node ? estimateNodeRunCost(node) : null;
+  });
 
   const titleInputRef = useRef<HTMLInputElement>(null);
   const commentPopoverRef = useRef<HTMLDivElement>(null);
@@ -634,21 +641,27 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
             </div>
           )}
 
-          {/* Run Button */}
+          {/* Run Button — shows the estimated per-run cost when pricing is known */}
           {canRun && onRunNode && (
             <div className="relative shrink-0 group">
               <button
                 onClick={() => onRunNode(id)}
                 disabled={isExecuting}
                 className="current-media-action current-media-action--primary current-node-header__run nodrag nopan"
-                title="Run this node"
+                title={
+                  runCost === null
+                    ? "Run this node"
+                    : runCost === 0
+                      ? "Run this node (free — runs locally)"
+                      : `Run this node (est. ${formatCost(runCost)})`
+                }
                 aria-label="Run this node"
               >
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <span className="max-w-0 opacity-0 whitespace-nowrap text-[10px] transition-all duration-200 ease-in-out overflow-hidden group-hover:max-w-[60px] group-hover:opacity-100 group-hover:ml-1">
-                  Run node
+                <span className="max-w-0 opacity-0 whitespace-nowrap text-[10px] transition-all duration-200 ease-in-out overflow-hidden group-hover:max-w-[96px] group-hover:opacity-100 group-hover:ml-1">
+                  {runCost === null ? "Run node" : runCost === 0 ? "Run · free" : `Run · ${formatCost(runCost)}`}
                 </span>
               </button>
             </div>

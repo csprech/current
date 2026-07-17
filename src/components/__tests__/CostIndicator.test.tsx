@@ -442,8 +442,8 @@ describe("CostIndicator", () => {
     });
   });
 
-  describe("Non-Gemini Provider Hiding", () => {
-    it("should not render when a nanoBanana node has a non-Gemini selectedModel", () => {
+  describe("Non-Gemini Providers", () => {
+    it("should render with a + marker when an external model has no pricing data", () => {
       const nodes: WorkflowNode[] = [
         {
           id: "node-1",
@@ -453,9 +453,9 @@ describe("CostIndicator", () => {
             model: "nano-banana",
             resolution: "1K",
             selectedModel: {
-              provider: "fal",
-              modelId: "fal-ai/flux",
-              displayName: "Flux",
+              provider: "replicate",
+              modelId: "some-model",
+              displayName: "Some Model",
             },
           },
         },
@@ -467,10 +467,14 @@ describe("CostIndicator", () => {
 
       render(<CostIndicator />);
 
-      expect(screen.queryByTitle("View cost details")).not.toBeInTheDocument();
+      const button = screen.getByRole("button", { name: "$0.00+" });
+      expect(button).toHaveAttribute(
+        "title",
+        expect.stringContaining("1 generation without pricing data")
+      );
     });
 
-    it("should not render when a generateVideo node has a non-Gemini selectedModel", () => {
+    it("should include external models with carried pricing in the total", () => {
       const nodes: WorkflowNode[] = [
         {
           id: "node-1",
@@ -481,6 +485,7 @@ describe("CostIndicator", () => {
               provider: "kie",
               modelId: "kling-video",
               displayName: "Kling Video",
+              pricing: { type: "per-run", amount: 0.35 },
             },
             status: "idle",
           },
@@ -493,33 +498,10 @@ describe("CostIndicator", () => {
 
       render(<CostIndicator />);
 
-      expect(screen.queryByTitle("View cost details")).not.toBeInTheDocument();
-    });
-
-    it("should not render when a generate3d node has a non-Gemini selectedModel", () => {
-      const nodes: WorkflowNode[] = [
-        {
-          id: "node-1",
-          type: "generate3d",
-          position: { x: 0, y: 0 },
-          data: {
-            selectedModel: {
-              provider: "fal",
-              modelId: "fal-3d",
-              displayName: "Fal 3D",
-            },
-            status: "idle",
-          },
-        },
-      ];
-
-      mockUseWorkflowStore.mockImplementation((selector) => {
-        return selector(createDefaultState({ nodes }));
-      });
-
-      render(<CostIndicator />);
-
-      expect(screen.queryByTitle("View cost details")).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "$0.35" })).toHaveAttribute(
+        "title",
+        "View cost details"
+      );
     });
 
     it("should render when a nanoBanana node has selectedModel with provider gemini", () => {
@@ -571,7 +553,7 @@ describe("CostIndicator", () => {
       expect(screen.getByTitle("View cost details")).toBeInTheDocument();
     });
 
-    it("should not render when mix of Gemini and non-Gemini nodes exist", () => {
+    it("should show the priced subtotal plus a marker when Gemini and unpriced nodes mix", () => {
       const nodes: WorkflowNode[] = [
         {
           id: "node-1",
@@ -604,7 +586,8 @@ describe("CostIndicator", () => {
 
       render(<CostIndicator />);
 
-      expect(screen.queryByTitle("View cost details")).not.toBeInTheDocument();
+      // Gemini node priced ($0.039 → $0.04), replicate node counted as unpriced
+      expect(screen.getByRole("button", { name: "$0.04+" })).toBeInTheDocument();
     });
   });
 });

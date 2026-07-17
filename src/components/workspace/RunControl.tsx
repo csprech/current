@@ -6,6 +6,7 @@ import { CurrentButton } from "@/components/current/CurrentButton";
 import { ChevronDownIcon, PlayIcon, StopIcon } from "@/components/current/CurrentIcons";
 import { useFTUXStore, type TutorialStep } from "@/store/ftuxStore";
 import { useWorkflowStore } from "@/store/workflowStore";
+import { calculatePredictedCost, formatCost } from "@/utils/costCalculator";
 
 export function RunControl() {
   const {
@@ -71,6 +72,17 @@ export function RunControl() {
     () => validateWorkflow(),
     [edges, nodes, validateWorkflow]
   );
+
+  // Estimated cost of a full run, surfaced on hover of the Run button
+  const runCostTitle = useMemo(() => {
+    const predicted = calculatePredictedCost(nodes);
+    if (predicted.nodeCount === 0) return undefined;
+    const unknown = predicted.unknownPricingCount;
+    const base = `Estimated cost: ${formatCost(predicted.totalCost)}`;
+    return unknown > 0
+      ? `${base} + ${unknown} generation${unknown === 1 ? "" : "s"} without pricing data`
+      : base;
+  }, [nodes]);
 
   useEffect(() => {
     if (isRunning || !valid) setRunMenuOpen(false);
@@ -161,6 +173,7 @@ export function RunControl() {
         className="current-run-control__primary"
         aria-label={isRunning ? "Stop workflow" : "Run"}
         aria-describedby={!valid && !isRunning ? validationId : undefined}
+        title={isRunning ? undefined : runCostTitle}
         disabled={!valid && !isRunning}
         onClick={handleRun}
         data-tutorial="floating-run-button"
