@@ -45,6 +45,8 @@ export interface ConnectedInputs {
   textItems: string[]; // All items from array batch mode (empty when not in batch)
   dynamicInputs: Record<string, string | string[]>;
   easeCurve: { bezierHandles: [number, number, number, number]; easingPreset: string | null; outputDuration: number } | null;
+  /** Inpainting mask connected to a generator's "mask" handle (white = edit region). */
+  mask?: string | null;
 }
 
 /**
@@ -78,7 +80,11 @@ export function getSourceOutput(
   } else if (sourceNode.type === "audioInput") {
     return { type: "audio", value: (sourceNode.data as AudioInputNodeData).audioFile };
   } else if (sourceNode.type === "annotation") {
-    return { type: "image", value: (sourceNode.data as AnnotationNodeData).outputImage };
+    const annotationData = sourceNode.data as AnnotationNodeData;
+    if (sourceHandle === "mask") {
+      return { type: "image", value: annotationData.outputMask ?? null };
+    }
+    return { type: "image", value: annotationData.outputImage };
   } else if (sourceNode.type === "nanoBanana") {
     const nbData = sourceNode.data as NanoBananaNodeData;
     return { type: "image", value: nbData.outputImage };
@@ -189,6 +195,7 @@ export function getConnectedInputsPure(
   const textItems: string[] = [];
   const dynamicInputs: Record<string, string | string[]> = {};
   let easeCurve: ConnectedInputs["easeCurve"] = null;
+  let mask: string | null = null;
 
   // Get the target node to check for inputSchema
   const targetNode = nodes.find((n) => n.id === nodeId);
@@ -368,7 +375,10 @@ export function getConnectedInputsPure(
       }
 
       // Route to typed arrays based on source output type
-      if (type === "3d") {
+      if (handleId === "mask" && type === "image") {
+        // Inpainting mask handle: single image, kept out of the images array
+        if (!mask) mask = value;
+      } else if (type === "3d") {
         model3d = value;
       } else if (type === "video") {
         videos.push(value);
@@ -401,7 +411,7 @@ export function getConnectedInputsPure(
     }
   }
 
-  return { images, videos, audio, model3d, text, textItems, dynamicInputs, easeCurve };
+  return { images, videos, audio, model3d, text, textItems, dynamicInputs, easeCurve, mask };
 }
 
 /**

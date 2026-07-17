@@ -144,6 +144,8 @@ const getHandleType = (handleId: string | null | undefined): "image" | "text" | 
   if (handleId === "video") return "video";
   if (handleId === "audio" || handleId.startsWith("audio")) return "audio";
   if (handleId === "image" || handleId === "text") return handleId;
+  // Inpainting mask handles carry image data
+  if (handleId === "mask") return "image";
   // Dynamic handles - check naming patterns (including indexed: text-0, image-0)
   if (handleId.includes("video")) return "video";
   if (handleId.startsWith("image-") || handleId.includes("image") || handleId.includes("frame")) return "image";
@@ -1302,7 +1304,8 @@ export function WorkflowCanvas() {
             sourceHandleIdForNewNode = "image";
           }
         } else if (nodeType === "nanoBanana" || nodeType === "generateVideo") {
-          targetHandleId = "image";
+          // Dragging from an annotation's mask output targets the mask input
+          targetHandleId = nodeType === "nanoBanana" && sourceHandleId === "mask" ? "mask" : "image";
         } else if (nodeType === "imageInput") {
           sourceHandleIdForNewNode = "image";
         }

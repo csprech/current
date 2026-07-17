@@ -184,6 +184,17 @@ export function AnnotationModal() {
         case "freehand":
           newShape = { ...baseShape, type: "freehand", points: [0, 0] } as FreehandShape;
           break;
+        case "mask":
+          // Inpainting brush: a fat freehand stroke flagged isMask — excluded
+          // from the flattened image, baked white-on-black into outputMask.
+          newShape = {
+            ...baseShape,
+            type: "freehand",
+            points: [0, 0],
+            strokeWidth: toolOptions.strokeWidth * 10,
+            isMask: true,
+          } as FreehandShape;
+          break;
         case "text": {
           // Calculate screen position for the input
           const stage = stageRef.current;
@@ -284,7 +295,7 @@ export function AnnotationModal() {
     const konvaImage = new Konva.Image({ image, width: image.width, height: image.height });
     tempLayer.add(konvaImage);
 
-    annotations.forEach((shape) => {
+    annotations.filter((shape) => !shape.isMask).forEach((shape) => {
       let konvaShape: Konva.Shape | null = null;
       switch (shape.type) {
         case "rectangle": {
@@ -322,12 +333,65 @@ export function AnnotationModal() {
     return dataUrl;
   }, [image, annotations]);
 
+  /** Bake isMask shapes white-on-black at image size; null when none exist. */
+  const flattenMask = useCallback((): string | null => {
+    if (!image) return null;
+    const maskShapes = annotations.filter((shape) => shape.isMask);
+    if (maskShapes.length === 0) return null;
+
+    const tempStage = new Konva.Stage({
+      container: document.createElement("div"),
+      width: image.width,
+      height: image.height,
+    });
+    const tempLayer = new Konva.Layer();
+    tempStage.add(tempLayer);
+    tempLayer.add(new Konva.Rect({ x: 0, y: 0, width: image.width, height: image.height, fill: "#000000" }));
+
+    maskShapes.forEach((shape) => {
+      switch (shape.type) {
+        case "freehand": {
+          const freehand = shape as FreehandShape;
+          tempLayer.add(new Konva.Line({
+            x: freehand.x, y: freehand.y, points: freehand.points,
+            stroke: "#ffffff", strokeWidth: freehand.strokeWidth,
+            opacity: 1, lineCap: "round", lineJoin: "round",
+          }));
+          break;
+        }
+        case "rectangle": {
+          const rect = shape as RectangleShape;
+          tempLayer.add(new Konva.Rect({ x: rect.x, y: rect.y, width: rect.width, height: rect.height, fill: "#ffffff", opacity: 1 }));
+          break;
+        }
+        case "circle": {
+          const circle = shape as CircleShape;
+          tempLayer.add(new Konva.Ellipse({ x: circle.x, y: circle.y, radiusX: circle.radiusX, radiusY: circle.radiusY, fill: "#ffffff", opacity: 1 }));
+          break;
+        }
+        default:
+          break;
+      }
+    });
+
+    tempLayer.draw();
+    const dataUrl = tempStage.toDataURL({ pixelRatio: 1 });
+    tempStage.destroy();
+    return dataUrl;
+  }, [image, annotations]);
+
   const handleDone = useCallback(() => {
     if (!sourceNodeId) return;
     const flattenedImage = flattenImage();
-    updateNodeData(sourceNodeId, { annotations, outputImage: flattenedImage, outputImageRef: undefined });
+    const flattenedMask = flattenMask();
+    updateNodeData(sourceNodeId, {
+      annotations,
+      outputImage: flattenedImage,
+      outputImageRef: undefined,
+      outputMask: flattenedMask,
+    });
     closeModal();
-  }, [sourceNodeId, annotations, flattenImage, updateNodeData, closeModal]);
+  }, [sourceNodeId, annotations, flattenImage, flattenMask, updateNodeData, closeModal]);
 
   const renderShape = (shape: AnnotationShape, isPreview = false) => {
     const commonProps = {
@@ -353,6 +417,10 @@ export function AnnotationModal() {
       }
       case "freehand": {
         const freehand = shape as FreehandShape;
+        if (freehand.isMask) {
+          // Mask strokes preview as a translucent info-blue highlight
+          return <Line key={shape.id} {...commonProps} opacity={0.4} x={freehand.x} y={freehand.y} points={freehand.points} stroke="#1151ff" strokeWidth={freehand.strokeWidth} lineCap="round" lineJoin="round" />;
+        }
         return <Line key={shape.id} {...commonProps} x={freehand.x} y={freehand.y} points={freehand.points} stroke={freehand.stroke} strokeWidth={freehand.strokeWidth} lineCap="round" lineJoin="round" />;
       }
       case "text": {
@@ -408,6 +476,7 @@ export function AnnotationModal() {
     { type: "arrow", label: "Arrow" },
     { type: "freehand", label: "Draw" },
     { type: "text", label: "Text" },
+    { type: "mask", label: "Mask" },
   ];
 
   return (

@@ -348,6 +348,7 @@ describe("AnnotationNode", () => {
         sourceImageRef: undefined,
         outputImage: null,
         outputImageRef: undefined,
+        outputMask: null,
         annotations: [],
       });
     });
@@ -415,6 +416,7 @@ describe("AnnotationNode", () => {
           sourceImageRef: undefined,
           outputImage: null,
           outputImageRef: undefined,
+          outputMask: null,
           annotations: [],
         });
       });

@@ -33,7 +33,7 @@ const AI_NODE_DOCS: Record<NodeType, AINodeDoc> = {
   generate3d: { io: "image?, text? → 3d", purpose: "AI 3D model generation (text-to-3D or image-to-3D)" },
   generateAudio: { io: "text → audio", purpose: "AI audio generation (speech, music, sound effects)" },
   llmGenerate: { io: "text, image? → text", purpose: "LLM text generation for prompt expansion or image analysis" },
-  annotation: { io: "image → image", purpose: "Draw or mark up an image on a canvas editor" },
+  annotation: { io: "image → image + mask", purpose: "Draw or mark up an image on a canvas editor; the Mask tool paints an inpainting region — connect its mask output to a generator's mask input to edit only that region" },
   splitGrid: { io: "image → reference", purpose: "Split one image into grid cells, creating child input+generate nodes" },
   videoStitch: { io: "video*, audio? → video", purpose: "Concatenate video clips in order, optionally with an audio track" },
   videoTrim: { io: "video → video", purpose: "Trim the start/end of a clip" },

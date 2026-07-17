@@ -467,6 +467,9 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   font-size: 0.6875rem;
   box-shadow: 0 8px 20px var(--current-shadow);
 }
+/* The launchpad covers the canvas, so run validation for the (empty) canvas
+   behind it is noise — suppress it while the launchpad is up. */
+body:has(.current-launchpad) .current-run-control__validation { display: none; }
 .current-run-control__menu { top: calc(100% + 0.5rem); right: 0; }
 .current-command-bar__comments { position: relative; }
 .current-command-bar__comments span {

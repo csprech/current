@@ -475,9 +475,12 @@ describe("GenerateImageNode", () => {
           </TestWrapper>
         );
 
-        // Component uses static handles - always 1 image input and 1 text input
+        // Component uses static handles — one image input, one mask input
+        // (image-typed), and one text input, regardless of schema
         const imageInputHandles = container.querySelectorAll('[data-handletype="image"][class*="target"]');
-        expect(imageInputHandles.length).toBe(1);
+        expect(imageInputHandles.length).toBe(2);
+        const handleIds = Array.from(imageInputHandles).map((h) => h.getAttribute("data-handleid")).sort();
+        expect(handleIds).toEqual(["image", "mask"]);
 
         const textHandles = container.querySelectorAll('[data-handletype="text"]');
         expect(textHandles.length).toBe(1);

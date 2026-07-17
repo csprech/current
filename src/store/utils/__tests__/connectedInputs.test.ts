@@ -58,6 +58,48 @@ describe("getConnectedInputsPure", () => {
     expect(result.images).toEqual(["data:image/png;base64,xyz"]);
   });
 
+  it("routes the annotation mask output into mask, not the images array", () => {
+    const nodes = [
+      makeNode("ann", "annotation", {
+        outputImage: "data:image/png;base64,clean",
+        outputMask: "data:image/png;base64,mask",
+      }),
+      makeNode("gen", "nanoBanana"),
+    ];
+    const edges = [
+      makeEdge("ann", "gen", "image"),
+      {
+        id: "ann-gen-mask",
+        source: "ann",
+        target: "gen",
+        sourceHandle: "mask",
+        targetHandle: "mask",
+      } as WorkflowEdge,
+    ];
+    const result = getConnectedInputsPure("gen", nodes, edges);
+    expect(result.images).toEqual(["data:image/png;base64,clean"]);
+    expect(result.mask).toBe("data:image/png;base64,mask");
+  });
+
+  it("returns a null mask when the annotation has no painted mask", () => {
+    const nodes = [
+      makeNode("ann", "annotation", { outputImage: "data:image/png;base64,clean", outputMask: null }),
+      makeNode("gen", "nanoBanana"),
+    ];
+    const edges = [
+      {
+        id: "ann-gen-mask",
+        source: "ann",
+        target: "gen",
+        sourceHandle: "mask",
+        targetHandle: "mask",
+      } as WorkflowEdge,
+    ];
+    const result = getConnectedInputsPure("gen", nodes, edges);
+    expect(result.mask ?? null).toBeNull();
+    expect(result.images).toEqual([]);
+  });
+
   it("should extract image from nanoBanana output", () => {
     const nodes = [
       makeNode("nb", "nanoBanana", { outputImage: "data:image/png;base64,nb" }),

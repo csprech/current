@@ -681,6 +681,16 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
       />
       {/* Prompt label */}
       <HandleLabel label="Prompt" side="target" color="var(--handle-color-text)" top="calc(65% - 18px)" visible={showLabels} />
+      {/* Inpainting mask input (white marks the region to edit) */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="mask"
+        style={{ top: "85%", zIndex: 10 }}
+        data-handletype="image"
+        isConnectable={true}
+      />
+      <HandleLabel label="Mask" side="target" color="var(--handle-color-image)" top="calc(85% - 18px)" visible={showLabels} />
       {/* Output handle */}
       <Handle
         type="source"
