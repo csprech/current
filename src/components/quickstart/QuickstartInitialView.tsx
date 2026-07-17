@@ -21,7 +21,7 @@ export function QuickstartInitialView({
         {/* Left column - Info */}
         <div className="flex-1 flex flex-col">
           <div className="mb-4">
-            <CurrentMark showWordmark wordmarkTone="color" />
+            <CurrentMark showWordmark />
           </div>
 
           <p className="text-sm text-neutral-400 leading-relaxed mb-6">

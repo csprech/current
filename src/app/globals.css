@@ -171,16 +171,10 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   object-fit: contain;
 }
 
-.current-brand-asset--white { display: none; }
-.current-brand-asset--wordmark-color { display: none; }
+.current-brand-asset--wordmark-white { display: none; }
 
-.current-brand-wordmark--color .current-brand-asset--black { display: none; }
-.current-brand-wordmark--color .current-brand-asset--wordmark-color { display: block; }
-
-:root[data-appearance="dark"] .current-brand-asset--icon-color,
-:root[data-appearance="dark"] .current-brand-asset--wordmark-color,
-:root[data-appearance="dark"] .current-brand-asset--black { display: none; }
-:root[data-appearance="dark"] .current-brand-asset--white { display: block; }
+:root[data-appearance="dark"] .current-brand-asset--wordmark-black { display: none; }
+:root[data-appearance="dark"] .current-brand-asset--wordmark-white { display: block; }
 
 .current-button,
 .current-icon-button,

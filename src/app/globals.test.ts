@@ -280,9 +280,10 @@ describe("Current Add Palette brand colors", () => {
   it("adapts the supplied Current assets to the active appearance", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    expect(css).toMatch(/\.current-brand-asset--white\s*\{[\s\S]*?display:\s*none/);
-    expect(css).toMatch(/\.current-brand-wordmark--color \.current-brand-asset--black\s*\{[\s\S]*?display:\s*none/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--icon-color,[\s\S]*?display:\s*none/);
-    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--white\s*\{[\s\S]*?display:\s*block/);
+    expect(css).toMatch(/\.current-brand-asset--wordmark-white\s*\{[\s\S]*?display:\s*none/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--wordmark-black\s*\{[\s\S]*?display:\s*none/);
+    expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--wordmark-white\s*\{[\s\S]*?display:\s*block/);
+    expect(css).not.toContain("current-brand-asset--icon-color");
+    expect(css).not.toContain("current-brand-asset--wordmark-color");
   });
 });
