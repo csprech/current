@@ -187,6 +187,7 @@ export interface NanoBananaNodeData extends BaseNodeData {
   inputImages: string[]; // Now supports multiple images
   inputImageRefs?: string[]; // External image references for storage optimization
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   outputImage: string | null;
   outputImageRef?: string; // External image reference for storage optimization
   aspectRatio: AspectRatio;
@@ -217,6 +218,7 @@ export interface GenerateVideoNodeData extends BaseNodeData {
   inputImages: string[];
   inputImageRefs?: string[]; // External image references for storage optimization
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   outputVideo: string | null; // Video data URL or URL
   outputVideoRef?: string; // External video reference for storage optimization
   selectedModel?: SelectedModel; // Required for video generation (no legacy fallback)
@@ -242,6 +244,7 @@ export interface Generate3DNodeData extends BaseNodeData {
   inputImages: string[];
   inputImageRefs?: string[];
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   output3dUrl: string | null;
   savedFilename: string | null;
   savedFilePath: string | null;
@@ -274,6 +277,7 @@ export interface CarouselAudioItem {
  */
 export interface GenerateAudioNodeData extends BaseNodeData {
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   outputAudio: string | null; // Audio data URL
   outputAudioRef?: string; // External audio reference for storage optimization
   selectedModel?: SelectedModel; // Required for audio generation
@@ -299,6 +303,7 @@ export interface GenerateAudioNodeData extends BaseNodeData {
  */
 export interface LLMGenerateNodeData extends BaseNodeData {
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   inputImages: string[];
   inputImageRefs?: string[]; // External image references for storage optimization
   outputText: string | null;

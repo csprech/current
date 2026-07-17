@@ -110,6 +110,45 @@ describe("executeNanoBanana", () => {
     });
   });
 
+  it("should use the inline prompt when no text is connected", async () => {
+    const node = makeNode({ inlinePrompt: "inline fox" });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, image: "data:image/png;base64,result" }),
+    });
+
+    const ctx = makeCtx(node, {
+      getConnectedInputs: vi.fn().mockReturnValue({
+        images: [],
+        videos: [],
+        audio: [],
+        text: null,
+        dynamicInputs: {},
+        easeCurve: null,
+      }),
+    });
+
+    await executeNanoBanana(ctx);
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+    expect(body.prompt).toBe("inline fox");
+  });
+
+  it("should prefer connected text over the inline prompt", async () => {
+    const node = makeNode({ inlinePrompt: "inline fox" });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, image: "data:image/png;base64,result" }),
+    });
+
+    const ctx = makeCtx(node); // default ctx provides connected text "test prompt"
+
+    await executeNanoBanana(ctx);
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+    expect(body.prompt).toBe("test prompt");
+  });
+
   it("should set loading status before API call", async () => {
     const node = makeNode();
     mockFetch.mockResolvedValueOnce({

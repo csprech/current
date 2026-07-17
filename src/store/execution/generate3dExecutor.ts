@@ -46,13 +46,13 @@ export async function executeGenerate3D(
 
   if (useStoredFallback) {
     images = connectedImages.length > 0 ? connectedImages : nodeData.inputImages;
-    promptText = connectedText ?? nodeData.inputPrompt;
+    promptText = connectedText ?? (nodeData.inlinePrompt || nodeData.inputPrompt);
   } else {
     images = connectedImages;
     const promptFromDynamic = Array.isArray(dynamicInputs.prompt)
       ? dynamicInputs.prompt[0]
       : dynamicInputs.prompt;
-    promptText = connectedText || promptFromDynamic || null;
+    promptText = connectedText || promptFromDynamic || nodeData.inlinePrompt || null;
   }
 
   // 3D models may work with just images (image-to-3d) or just text (text-to-3d)

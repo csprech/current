@@ -47,7 +47,7 @@ export async function executeGenerateVideo(
 
   if (useStoredFallback) {
     images = connectedImages.length > 0 ? connectedImages : nodeData.inputImages;
-    text = connectedText ?? nodeData.inputPrompt;
+    text = connectedText ?? (nodeData.inlinePrompt || nodeData.inputPrompt);
     const hasPrompt = text || dynamicInputs.prompt || dynamicInputs.negative_prompt;
     const hasAudio = connectedAudio.length > 0;
     const hasVideo = connectedVideos.length > 0;
@@ -60,7 +60,7 @@ export async function executeGenerateVideo(
     }
   } else {
     images = connectedImages;
-    text = connectedText;
+    text = connectedText || nodeData.inlinePrompt || null;
     const hasPrompt = text || dynamicInputs.prompt || dynamicInputs.negative_prompt;
     const hasAudio = connectedAudio.length > 0;
     const hasVideo = connectedVideos.length > 0;

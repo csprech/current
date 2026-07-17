@@ -14,6 +14,7 @@ import { useAudioVisualization } from "@/hooks/useAudioVisualization";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
+import { InlinePromptField } from "./InlinePromptField";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { downloadMedia } from "@/utils/downloadMedia";
@@ -334,6 +335,14 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             onExpandChange={handleParametersExpandChange}
           />
         )}
+
+        <InlinePromptField
+          nodeId={id}
+          value={nodeData.inlinePrompt}
+          variant="block"
+          className="mt-1.5"
+          placeholder="Describe the audio to generate…"
+        />
 
         {/* Output audio player */}
         {nodeData.outputAudio && (

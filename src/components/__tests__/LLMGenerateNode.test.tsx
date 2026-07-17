@@ -30,6 +30,7 @@ describe("LLMGenerateNode", () => {
     // Default mock implementation
     mockUseWorkflowStore.mockImplementation((selector) => {
       const state = {
+        edges: [],
         updateNodeData: mockUpdateNodeData,
         regenerateNode: mockRegenerateNode,
         isRunning: false,
@@ -196,6 +197,7 @@ describe("LLMGenerateNode", () => {
     it("should disable regenerate button when workflow is running", () => {
       mockUseWorkflowStore.mockImplementation((selector) => {
         const state = {
+          edges: [],
           updateNodeData: mockUpdateNodeData,
           regenerateNode: mockRegenerateNode,
           isRunning: true,

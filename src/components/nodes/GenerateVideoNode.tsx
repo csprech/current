@@ -17,6 +17,7 @@ import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
 import { useVideoAutoplay } from "@/hooks/useVideoAutoplay";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
+import { InlinePromptField } from "./InlinePromptField";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { downloadMedia } from "@/utils/downloadMedia";
@@ -872,6 +873,18 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
             )}
           </div>
         )}
+
+        <InlinePromptField
+          nodeId={id}
+          value={nodeData.inlinePrompt}
+          className={
+            nodeData.outputVideo
+              ? hasCarouselVideos
+                ? "bottom-[4.75rem]"
+                : "bottom-12"
+              : "bottom-1"
+          }
+        />
       </div>
 
     </BaseNode>

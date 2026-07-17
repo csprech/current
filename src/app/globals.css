@@ -963,6 +963,23 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-node-header__menu-danger:hover,
 .current-node-header__menu-danger:focus-visible { background: color-mix(in srgb, var(--current-danger) 9%, var(--current-paper)); }
 
+/* Inline prompt typed directly on generation nodes. */
+.current-inline-prompt {
+  display: block;
+  color: var(--current-text-primary);
+  background: color-mix(in srgb, var(--current-surface-elevated) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--current-border);
+}
+.current-inline-prompt::placeholder { color: var(--current-text-secondary, #8b98a9); }
+.current-inline-prompt:focus { border-color: var(--current-blue); }
+.current-inline-prompt__linked {
+  color: var(--current-text-primary);
+  background: color-mix(in srgb, var(--current-surface-elevated) 85%, transparent);
+  border: 1px solid var(--current-border);
+}
+
 /* Frosted transient chrome, reserved for overlays and contextual controls. */
 .current-transient-surface {
   color: var(--current-text-primary);

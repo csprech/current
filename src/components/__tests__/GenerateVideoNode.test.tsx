@@ -102,6 +102,7 @@ describe("GenerateVideoNode", () => {
     // Default mock implementation
     mockUseWorkflowStore.mockImplementation((selector) => {
       const state = {
+        edges: [],
         updateNodeData: mockUpdateNodeData,
         regenerateNode: mockRegenerateNode,
         addNode: mockAddNode,

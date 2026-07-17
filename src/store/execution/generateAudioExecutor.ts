@@ -45,7 +45,7 @@ export async function executeGenerateAudio(
   let text: string | null;
 
   if (useStoredFallback) {
-    text = connectedText ?? nodeData.inputPrompt;
+    text = connectedText ?? (nodeData.inlinePrompt || nodeData.inputPrompt);
     const hasPrompt = text || dynamicInputs.prompt;
     if (!hasPrompt) {
       updateNodeData(node.id, {
@@ -55,7 +55,7 @@ export async function executeGenerateAudio(
       throw new Error("Missing text input for audio generation");
     }
   } else {
-    text = connectedText;
+    text = connectedText || nodeData.inlinePrompt || null;
     const hasPrompt = text || dynamicInputs.prompt;
     if (!hasPrompt) {
       updateNodeData(node.id, {
