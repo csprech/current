@@ -97,6 +97,16 @@ describe("AddPalette", () => {
     expect(JSON.parse(sessionStorage.getItem("current:add-palette-recents")!)).toEqual(["imageInput"]);
   });
 
+  it("centers the node on insertAt when a canvas point was double-clicked", () => {
+    const onClose = vi.fn();
+    render(<AddPalette open insertAt={{ x: 400, y: 300 }} onClose={onClose} />);
+    fireEvent.click(screen.getByRole("button", { name: "Image input" }));
+    // imageInput default dims are 300×280 → top-left lands half a node up-left of the point
+    expect(mockAddNode).toHaveBeenCalledWith("imageInput", { x: 250, y: 160 });
+    expect(mockScreenToFlowPosition).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
   it("keeps recents unique and limited", () => {
     render(<AddPalette open onClose={vi.fn()} />);
     for (const type of ["imageInput", "audioInput", "videoInput", "prompt", "array", "output", "imageInput"]) {

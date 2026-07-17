@@ -23,6 +23,8 @@ export default function Home() {
   const showQuickstart = useWorkflowStore((state) => state.showQuickstart);
   const [showFTUX, setShowFTUX] = useState(false);
   const [addPaletteOpen, setAddPaletteOpen] = useState(false);
+  // Flow-space insertion point for the palette (set by canvas double-click, null = pane center)
+  const [addNodeAt, setAddNodeAt] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     initializeAutoSave();
@@ -50,6 +52,7 @@ export default function Home() {
       const renderedModal = document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"]');
       if (showFTUX || showQuickstart || isModalOpen || modelSearchOpen || shortcutsDialogOpen || renderedModal) return;
       event.preventDefault();
+      setAddNodeAt(null);
       setAddPaletteOpen(true);
     };
     window.addEventListener("keydown", openAddPalette);
@@ -78,9 +81,18 @@ export default function Home() {
   return (
     <ReactFlowProvider>
       <div className="h-screen flex flex-col">
-        <CurrentCommandBar onAddNode={() => setAddPaletteOpen(true)} />
-        <WorkflowCanvas />
-        <AddPalette open={addPaletteOpen} onClose={() => setAddPaletteOpen(false)} />
+        <CurrentCommandBar onAddNode={() => { setAddNodeAt(null); setAddPaletteOpen(true); }} />
+        <WorkflowCanvas
+          onPaneDoubleClick={(position) => {
+            setAddNodeAt(position);
+            setAddPaletteOpen(true);
+          }}
+        />
+        <AddPalette
+          open={addPaletteOpen}
+          insertAt={addNodeAt}
+          onClose={() => { setAddPaletteOpen(false); setAddNodeAt(null); }}
+        />
         <WorkspaceModelSearchDialog />
         {showFTUX && (
           <FTUXModal

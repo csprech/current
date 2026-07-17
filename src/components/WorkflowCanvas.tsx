@@ -11,6 +11,7 @@ import {
   Connection,
   Edge,
   useReactFlow,
+  useNodesInitialized,
   OnConnectEnd,
   Node,
   OnSelectionChangeParams,
@@ -336,7 +337,12 @@ export function decorateNodeSemanticState(
   } as WorkflowNode;
 }
 
-export function WorkflowCanvas() {
+interface WorkflowCanvasProps {
+  /** Double-click on empty canvas, reported in flow coordinates (used to add a node at the cursor). */
+  onPaneDoubleClick?: (position: { x: number; y: number }) => void;
+}
+
+export function WorkflowCanvas({ onPaneDoubleClick }: WorkflowCanvasProps = {}) {
   const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds, workspaceView } =
     useWorkflowStore(useShallow((state) => ({
       nodes: state.nodes,
@@ -373,7 +379,8 @@ export function WorkflowCanvas() {
   const setActiveRightPanel = useWorkflowStore((state) => state.setActiveRightPanel);
   const openAnnotationModal = useAnnotationStore((state) => state.openModal);
   const isAnnotationModalOpen = useAnnotationStore((state) => state.isModalOpen);
-  const { screenToFlowPosition, getViewport, zoomIn, zoomOut, setViewport, setCenter } = useReactFlow();
+  const { screenToFlowPosition, getViewport, zoomIn, zoomOut, setViewport, setCenter, fitView } = useReactFlow();
+  const nodesInitialized = useNodesInitialized();
   const { show: showToast } = useToast();
   const [isDragOver, setIsDragOver] = useState(false);
   const [dropType, setDropType] = useState<"image" | "audio" | "workflow" | "node" | null>(null);
@@ -1870,6 +1877,35 @@ export function WorkflowCanvas() {
   // Fix for React Flow selection bug where nodes with undefined bounds get incorrectly selected.
   // Uses statistical outlier detection to identify and deselect nodes that are clearly
   // outside the actual selection area.
+  // One-time deferred fit, replacing React Flow's fitView prop. The prop's
+  // deferred init fit would also fire when the FIRST node is added to an empty
+  // canvas, recentering the viewport and swallowing any deliberate placement
+  // (double-click add, palette drag-drop). Restored workflows still fit; a
+  // user-positioned first node disarms the fit instead of being teleported.
+  const deferredFitRef = useRef(true);
+  useEffect(() => {
+    if (workspaceView === "outputs") {
+      // ReactFlow remounts on return; behave like a fresh init
+      deferredFitRef.current = true;
+      return;
+    }
+    if (!deferredFitRef.current || !nodesInitialized || nodes.length === 0) return;
+    deferredFitRef.current = false;
+    fitView();
+  }, [workspaceView, nodesInitialized, nodes.length, fitView]);
+
+  // Double-click on the empty pane adds a node at the cursor (zoomOnDoubleClick
+  // is disabled below so the gesture doesn't fight the zoom).
+  const handlePaneDoubleClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (!onPaneDoubleClick || showQuickstart || isModalOpen) return;
+      if (!(event.target instanceof HTMLElement) || !event.target.classList.contains("react-flow__pane")) return;
+      deferredFitRef.current = false;
+      onPaneDoubleClick(screenToFlowPosition({ x: event.clientX, y: event.clientY }));
+    },
+    [onPaneDoubleClick, showQuickstart, isModalOpen, screenToFlowPosition]
+  );
+
   const handleSelectionChange = useCallback(({ nodes: selectedNodes }: OnSelectionChangeParams) => {
     if (selectedNodes.length <= 1) return;
 
@@ -1972,6 +2008,9 @@ export function WorkflowCanvas() {
       if (showQuickstart) return;
       setIsDragOver(false);
       setDropType(null);
+      // Anything dropped at a point is a deliberate placement — don't let the
+      // deferred first-content fit recenter it.
+      deferredFitRef.current = false;
 
       // Check for node type drop from action bar
       const nodeType = event.dataTransfer.getData("application/node-type") as NodeType;
@@ -2204,7 +2243,6 @@ export function WorkflowCanvas() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         isValidConnection={isValidConnection}
-        fitView
         deleteKeyCode={showQuickstart ? null : ["Backspace", "Delete"]}
         multiSelectionKeyCode={showQuickstart ? null : "Shift"}
         selectionOnDrag={
@@ -2238,6 +2276,8 @@ export function WorkflowCanvas() {
         nodeDragThreshold={5}
         nodeClickDistance={5}
         zoomOnScroll={tutorialActive ? false : false}
+        zoomOnDoubleClick={false}
+        onDoubleClick={handlePaneDoubleClick}
         zoomOnPinch={showQuickstart || tutorialActive ? false : !isModalOpen}
         minZoom={0.1}
         maxZoom={4}

@@ -53,6 +53,7 @@ const shortcutGroups: ShortcutGroup[] = [
     title: "Canvas",
     shortcuts: [
       { keys: ["F"], description: "Open media viewer (image/video node selected)" },
+      { keys: ["Double-click"], description: "Add node at cursor" },
       { keys: ["Scroll"], description: "Zoom in / out" },
       { keys: ["Trackpad"], description: "Pan (macOS)" },
       { keys: ["Delete"], description: "Delete selected nodes" },
