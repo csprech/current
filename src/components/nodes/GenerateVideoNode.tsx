@@ -18,6 +18,7 @@ import { useVideoAutoplay } from "@/hooks/useVideoAutoplay";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
 import { InlinePromptField } from "./InlinePromptField";
+import { VariantCountPicker } from "./VariantCountPicker";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { downloadMedia } from "@/utils/downloadMedia";
@@ -422,7 +423,10 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
             />
           )}
 
-          {/* Primary tab: external provider parameters */}
+          {/* Primary tab: variations + external provider parameters */}
+          {settingsTab === "primary" && (
+            <VariantCountPicker nodeId={id} value={nodeData.variantCount} />
+          )}
           {settingsTab === "primary" && nodeData.selectedModel?.modelId && (
             <ModelParameters
               modelId={nodeData.selectedModel.modelId}

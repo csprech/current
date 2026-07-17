@@ -13,6 +13,7 @@ import { calculateGenerationCost } from "@/utils/costCalculator";
 import { buildGenerateHeaders } from "@/store/utils/buildApiHeaders";
 import { pollGenerateTask } from "./pollTaskCompletion";
 import { runWithFallback } from "./runWithFallback";
+import { runWithVariants } from "./variantExecution";
 import type { NodeExecutionContext } from "./types";
 
 export interface NanoBananaOptions {
@@ -21,6 +22,13 @@ export interface NanoBananaOptions {
 }
 
 export async function executeNanoBanana(
+  ctx: NodeExecutionContext,
+  options: NanoBananaOptions = {}
+): Promise<void> {
+  await runWithVariants(ctx, () => executeNanoBananaOnce(ctx, options));
+}
+
+async function executeNanoBananaOnce(
   ctx: NodeExecutionContext,
   options: NanoBananaOptions = {}
 ): Promise<void> {

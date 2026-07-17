@@ -50,6 +50,12 @@ export function getModelCost(pricing: { type: 'per-run' | 'per-second'; amount: 
   };
 }
 
+/** Clamp a node's variants-per-run setting to the supported 1–4 range. */
+function clampVariantCount(value: number | undefined): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 1;
+  return Math.max(1, Math.min(4, Math.round(value)));
+}
+
 /**
  * Hardcoded Gemini pricing for legacy models.
  */
@@ -240,7 +246,7 @@ export function calculatePredictedCost(
       const unitCost = pricing?.unitCost ?? null;
       const unit = pricing?.unit ?? "image";
 
-      addToBreakdown(provider, modelId, modelName, unit, unitCost);
+      addToBreakdown(provider, modelId, modelName, unit, unitCost, clampVariantCount(data.variantCount));
     }
 
     // Handle generateVideo / generateAudio / generate3d nodes — these require
@@ -260,7 +266,10 @@ export function calculatePredictedCost(
         // Per-run pricing reports a generic "image" unit — relabel per media type
         const unit = !pricing || pricing.unit === "image" ? fallbackUnit : pricing.unit;
 
-        addToBreakdown(provider, modelId, modelName, unit, unitCost);
+        const count = node.type === "generateVideo"
+          ? clampVariantCount((data as GenerateVideoNodeData).variantCount)
+          : 1;
+        addToBreakdown(provider, modelId, modelName, unit, unitCost, count);
       }
     }
 

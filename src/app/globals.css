@@ -963,6 +963,24 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-node-header__menu-danger:hover,
 .current-node-header__menu-danger:focus-visible { background: color-mix(in srgb, var(--current-danger) 9%, var(--current-paper)); }
 
+/* Variations-per-run segmented control on generation nodes. */
+.current-variant-option {
+  min-width: 1.55rem;
+  padding: 0.2rem 0.3rem;
+  border: 1px solid var(--current-border);
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--current-text-primary);
+  font-size: 0.7rem;
+  font-weight: 550;
+  cursor: pointer;
+}
+.current-variant-option:hover { background: color-mix(in srgb, var(--current-text-primary) 8%, transparent); }
+.current-variant-option--active {
+  border-color: var(--current-blue);
+  background: color-mix(in srgb, var(--current-blue) 18%, transparent);
+}
+
 /* Inline prompt typed directly on generation nodes. */
 .current-inline-prompt {
   display: block;

@@ -8,6 +8,7 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { copyImageToClipboard, getNodeImageSource } from "@/utils/clipboardMedia";
 import { estimateNodeRunCost, formatCost } from "@/utils/costCalculator";
+import { getVariantCount } from "@/store/execution/variantExecution";
 import { useToast } from "@/components/Toast";
 import { ProviderBadge } from "./ProviderBadge";
 import { getNodeRole, type NodeRole } from "./nodePresentation";
@@ -114,11 +115,13 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
   const duplicateNodes = useWorkflowStore((state) => state.duplicateNodes);
   const executeWorkflow = useWorkflowStore((state) => state.executeWorkflow);
   const isWorkflowRunning = useWorkflowStore((state) => state.isRunning);
-  // Estimated cost of one run of this node (primitive selector — no object churn)
+  // Estimated cost of one run of this node, including variants (primitive selector — no object churn)
   const runCost = useWorkflowStore((state) => {
     if (!RUNNABLE_TYPES.has(type)) return null;
     const node = state.nodes.find((n) => n.id === id);
-    return node ? estimateNodeRunCost(node) : null;
+    if (!node) return null;
+    const perRun = estimateNodeRunCost(node);
+    return perRun === null ? null : perRun * getVariantCount(node);
   });
 
   const titleInputRef = useRef<HTMLInputElement>(null);

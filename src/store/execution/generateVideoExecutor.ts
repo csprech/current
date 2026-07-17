@@ -9,6 +9,7 @@ import type { GenerateVideoNodeData, SelectedModel } from "@/types";
 import { buildGenerateHeaders } from "@/store/utils/buildApiHeaders";
 import { pollGenerateTask } from "./pollTaskCompletion";
 import { runWithFallback } from "./runWithFallback";
+import { runWithVariants } from "./variantExecution";
 import type { NodeExecutionContext } from "./types";
 
 export interface GenerateVideoOptions {
@@ -17,6 +18,13 @@ export interface GenerateVideoOptions {
 }
 
 export async function executeGenerateVideo(
+  ctx: NodeExecutionContext,
+  options: GenerateVideoOptions = {}
+): Promise<void> {
+  await runWithVariants(ctx, () => executeGenerateVideoOnce(ctx, options));
+}
+
+async function executeGenerateVideoOnce(
   ctx: NodeExecutionContext,
   options: GenerateVideoOptions = {}
 ): Promise<void> {

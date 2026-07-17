@@ -8,6 +8,7 @@ import { NodeType, NanoBananaNodeData, LLMGenerateNodeData, GenerateVideoNodeDat
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { ModelParameters } from "./ModelParameters";
+import { VariantCountPicker } from "./VariantCountPicker";
 import { CubicBezierEditor } from "@/components/CubicBezierEditor";
 import { deduplicatedFetch } from "@/utils/deduplicatedFetch";
 import { evaluateRule } from "@/store/utils/ruleEvaluation";
@@ -349,6 +350,7 @@ function GenerateImageControls({ node }: { node: Node }) {
   return (
     <>
       <div className="space-y-3 current-inspector__controls">
+        <VariantCountPicker nodeId={node.id} value={nodeData.variantCount} />
         {/* Model name + provider with link — sits directly under title divider */}
         <div className="current-inspector__model">
           <div className="flex items-start gap-2">
@@ -519,6 +521,7 @@ function GenerateVideoControls({ node }: { node: Node }) {
   return (
     <>
       <div className="space-y-3">
+        <VariantCountPicker nodeId={node.id} value={nodeData.variantCount} />
         {/* Model name + provider with link */}
         <div className="border-t border-neutral-700 pt-3">
           <div className="flex items-start gap-2">

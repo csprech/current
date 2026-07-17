@@ -16,6 +16,7 @@ import { ProviderBadge } from "./ProviderBadge";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
 import { InlinePromptField } from "./InlinePromptField";
+import { VariantCountPicker } from "./VariantCountPicker";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
@@ -532,6 +533,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
           {/* Primary tab content */}
           {settingsTab === "primary" && (
             <>
+              <VariantCountPicker nodeId={id} value={nodeData.variantCount} />
               {/* Gemini-specific controls */}
               {isGeminiProvider && currentModelId && (() => {
                 const controls: React.ReactNode[] = [

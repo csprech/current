@@ -110,6 +110,15 @@ describe("calculatePredictedCost with carried model pricing", () => {
     expect(result.breakdown.find((b) => b.modelId === "tts-model")?.unit).toBe("audio");
   });
 
+  it("multiplies node cost by the variants-per-run setting", () => {
+    const nodes = [
+      makeNode("1", "nanoBanana", { model: "nano-banana", resolution: "1K", variantCount: 3 }),
+    ];
+    const result = calculatePredictedCost(nodes);
+    expect(result.nodeCount).toBe(3);
+    expect(result.totalCost).toBeCloseTo(PRICING["nano-banana"]["1K"] * 3, 5);
+  });
+
   it("relabels per-run video pricing with a video unit", () => {
     const nodes = [
       makeNode("1", "generateVideo", {

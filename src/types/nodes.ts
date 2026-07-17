@@ -188,6 +188,7 @@ export interface NanoBananaNodeData extends BaseNodeData {
   inputImageRefs?: string[]; // External image references for storage optimization
   inputPrompt: string | null;
   inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
+  variantCount?: number; // Variations generated per run (1-4, default 1)
   outputImage: string | null;
   outputImageRef?: string; // External image reference for storage optimization
   aspectRatio: AspectRatio;
@@ -219,6 +220,7 @@ export interface GenerateVideoNodeData extends BaseNodeData {
   inputImageRefs?: string[]; // External image references for storage optimization
   inputPrompt: string | null;
   inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
+  variantCount?: number; // Variations generated per run (1-4, default 1)
   outputVideo: string | null; // Video data URL or URL
   outputVideoRef?: string; // External video reference for storage optimization
   selectedModel?: SelectedModel; // Required for video generation (no legacy fallback)
