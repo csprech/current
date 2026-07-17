@@ -181,6 +181,20 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 :root[data-appearance="dark"] .current-brand-asset--wordmark-black { display: none; }
 :root[data-appearance="dark"] .current-brand-asset--wordmark-white { display: block; }
 
+/* Compact "iso" icon mark — used where the full wordmark is too wide. */
+.current-brand-icon {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 1.2rem;
+  height: 1.3rem;
+}
+
+.current-brand-asset--icon-white { display: none; }
+
+:root[data-appearance="dark"] .current-brand-asset--icon-black { display: none; }
+:root[data-appearance="dark"] .current-brand-asset--icon-white { display: block; }
+
 .current-button,
 .current-icon-button,
 .current-segmented-control button {

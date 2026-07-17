@@ -96,7 +96,7 @@ export function CurrentCommandBar({ onAddNode }: CurrentCommandBarProps) {
           aria-label="Open welcome"
           onClick={() => setShowQuickstart(true)}
         >
-          <CurrentMark />
+          <CurrentMark variant="icon" />
         </button>
         <ProjectMenu />
       </div>
