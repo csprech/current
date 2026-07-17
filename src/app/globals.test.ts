@@ -99,6 +99,18 @@ describe("Current Add Palette brand colors", () => {
     expect(inspectorRun).toContain("background: var(--current-action)");
   });
 
+  it("centers the Current wordmark within the full command-bar height", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const identity = css.match(/\.current-command-bar__identity\s*\{([^}]*)\}/)?.[1];
+    const welcome = css.match(/\.current-command-bar__welcome\s*\{([^}]*)\}/)?.[1];
+
+    expect(identity).toContain("height: 100%");
+    expect(welcome).toContain("display: flex");
+    expect(welcome).toContain("height: 100%");
+    expect(welcome).toContain("align-items: center");
+    expect(welcome).toContain("line-height: 0");
+  });
+
   it("uses adaptive semantic roles across secondary product surfaces", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const addPalette = css.match(/\n\.current-add-palette\s*\{([^}]*)\}/)?.[1];

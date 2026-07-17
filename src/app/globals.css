@@ -292,14 +292,18 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   align-items: center;
 }
 
-.current-command-bar__identity { min-width: 0; gap: 0.5rem; }
+.current-command-bar__identity { height: 100%; min-width: 0; gap: 0.5rem; }
 .current-command-bar__actions { min-width: 0; justify-content: flex-end; gap: 0.125rem; }
 .current-command-bar__welcome {
+  display: flex;
+  height: 100%;
+  align-items: center;
   padding: 0;
   border: 0;
   color: inherit;
   background: transparent;
   cursor: pointer;
+  line-height: 0;
 }
 .current-command-bar__welcome:focus-visible,
 .current-project__trigger:focus-visible,
