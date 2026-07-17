@@ -173,7 +173,10 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   object-fit: contain;
 }
 
-.current-brand-asset--wordmark-white { display: none; }
+.current-brand-asset--wordmark-white {
+  display: none;
+  height: 15px;
+}
 
 :root[data-appearance="dark"] .current-brand-asset--wordmark-black { display: none; }
 :root[data-appearance="dark"] .current-brand-asset--wordmark-white { display: block; }

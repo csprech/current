@@ -294,6 +294,7 @@ describe("Current Add Palette brand colors", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
     expect(css).toMatch(/\.current-brand-asset--wordmark-white\s*\{[\s\S]*?display:\s*none/);
+    expect(css).toMatch(/\.current-brand-asset--wordmark-white\s*\{[\s\S]*?height:\s*15px/);
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--wordmark-black\s*\{[\s\S]*?display:\s*none/);
     expect(css).toMatch(/:root\[data-appearance="dark"\] \.current-brand-asset--wordmark-white\s*\{[\s\S]*?display:\s*block/);
     expect(css).not.toContain("current-brand-asset--icon-color");
