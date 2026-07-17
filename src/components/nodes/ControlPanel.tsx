@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback, useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useShallow } from "zustand/shallow";
 import { Node } from "@xyflow/react";
 import { useWorkflowStore, saveNanoBananaDefaults, useProviderApiKeys } from "@/store/workflowStore";
 import { NodeType, NanoBananaNodeData, LLMGenerateNodeData, GenerateVideoNodeData, Generate3DNodeData, GenerateAudioNodeData, EaseCurveNodeData, ConditionalSwitchNodeData, AspectRatio, Resolution, ModelType, MODEL_DISPLAY_NAMES, ProviderType, SelectedModel, LLMProvider, LLMModelType, MatchMode, ConditionalSwitchRule } from "@/types";
@@ -9,6 +10,7 @@ import { ProviderModel, ModelCapability } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { ModelParameters } from "./ModelParameters";
 import { VariantCountPicker } from "./VariantCountPicker";
+import { BulkParametersPanel, BULK_EDITABLE_NODE_TYPES } from "./BulkParametersPanel";
 import { CubicBezierEditor } from "@/components/CubicBezierEditor";
 import { deduplicatedFetch } from "@/utils/deduplicatedFetch";
 import { evaluateRule } from "@/store/utils/ruleEvaluation";
@@ -82,14 +84,31 @@ function generateEasingPolyline(
  * Displays controls for the currently selected node
  */
 export function ControlPanel({ onClose }: { onClose: () => void }) {
-  const selectedNode = useWorkflowStore((state) => {
-    const selected = state.nodes.filter((n) => n.selected);
-    return selected.length === 1 ? selected[0] : null;
-  });
+  const selectedNodes = useWorkflowStore(
+    useShallow((state) => state.nodes.filter((n) => n.selected))
+  );
+  const selectedNode = selectedNodes.length === 1 ? selectedNodes[0] : null;
   const { inlineParametersEnabled } = useInlineParameters();
 
   // Check if the selected node is configurable
   const isConfigurable = selectedNode && INSPECTOR_CONFIGURABLE_NODE_TYPES.includes(selectedNode.type as NodeType);
+
+  // Bulk edit: 2+ nodes of the same editable type selected
+  const isBulk =
+    selectedNodes.length >= 2 &&
+    BULK_EDITABLE_NODE_TYPES.has(selectedNodes[0].type as string) &&
+    selectedNodes.every((n) => n.type === selectedNodes[0].type);
+
+  if (isBulk) {
+    return (
+      <CurrentPanel side="right" title="Inspector" onClose={onClose}>
+        <div className="current-inspector__selection">{getNodeTypeTitle(selectedNodes[0].type as NodeType)}</div>
+        <div className="space-y-4 mt-4">
+          <BulkParametersPanel nodes={selectedNodes} />
+        </div>
+      </CurrentPanel>
+    );
+  }
 
   // If no single node selected or not configurable, hide panel
   if (!selectedNode || !isConfigurable) {
