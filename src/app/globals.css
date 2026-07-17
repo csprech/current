@@ -52,6 +52,10 @@
   --current-action-hover: #3658c9;
   --current-action-foreground: #ffffff;
   --current-accent-text: #4164d9;
+  --current-media-overlay: #172130;
+  --current-media-overlay-hover: #213147;
+  --current-media-overlay-foreground: #ffffff;
+  --current-media-overlay-border: #8093aa;
   --current-status-success: #18875d;
   --current-status-warning: #a35f00;
   --current-status-danger: #c53c45;
@@ -98,6 +102,10 @@
   --current-action-hover: #3658c9;
   --current-action-foreground: #ffffff;
   --current-accent-text: #6f8cff;
+  --current-media-overlay: #172130;
+  --current-media-overlay-hover: #213147;
+  --current-media-overlay-foreground: #ffffff;
+  --current-media-overlay-border: #8093aa;
   --current-status-success: #47c58d;
   --current-status-warning: #ffb85a;
   --current-status-danger: #ff7b84;
@@ -145,16 +153,10 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   gap: 0.5rem;
 }
 
-.current-brand-icon,
 .current-brand-wordmark {
   position: relative;
   display: block;
   flex: none;
-}
-
-.current-brand-icon {
-  width: 2rem;
-  height: 2rem;
 }
 
 .current-brand-wordmark {
@@ -171,16 +173,13 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   object-fit: contain;
 }
 
-.current-brand-asset--white { display: none; }
-.current-brand-asset--wordmark-color { display: none; }
+.current-brand-asset--wordmark-white {
+  display: none;
+  height: 15px;
+}
 
-.current-brand-wordmark--color .current-brand-asset--black { display: none; }
-.current-brand-wordmark--color .current-brand-asset--wordmark-color { display: block; }
-
-:root[data-appearance="dark"] .current-brand-asset--icon-color,
-:root[data-appearance="dark"] .current-brand-asset--wordmark-color,
-:root[data-appearance="dark"] .current-brand-asset--black { display: none; }
-:root[data-appearance="dark"] .current-brand-asset--white { display: block; }
+:root[data-appearance="dark"] .current-brand-asset--wordmark-black { display: none; }
+:root[data-appearance="dark"] .current-brand-asset--wordmark-white { display: block; }
 
 .current-button,
 .current-icon-button,
@@ -293,14 +292,18 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   align-items: center;
 }
 
-.current-command-bar__identity { min-width: 0; gap: 0.5rem; }
+.current-command-bar__identity { height: 100%; min-width: 0; gap: 0.5rem; }
 .current-command-bar__actions { min-width: 0; justify-content: flex-end; gap: 0.125rem; }
 .current-command-bar__welcome {
+  display: flex;
+  height: 100%;
+  align-items: center;
   padding: 0;
   border: 0;
   color: inherit;
   background: transparent;
   cursor: pointer;
+  line-height: 0;
 }
 .current-command-bar__welcome:focus-visible,
 .current-project__trigger:focus-visible,
@@ -728,6 +731,14 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
    ============================================================ */
 
 /* The stage stays visually quiet so the workflow remains the primary object. */
+.current-canvas-shell {
+  background: var(--current-canvas);
+}
+
+.current-canvas-flow {
+  --xy-background-color: var(--current-canvas);
+}
+
 .react-flow {
   background:
     radial-gradient(130% 90% at 50% -25%, color-mix(in srgb, var(--current-surface-elevated) 46%, transparent) 0%, transparent 55%),
@@ -1016,9 +1027,34 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-media-action:disabled { cursor: not-allowed; opacity: 0.45; }
 .current-media-action--primary { color: var(--current-action-foreground); border-color: transparent; background: var(--current-action); }
 .current-media-action--primary:hover:not(:disabled) { color: var(--current-action-foreground); background: var(--current-action-hover); }
-.current-media-action--overlay { color: var(--current-paper); border-color: rgb(255 255 255 / 18%); background: rgb(37 38 43 / 78%); opacity: 0.76; }
+.current-node-header__run {
+  display: inline-flex;
+  width: auto;
+  min-width: 2rem;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+}
+
+.current-node-header__run:hover:not(:disabled) {
+  padding-right: 0.5rem;
+}
+.current-media-action--overlay {
+  color: var(--current-media-overlay-foreground);
+  border-color: var(--current-media-overlay-border);
+  background: color-mix(in srgb, var(--current-media-overlay) 94%, transparent);
+  box-shadow: 0 5px 14px -6px var(--current-shadow-strong);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  backdrop-filter: blur(12px) saturate(120%);
+  opacity: 1;
+}
 .group:hover .current-media-action--overlay,
-.current-media-action--overlay:hover:not(:disabled) { color: var(--current-paper); background: rgb(37 38 43 / 92%); opacity: 1; }
+.current-media-action--overlay:hover:not(:disabled) {
+  color: var(--current-media-overlay-foreground);
+  border-color: color-mix(in srgb, var(--current-media-overlay-foreground) 68%, var(--current-media-overlay-border));
+  background: var(--current-media-overlay-hover);
+  opacity: 1;
+}
 
 .current-curve-handle {
   width: 1.75rem;
@@ -1430,7 +1466,9 @@ body {
 
 .current-add-palette__categories { display: flex; gap: 5px; padding: 0 18px 12px; overflow-x: auto; }
 .current-add-palette__categories button,
-.current-add-palette__footer button { border: 0; border-radius: 999px; background: transparent; padding: 6px 10px; color: var(--current-text-secondary); font-size: 11px; font-weight: 650; }
+.current-add-palette__footer button { border: 0; border-radius: 999px; background: transparent; color: var(--current-text-secondary); font-size: 11px; font-weight: 650; }
+.current-add-palette__categories button { padding: 8px 14px; }
+.current-add-palette__footer button { padding: 6px 10px; }
 .current-add-palette__categories button[aria-pressed="true"],
 .current-add-palette__categories button:hover,
 .current-add-palette__footer button:hover { background: var(--current-surface-control-hover); color: var(--current-accent-text); }
@@ -1571,7 +1609,7 @@ body {
 
 .current-launchpad__detail {
   width: min(1160px, calc(100vw - 96px));
-  min-height: calc(100% - 96px);
+  height: calc(100% - 96px);
   margin: 48px auto;
   overflow: hidden;
   border: 1px solid var(--current-border);

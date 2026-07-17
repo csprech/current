@@ -18,6 +18,9 @@ const mockCopySelectedNodes = vi.fn();
 const mockPasteNodes = vi.fn();
 const mockClearClipboard = vi.fn();
 const mockSetShowQuickstart = vi.fn();
+const mockClearWorkflow = vi.fn();
+const mockSetWorkflowMetadata = vi.fn();
+const mockSaveToFile = vi.fn();
 const mockUseWorkflowStore = vi.fn();
 
 vi.mock("@/store/workflowStore", () => ({
@@ -83,7 +86,28 @@ vi.mock("@/components/GroupsOverlay", () => ({
 }));
 
 vi.mock("@/components/workspace/Launchpad", () => ({
-  Launchpad: () => <main aria-label="Current launchpad" data-testid="launchpad" />,
+  Launchpad: ({ onNewCanvas }: { onNewCanvas: () => void }) => (
+    <main aria-label="Current launchpad" data-testid="launchpad">
+      <button type="button" onClick={onNewCanvas}>New canvas</button>
+    </main>
+  ),
+}));
+
+vi.mock("@/components/ProjectSetupModal", () => ({
+  ProjectSetupModal: ({
+    isOpen,
+    onSave,
+  }: {
+    isOpen: boolean;
+    onSave: (id: string, name: string, directoryPath: string) => boolean | Promise<boolean>;
+  }) => isOpen ? (
+    <button
+      type="button"
+      onClick={() => void onSave("workflow-1", "New Project", "/tmp/New Project")}
+    >
+      Create project
+    </button>
+  ) : null,
 }));
 
 vi.mock("@/utils/gridSplitter", () => ({
@@ -137,6 +161,8 @@ const createDefaultState = (overrides = {}) => ({
   isModalOpen: false,
   showQuickstart: false,
   setShowQuickstart: mockSetShowQuickstart,
+  clearWorkflow: mockClearWorkflow,
+  saveToFile: mockSaveToFile,
   copySelectedNodes: mockCopySelectedNodes,
   pasteNodes: mockPasteNodes,
   clearClipboard: mockClearClipboard,
@@ -153,13 +179,19 @@ const createDefaultState = (overrides = {}) => ({
   skippedNodeIds: new Set<string>(),
   captureSnapshot: vi.fn(),
   applyEditOperations: vi.fn(() => ({ applied: 0, skipped: [] })),
-  setWorkflowMetadata: vi.fn(),
+  setWorkflowMetadata: mockSetWorkflowMetadata,
   ...overrides,
 });
 
 // Wrapper component for React Flow context
 function TestWrapper({ children }: { children: React.ReactNode }) {
   return <ReactFlowProvider>{children}</ReactFlowProvider>;
+}
+
+function getCanvasShell() {
+  const shell = screen.getByTestId("canvas-workspace").parentElement;
+  if (!shell) throw new Error("Missing workflow canvas shell");
+  return shell;
 }
 
 describe("WorkflowCanvas", () => {
@@ -215,6 +247,18 @@ describe("WorkflowCanvas", () => {
       expect(document.querySelector(".react-flow")).toBeInTheDocument();
     });
 
+    it("binds the canvas shell and React Flow surface to semantic appearance classes", () => {
+      render(
+        <TestWrapper>
+          <WorkflowCanvas />
+        </TestWrapper>
+      );
+
+      expect(getCanvasShell()).toHaveClass("current-canvas-shell");
+      expect(getCanvasShell()).not.toHaveClass("bg-canvas-bg");
+      expect(document.querySelector(".react-flow")).toHaveClass("current-canvas-flow");
+    });
+
     it("should render Background component", () => {
       render(
         <TestWrapper>
@@ -223,7 +267,9 @@ describe("WorkflowCanvas", () => {
       );
 
       // Background pattern should be rendered
-      expect(document.querySelector(".react-flow__background")).toBeInTheDocument();
+      const background = document.querySelector(".react-flow__background");
+      expect(background).toBeInTheDocument();
+      expect(background).toHaveStyle({ "--xy-background-color-props": "var(--current-canvas)" });
     });
 
     it("should render Controls component", () => {
@@ -280,6 +326,25 @@ describe("WorkflowCanvas", () => {
   });
 
   describe("Launchpad", () => {
+    it("persists the initial empty workflow before opening a new canvas", async () => {
+      mockSaveToFile.mockResolvedValue(true);
+      mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
+
+      render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
+
+      fireEvent.click(screen.getByRole("button", { name: "New canvas" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create project" }));
+
+      await waitFor(() => {
+        expect(mockSetWorkflowMetadata).toHaveBeenCalledWith(
+          "workflow-1",
+          "New Project",
+          "/tmp/New Project",
+        );
+        expect(mockSaveToFile).toHaveBeenCalledTimes(1);
+      });
+    });
+
     it("shows the launchpad and makes the canvas inaccessible while quickstart is active", () => {
       mockUseWorkflowStore.mockImplementation((selector) => {
         return selector(createDefaultState({
@@ -326,7 +391,7 @@ describe("WorkflowCanvas", () => {
     it("ignores node and history-media drops while the launchpad is active", () => {
       mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
       render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
-      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const root = getCanvasShell();
 
       fireEvent.dragOver(root, {
         dataTransfer: {
@@ -358,7 +423,7 @@ describe("WorkflowCanvas", () => {
     it("ignores workflow file drops while the launchpad is active", async () => {
       mockUseWorkflowStore.mockImplementation((selector) => selector(createDefaultState({ showQuickstart: true })));
       render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
-      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const root = getCanvasShell();
       const workflowFile = new File([
         JSON.stringify({ version: 1, nodes: [], edges: [] }),
       ], "workflow.json", { type: "application/json" });
@@ -418,7 +483,7 @@ describe("WorkflowCanvas", () => {
     it("reports workflow import failure without a browser alert", async () => {
       const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
       render(<TestWrapper><WorkflowCanvas /></TestWrapper>);
-      const root = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const root = getCanvasShell();
       const invalidWorkflow = new File(["not-json"], "broken.json", { type: "application/json" });
 
       fireEvent.drop(root, {
@@ -474,7 +539,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       // Simulate drag over with node type data
       const mockDataTransfer = {
@@ -501,7 +566,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       // Simulate drag over with image file
       const mockDataTransfer = {
@@ -528,7 +593,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       // Simulate drag over with JSON file
       const mockDataTransfer = {
@@ -555,7 +620,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       // First drag over
       const mockDataTransfer = {
@@ -587,7 +652,7 @@ describe("WorkflowCanvas", () => {
         </TestWrapper>
       );
 
-      const canvas = document.querySelector(".bg-canvas-bg") as HTMLElement;
+      const canvas = getCanvasShell();
 
       const mockDataTransfer = {
         types: ["application/node-type"],

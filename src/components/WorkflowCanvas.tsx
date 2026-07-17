@@ -353,6 +353,7 @@ export function WorkflowCanvas() {
   const captureSnapshot = useWorkflowStore((state) => state.captureSnapshot);
   const applyEditOperations = useWorkflowStore((state) => state.applyEditOperations);
   const setWorkflowMetadata = useWorkflowStore((state) => state.setWorkflowMetadata);
+  const saveToFile = useWorkflowStore((state) => state.saveToFile);
   const setShortcutsDialogOpen = useWorkflowStore((state) => state.setShortcutsDialogOpen);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const clearWorkflow = useWorkflowStore((state) => state.clearWorkflow);
@@ -2074,7 +2075,7 @@ export function WorkflowCanvas() {
   return (
     <div
       ref={reactFlowWrapper}
-      className={`flex-1 min-h-0 overflow-hidden bg-canvas-bg relative ${isDragOver ? "ring-2 ring-inset ring-blue-500" : ""}`}
+      className={`flex-1 min-h-0 overflow-hidden current-canvas-shell relative ${isDragOver ? "ring-2 ring-inset ring-blue-500" : ""}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -2135,10 +2136,13 @@ export function WorkflowCanvas() {
         <ProjectSetupModal
           isOpen={showNewProjectSetup}
           mode="new"
-          onSave={(id, name, directoryPath) => {
+          onSave={async (id, name, directoryPath) => {
             setWorkflowMetadata(id, name, directoryPath);
-            setShowNewProjectSetup(false);
-            return true;
+            const saved = await saveToFile();
+            if (saved) {
+              setShowNewProjectSetup(false);
+            }
+            return saved;
           }}
           onClose={() => {
             setShowNewProjectSetup(false);
@@ -2220,7 +2224,7 @@ export function WorkflowCanvas() {
         nodesDraggable={!showQuickstart && !isModalOpen}
         nodesConnectable={!showQuickstart && !isModalOpen}
         elementsSelectable={!showQuickstart && !isModalOpen}
-        className="bg-neutral-900"
+        className="current-canvas-flow"
         proOptions={{ hideAttribution: true }}
         defaultEdgeOptions={{
           type: "editable",
@@ -2232,6 +2236,7 @@ export function WorkflowCanvas() {
         <GroupControlsOverlay />
         <Background
           color="var(--current-border)"
+          bgColor="var(--current-canvas)"
           gap={26}
           size={1}
           className={tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}

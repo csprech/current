@@ -4,24 +4,26 @@ import { CurrentMark } from "@/components/current/CurrentMark";
 
 describe("CurrentMark", () => {
   it("renders an accessible Current identity", () => {
-    render(<CurrentMark showWordmark />);
+    render(<CurrentMark />);
     expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
   });
 
-  it("references the approved Current brand asset family", () => {
-    const { container } = render(<CurrentMark showWordmark wordmarkTone="color" />);
+  it("renders only the approved adaptive monochrome Current assets", () => {
+    const { container } = render(<CurrentMark />);
 
-    expect(container.querySelector('img[src="/brand/current-icon-color.svg"]')).toBeInTheDocument();
-    expect(container.querySelector('img[src="/brand/current-icon-white.svg"]')).toBeInTheDocument();
-    expect(container.querySelector('img[src="/brand/current-logo-black.svg"]')).toBeInTheDocument();
-    expect(container.querySelector('img[src="/brand/current-logo-color.svg"]')).toBeInTheDocument();
-    expect(container.querySelector('img[src="/brand/current-logo-white.svg"]')).toBeInTheDocument();
+    expect(container.querySelectorAll('img[src="/brand/current-icon-white.svg"]')).toHaveLength(0);
+    expect(container.querySelectorAll('img[src="/brand/current-logo-black.svg"]')).toHaveLength(1);
+    expect(container.querySelectorAll('img[src="/brand/current-logo-white.svg"]')).toHaveLength(1);
+    expect(container.querySelector(".current-brand-icon")).not.toBeInTheDocument();
+    for (const assetType of ["icon", "logo"]) {
+      expect(container.querySelectorAll(`img[src="/brand/current-${assetType}-color.svg"]`)).toHaveLength(0);
+    }
   });
 
   it("contributes one accessible name when composed in a button", () => {
     render(
       <button type="button">
-        <CurrentMark showWordmark />
+        <CurrentMark />
       </button>,
     );
 
