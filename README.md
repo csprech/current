@@ -31,6 +31,7 @@ It is designed for creative work that benefits from seeing the entire process: r
 | Local projects | Save workflow files and media to a local project directory. |
 | Outputs workspace | Review generated work, reopen it on the canvas, and manage assets from one place. |
 | Bring your own keys | Add provider API keys in Project Settings or with environment variables. |
+| Headless runs | Execute any workflow from the CLI or `POST /api/run` — no browser required. |
 
 ## Quick start
 
@@ -76,6 +77,21 @@ Keep `.env.local` private. It should never be committed.
 4. Select a node to adjust its model and parameters in the inspector.
 5. Run with the command bar or `Cmd/Ctrl + Enter`.
 6. Review results in Outputs, then reuse an asset or continue refining the workflow.
+
+## Headless runs
+
+Any saved or exported workflow can run without the canvas — from scripts, cron, or CI. With a Current server running (`npm run dev` or `npm run start`):
+
+```bash
+npm run workflow -- ./my-workflow.json \
+  --input "Product Photo=@./shot.png" \
+  --input "Prompt=a watercolor fox on white" \
+  --out ./outputs
+```
+
+Inputs are matched by node title or id: `name=@file` loads media into an input node, `name=text` sets prompt text. Every output node's media is written to the `--out` directory, and the same engine is available directly at `POST /api/run` for your own integrations. Provider keys come from the server environment.
+
+Supported headlessly today: input nodes, prompts, image/video/audio generation, LLM text, and outputs. Canvas-coupled nodes (annotation, image actions, video editing, routing, loops) report a clear unsupported error rather than failing silently.
 
 ## Included node families
 
