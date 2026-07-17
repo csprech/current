@@ -47,6 +47,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
           sourceImageRef: undefined,
           outputImage: null,
           outputImageRef: undefined,
+          outputMask: null,
           annotations: [],
         });
       };
@@ -93,6 +94,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
       sourceImageRef: undefined,
       outputImage: null,
       outputImageRef: undefined,
+      outputMask: null,
       annotations: [],
     });
   }, [id, updateNodeData]);
@@ -135,8 +137,18 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
         position={Position.Right}
         id="image"
         data-handletype="image"
+        style={{ top: "40%" }}
       />
-      <HandleLabel label="Image" side="source" color="var(--handle-color-image)" visible={showLabels} />
+      <HandleLabel label="Image" side="source" color="var(--handle-color-image)" top="calc(40% - 7px)" visible={showLabels} />
+      {/* Inpainting mask painted with the Mask tool (white-on-black) */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="mask"
+        data-handletype="image"
+        style={{ top: "70%" }}
+      />
+      <HandleLabel label="Mask" side="source" color="var(--handle-color-image)" top="calc(70% - 7px)" visible={showLabels} />
 
       {displayImage ? (
         <div

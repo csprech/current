@@ -29,6 +29,12 @@ export interface BaseShape {
   stroke: string;
   strokeWidth: number;
   opacity: number;
+  /**
+   * Mask shapes mark an inpainting region instead of a visible annotation:
+   * they are excluded from the flattened output image and baked white-on-black
+   * into the node's outputMask instead.
+   */
+  isMask?: boolean;
 }
 
 /**
@@ -96,6 +102,8 @@ export interface AnnotationNodeData extends BaseNodeData {
   annotations: AnnotationShape[];
   outputImage: string | null;
   outputImageRef?: string; // External image reference for storage optimization
+  /** White-on-black inpainting mask baked from isMask shapes (null when none). */
+  outputMask?: string | null;
 }
 
 // Tool type for annotation editor
@@ -105,7 +113,8 @@ export type ToolType =
   | "circle"
   | "arrow"
   | "freehand"
-  | "text";
+  | "text"
+  | "mask";
 
 /**
  * Tool options for annotation drawing

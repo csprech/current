@@ -139,6 +139,7 @@ Additional providers (Replicate, fal.ai, Kie.ai, WaveSpeed) expose their catalog
 2. Connections flow source (output) → target (input).
 3. Image inputs accept multiple connections; text inputs accept one.
 4. **Video connections are gated by an explicit allowlist of target node types in `isValidConnection()` (`WorkflowCanvas.tsx`)** — a new video-consuming node must be added there or its connections silently fail.
+5. **Inpainting**: the annotation node's Mask tool paints a white-on-black `outputMask` exposed on a `mask` source handle; the image generator's `mask` target handle routes it into `ConnectedInputs.mask` → the executor's `maskImage` → `/api/generate`, which appends it as the final image with `MASK_INSTRUCTION`. `mask` handles are image-typed (`getHandleType`). Outpainting recipe: Image Action "Change aspect ratio → Pad" → mask the padded borders → generate.
 
 ## Adding a New Node Type — the real checklist
 

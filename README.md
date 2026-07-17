@@ -27,7 +27,7 @@ It is designed for creative work that benefits from seeing the entire process: r
 | Visual canvas | Drag, connect, group, pan, zoom, and inspect workflows on a desktop canvas. |
 | Typed connections | Image, text, and audio handles prevent incompatible connections. |
 | AI generation | Run supported Gemini, OpenAI, and Kie.ai models from a single workflow. |
-| Creative tools | Annotate images, split grids, compare results, trim video, and preview GLB files. |
+| Creative tools | Annotate images, paint inpainting masks, split grids, compare results, trim video, and preview GLB files. |
 | Local projects | Save workflow files and media to a local project directory. |
 | Outputs workspace | Review generated work, reopen it on the canvas, and manage assets from one place. |
 | Bring your own keys | Add provider API keys in Project Settings or with environment variables. |

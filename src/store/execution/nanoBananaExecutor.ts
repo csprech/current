@@ -50,7 +50,7 @@ async function executeNanoBananaOnce(
 
   const { useStoredFallback = false } = options;
 
-  const { images: connectedImages, text: connectedText, dynamicInputs } = getConnectedInputs(node.id);
+  const { images: connectedImages, text: connectedText, dynamicInputs, mask } = getConnectedInputs(node.id);
 
   // Get fresh node data from store
   const freshNode = getFreshNode(node.id);
@@ -113,6 +113,7 @@ async function executeNanoBananaOnce(
     const requestPayload = {
       images,
       prompt: finalPrompt,
+      ...(mask ? { maskImage: mask } : {}),
       aspectRatio: (parametersOverride?.aspectRatio as string) ?? nodeData.aspectRatio,
       resolution: (parametersOverride?.resolution as string) ?? nodeData.resolution,
       model: nodeData.model,

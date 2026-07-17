@@ -41,7 +41,7 @@ vi.mock("@/lib/images", () => ({
   deleteImages: vi.fn(),
 }));
 
-import { POST, clearFalInputMappingCache } from "../route";
+import { POST, clearFalInputMappingCache, MASK_INSTRUCTION } from "../route";
 import { POST as POLL_POST } from "../poll/route";
 import { clearUploadCache } from "../providers/uploadCache";
 
@@ -168,6 +168,39 @@ describe("/api/generate route", () => {
                     data: "inputImageData",
                   },
                 },
+              ],
+            },
+          ],
+        })
+      );
+    });
+
+    it("appends an inpainting mask as the final image with the mask instruction", async () => {
+      process.env.GEMINI_API_KEY = "test-gemini-key";
+
+      mockGenerateContent.mockResolvedValueOnce(createGeminiImageResponse());
+
+      const request = createMockPostRequest({
+        prompt: "Replace the sky with a storm",
+        images: ["data:image/png;base64,sourceImageData"],
+        maskImage: "data:image/png;base64,maskImageData",
+        model: "nano-banana-pro",
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(mockGenerateContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: `Replace the sky with a storm\n\n${MASK_INSTRUCTION}` },
+                { inlineData: { mimeType: "image/png", data: "sourceImageData" } },
+                { inlineData: { mimeType: "image/png", data: "maskImageData" } },
               ],
             },
           ],

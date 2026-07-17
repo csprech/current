@@ -149,6 +149,46 @@ describe("executeNanoBanana", () => {
     expect(body.prompt).toBe("test prompt");
   });
 
+  it("forwards a connected inpainting mask as maskImage", async () => {
+    const node = makeNode();
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, image: "data:image/png;base64,result" }),
+    });
+
+    const ctx = makeCtx(node, {
+      getConnectedInputs: vi.fn().mockReturnValue({
+        images: ["data:image/png;base64,src"],
+        videos: [],
+        audio: [],
+        text: "replace the sky",
+        dynamicInputs: {},
+        easeCurve: null,
+        mask: "data:image/png;base64,mask",
+      }),
+    });
+
+    await executeNanoBanana(ctx);
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+    expect(body.maskImage).toBe("data:image/png;base64,mask");
+    expect(body.images).toEqual(["data:image/png;base64,src"]);
+  });
+
+  it("omits maskImage when no mask is connected", async () => {
+    const node = makeNode();
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, image: "data:image/png;base64,result" }),
+    });
+
+    const ctx = makeCtx(node);
+    await executeNanoBanana(ctx);
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+    expect("maskImage" in body).toBe(false);
+  });
+
   it("should set loading status before API call", async () => {
     const node = makeNode();
     mockFetch.mockResolvedValueOnce({

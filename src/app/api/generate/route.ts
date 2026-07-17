@@ -35,7 +35,20 @@ interface MultiProviderGenerateRequest extends GenerateRequest {
   parameters?: Record<string, unknown>;
   /** Dynamic inputs from schema-based connections (e.g., image_url, tail_image_url, prompt) */
   dynamicInputs?: Record<string, string | string[]>;
+  /** White-on-black inpainting mask; white marks the only region to edit. */
+  maskImage?: string;
 }
+
+/**
+ * Instruction appended to the prompt when an inpainting mask is attached.
+ * The mask rides the standard multi-image plumbing (appended as the final
+ * image), so every provider that accepts multiple images gets the same
+ * masked-edit contract.
+ */
+export const MASK_INSTRUCTION =
+  "The final attached image is a black-and-white inpainting mask for the first image: " +
+  "white marks the only region to change. Apply the requested edit strictly inside the " +
+  "white region and keep every pixel outside it identical to the original image.";
 
 
 export function buildMediaResponse(output: { type: string; data: string; url?: string }): NextResponse {
@@ -89,9 +102,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: MultiProviderGenerateRequest = await request.json();
-    const {
+    let {
       images,
       prompt,
+    } = body;
+    const {
       model = "nano-banana-pro",
       aspectRatio,
       resolution,
@@ -101,6 +116,7 @@ export async function POST(request: NextRequest) {
       parameters,
       dynamicInputs,
       mediaType,
+      maskImage,
     } = body;
 
     // Prompt is required unless:
@@ -133,6 +149,15 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    // Inpainting: append the mask as the final image and add the masked-edit
+    // instruction. Applied after the required-input gate so the instruction
+    // alone can never satisfy the prompt requirement.
+    if (typeof maskImage === "string" && maskImage.length > 0) {
+      images = [...(images ?? []), maskImage];
+      prompt = prompt ? `${prompt}\n\n${MASK_INSTRUCTION}` : MASK_INSTRUCTION;
+      console.log(`[API:${requestId}] Inpainting mask attached (${images.length} images total)`);
     }
 
     // Determine which provider to use
