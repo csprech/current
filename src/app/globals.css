@@ -145,16 +145,10 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
   gap: 0.5rem;
 }
 
-.current-brand-icon,
 .current-brand-wordmark {
   position: relative;
   display: block;
   flex: none;
-}
-
-.current-brand-icon {
-  width: 2rem;
-  height: 2rem;
 }
 
 .current-brand-wordmark {
