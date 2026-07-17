@@ -46,6 +46,9 @@ describe.each(["light", "dark"] as const)("%s appearance contract", (theme) => {
       "current-action": expect.any(String),
       "current-action-foreground": expect.any(String),
       "current-accent-text": expect.any(String),
+      "current-media-overlay": expect.any(String),
+      "current-media-overlay-foreground": expect.any(String),
+      "current-media-overlay-border": expect.any(String),
       "current-focus-inner": expect.any(String),
       "current-focus-outer": expect.any(String),
     });
@@ -56,10 +59,12 @@ describe.each(["light", "dark"] as const)("%s appearance contract", (theme) => {
     expect(contrast(vars["current-text-secondary"], vars["current-surface-panel"])).toBeGreaterThanOrEqual(4.5);
     expect(contrast(vars["current-text-tertiary"], vars["current-canvas"])).toBeGreaterThanOrEqual(4.5);
     expect(contrast(vars["current-action-foreground"], vars["current-action"])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(vars["current-media-overlay-foreground"], vars["current-media-overlay"])).toBeGreaterThanOrEqual(7);
   });
 
   it("keeps strong control boundaries and focus rings at 3:1", () => {
     expect(contrast(vars["current-border-strong"], vars["current-surface-elevated"])).toBeGreaterThanOrEqual(3);
     expect(contrast(vars["current-focus-outer"], vars["current-canvas"])).toBeGreaterThanOrEqual(3);
+    expect(contrast(vars["current-media-overlay-border"], vars["current-media-overlay"])).toBeGreaterThanOrEqual(3);
   });
 });

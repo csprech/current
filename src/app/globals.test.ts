@@ -54,6 +54,17 @@ describe("Current Add Palette brand colors", () => {
     expect(css).toMatch(/\.current-inline-notice--info\s*\{[\s\S]*?var\(--current-status-info\)/);
   });
 
+  it("keeps media overlay actions legible instead of inheriting the adaptive paper color", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+    const overlayAction = css.match(/\.current-media-action--overlay\s*\{([^}]*)\}/)?.[1];
+
+    expect(overlayAction).toContain("color: var(--current-media-overlay-foreground)");
+    expect(overlayAction).toContain("var(--current-media-overlay)");
+    expect(overlayAction).toContain("var(--current-media-overlay-border)");
+    expect(overlayAction).toContain("opacity: 1");
+    expect(overlayAction).not.toContain("var(--current-paper)");
+  });
+
   it("uses adaptive semantic roles across the core workspace", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
     const commandBar = css.match(/\.current-command-bar\s*\{([^}]*)\}/)?.[1];

@@ -52,6 +52,10 @@
   --current-action-hover: #3658c9;
   --current-action-foreground: #ffffff;
   --current-accent-text: #4164d9;
+  --current-media-overlay: #172130;
+  --current-media-overlay-hover: #213147;
+  --current-media-overlay-foreground: #ffffff;
+  --current-media-overlay-border: #8093aa;
   --current-status-success: #18875d;
   --current-status-warning: #a35f00;
   --current-status-danger: #c53c45;
@@ -98,6 +102,10 @@
   --current-action-hover: #3658c9;
   --current-action-foreground: #ffffff;
   --current-accent-text: #6f8cff;
+  --current-media-overlay: #172130;
+  --current-media-overlay-hover: #213147;
+  --current-media-overlay-foreground: #ffffff;
+  --current-media-overlay-border: #8093aa;
   --current-status-success: #47c58d;
   --current-status-warning: #ffb85a;
   --current-status-danger: #ff7b84;
@@ -1024,9 +1032,22 @@ html[data-appearance="dark"] .current-sheet-backdrop { background: rgb(0 0 0 / 5
 .current-node-header__run:hover:not(:disabled) {
   padding-right: 0.5rem;
 }
-.current-media-action--overlay { color: var(--current-paper); border-color: rgb(255 255 255 / 18%); background: rgb(37 38 43 / 78%); opacity: 0.76; }
+.current-media-action--overlay {
+  color: var(--current-media-overlay-foreground);
+  border-color: var(--current-media-overlay-border);
+  background: color-mix(in srgb, var(--current-media-overlay) 94%, transparent);
+  box-shadow: 0 5px 14px -6px var(--current-shadow-strong);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  backdrop-filter: blur(12px) saturate(120%);
+  opacity: 1;
+}
 .group:hover .current-media-action--overlay,
-.current-media-action--overlay:hover:not(:disabled) { color: var(--current-paper); background: rgb(37 38 43 / 92%); opacity: 1; }
+.current-media-action--overlay:hover:not(:disabled) {
+  color: var(--current-media-overlay-foreground);
+  border-color: color-mix(in srgb, var(--current-media-overlay-foreground) 68%, var(--current-media-overlay-border));
+  background: var(--current-media-overlay-hover);
+  opacity: 1;
+}
 
 .current-curve-handle {
   width: 1.75rem;
