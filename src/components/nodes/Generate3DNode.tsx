@@ -14,6 +14,7 @@ import { ProviderBadge } from "./ProviderBadge";
 import { getModelPageUrl, getProviderDisplayName } from "@/utils/providerUrls";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
+import { InlinePromptField } from "./InlinePromptField";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
@@ -473,6 +474,13 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
           />
         )}
 
+        <InlinePromptField
+          nodeId={id}
+          value={nodeData.inlinePrompt}
+          variant="block"
+          className="mt-1.5"
+          placeholder="Describe the 3D model…"
+        />
       </div>
     </BaseNode>
 

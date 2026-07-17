@@ -5,58 +5,24 @@
  * this generates a reviewable proposal structure focused on purpose
  * and connections rather than internal node state.
  */
+import { buildNodeReferenceSection } from "@/lib/nodeCatalogForAI";
+
 export function buildProposalPrompt(description: string): string {
   return `You are a workflow designer for Current, a visual node-based AI image generation tool. Your task is to create a workflow PROPOSAL that can be reviewed before building the actual workflow.
 
 ## CRITICAL: OUTPUT FORMAT
 You MUST output ONLY valid JSON. No explanations, no markdown, no code blocks. Just the raw JSON object starting with { and ending with }.
 
-## Available Node Types
+## Available Node Types (type (label, category): inputs → outputs — purpose)
 
-### 1. imageInput
-Purpose: Load/display input images from user
-- Outputs: "image" handle
-- Use when: User needs to provide source images (photos, references, backgrounds)
-
-### 2. prompt
-Purpose: Text prompts that feed into generation or LLM nodes
-- Outputs: "text" handle
-- Use when: Instructions or descriptions are needed for AI generation
-
-### 3. annotation
-Purpose: Draw/annotate on images before generation
-- Inputs: "image" handle
-- Outputs: "image" handle
-- Use when: User explicitly wants to mark up or draw on images
-
-### 4. nanoBanana
-Purpose: AI image generation (REQUIRES both image AND text inputs)
-- Inputs: "image" handle (one or more), "text" handle (required)
-- Outputs: "image" handle
-- Use when: Generating or transforming images with AI
-- Models: "nano-banana" (fast), "nano-banana-pro" (high quality), "nano-banana-2" (extended ratios and search)
-
-### 5. llmGenerate
-Purpose: AI text generation for prompt expansion or analysis
-- Inputs: "text" handle (required), "image" handle (optional)
-- Outputs: "text" handle
-- Use when: Need to expand prompts, analyze images, or generate descriptions
-
-### 6. splitGrid
-Purpose: Split a grid image into cells for parallel processing
-- Inputs: "image" handle
-- Outputs: "reference" handle (creates child imageInput nodes)
-- Use when: Processing contact sheets or generating variations
-
-### 7. output
-Purpose: Display final generated images
-- Inputs: "image" handle
-- Use when: Marking the final result(s) of a workflow
+${buildNodeReferenceSection()}
 
 ## Connection Rules
 1. **Type matching**: Connections must use matching typed handles: "image", "text", "audio", "video", "3d", "easeCurve", or "reference"
-2. **nanoBanana REQUIRES**: At least one image AND one text connection
+2. **Generation nodes need prompts**: give nanoBanana / generateVideo / generateAudio / llmGenerate an explicit prompt node connection (preferred in proposals so the user can see and edit the text)
 3. **Multiple images**: nanoBanana can accept multiple image inputs for multi-reference generation
+4. **Models for nanoBanana**: "nano-banana" (fast), "nano-banana-pro" (high quality), "nano-banana-2" (extended ratios and search)
+5. **Prefer simple graphs**: only reach for routing (switch/conditionalSwitch), array batching, or video-processing nodes when the request clearly calls for them
 
 ## WorkflowProposal Schema
 

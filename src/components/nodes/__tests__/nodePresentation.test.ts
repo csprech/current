@@ -10,14 +10,21 @@ import {
 import { createDefaultNodeData } from "@/store/utils/nodeDefaults";
 
 describe("nodePresentation", () => {
-  it("maps every connection type to a labeled Current-family presentation", () => {
+  it("maps every connection type to a labeled category-accent presentation", () => {
     expect(getHandlePresentation("text")).toEqual(
       expect.objectContaining({ label: "Text", color: "var(--current-blue)" })
     );
     expect(getHandlePresentation("image")).toEqual(
       expect.objectContaining({ label: "Image", color: "var(--current-aqua)" })
     );
-    expect(getHandlePresentation("video").gradient).toBe(true);
+    // Solid accents only — the design system has no gradients in chrome.
+    expect(getHandlePresentation("video")).toEqual(
+      expect.objectContaining({ label: "Video", color: "var(--current-blue-indigo)" })
+    );
+    expect(getHandlePresentation("audio")).toEqual(
+      expect.objectContaining({ label: "Audio", color: "var(--current-pink)" })
+    );
+    expect(getHandlePresentation("video").gradient).toBeUndefined();
 
     const handleTypes: HandleType[] = ["text", "image", "video", "audio", "3d", "easeCurve"];
     for (const type of handleTypes) {
@@ -30,10 +37,10 @@ describe("nodePresentation", () => {
     );
   });
 
-  it("assigns every node type to a semantic role and Current minimap color", () => {
+  it("assigns every node type to a semantic role and category-accent minimap color", () => {
     expect(getNodeRole("nanoBanana")).toBe("generator");
     expect(getNodeRole("outputGallery")).toBe("output");
-    expect(getMinimapColor("generateAudio")).toBe("#6A70E8");
+    expect(getMinimapColor("generateAudio")).toBe("#E8479E");
     expect(getMinimapColor("group")).toBe("#8A8D96");
     expect(getMinimapColor(undefined)).toBe("#8A8D96");
 
@@ -41,8 +48,8 @@ describe("nodePresentation", () => {
       "imageInput", "audioInput", "videoInput", "annotation", "prompt", "array",
       "promptConstructor", "nanoBanana", "generateVideo", "generateAudio", "llmGenerate",
       "splitGrid", "output", "outputGallery", "imageCompare", "videoStitch", "easeCurve",
-      "videoTrim", "videoFrameGrab", "removeBackground", "router", "switch",
-      "conditionalSwitch", "generate3d", "glbViewer",
+      "videoTrim", "videoFrameGrab", "removeBackground", "imageAction", "videoAction",
+      "router", "switch", "conditionalSwitch", "generate3d", "glbViewer",
     ];
 
     for (const type of nodeTypes) {

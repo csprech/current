@@ -47,5 +47,7 @@ export {
 } from "./videoProcessingExecutors";
 
 export { executeRemoveBackground } from "./removeBackgroundExecutor";
+export { executeImageAction } from "./imageActionExecutor";
+export { executeVideoAction } from "./videoActionExecutor";
 
 export { runBatchIfApplicable } from "./batchExecution";

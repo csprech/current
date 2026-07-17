@@ -107,6 +107,7 @@ describe("GenerateAudioNode", () => {
 
     mockUseWorkflowStore.mockImplementation((selector) => {
       const state = {
+        edges: [],
         updateNodeData: mockUpdateNodeData,
         regenerateNode: mockRegenerateNode,
         incrementModalCount: mockIncrementModalCount,

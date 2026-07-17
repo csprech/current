@@ -6,6 +6,11 @@ import { useReactFlow } from "@xyflow/react";
 import { NodeType, ProviderType } from "@/types";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
+import { copyImageToClipboard, getNodeImageSource } from "@/utils/clipboardMedia";
+import { estimateNodeRunCost, formatCost } from "@/utils/costCalculator";
+import { getVariantCount } from "@/store/execution/variantExecution";
+import { useMediaViewerStore } from "@/store/mediaViewerStore";
+import { useToast } from "@/components/Toast";
 import { ProviderBadge } from "./ProviderBadge";
 import { getNodeRole, type NodeRole } from "./nodePresentation";
 
@@ -23,6 +28,8 @@ const RUNNABLE_TYPES = new Set([
   'generateAudio',
   'llmGenerate',
   'removeBackground',
+  'imageAction',
+  'videoAction',
 ]);
 const EXPANDABLE_TYPES = new Set(['prompt', 'promptConstructor', 'splitGrid', 'annotation']);
 
@@ -105,8 +112,20 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
   const [editCommentValue, setEditCommentValue] = useState(comment || "");
   const [showCommentTooltip, setShowCommentTooltip] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [menuImageSrc, setMenuImageSrc] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number } | null>(null);
   const removeNode = useWorkflowStore((state) => state.removeNode);
+  const duplicateNodes = useWorkflowStore((state) => state.duplicateNodes);
+  const executeWorkflow = useWorkflowStore((state) => state.executeWorkflow);
+  const isWorkflowRunning = useWorkflowStore((state) => state.isRunning);
+  // Estimated cost of one run of this node, including variants (primitive selector — no object churn)
+  const runCost = useWorkflowStore((state) => {
+    if (!RUNNABLE_TYPES.has(type)) return null;
+    const node = state.nodes.find((n) => n.id === id);
+    if (!node) return null;
+    const perRun = estimateNodeRunCost(node);
+    return perRun === null ? null : perRun * getVariantCount(node);
+  });
 
   const titleInputRef = useRef<HTMLInputElement>(null);
   const commentPopoverRef = useRef<HTMLDivElement>(null);
@@ -249,6 +268,13 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
     setIsMoreOpen(false);
   }, []);
 
+  const openMoreMenu = useCallback(() => {
+    // Resolve the copyable image lazily so headers never subscribe to node data.
+    const node = useWorkflowStore.getState().nodes.find((n) => n.id === id);
+    setMenuImageSrc(node ? getNodeImageSource(node.type, node.data) : null);
+    setIsMoreOpen(true);
+  }, [id]);
+
   const handleMoreMenuKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -259,9 +285,33 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
 
     if (event.key === "Home" || event.key === "End" || event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
-      moreMenuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
+      const items = Array.from(
+        moreMenuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)') ?? []
+      );
+      if (items.length === 0) return;
+
+      const activeIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+      let nextIndex = 0;
+      if (event.key === "End") {
+        nextIndex = items.length - 1;
+      } else if (event.key === "ArrowDown") {
+        nextIndex = activeIndex === -1 ? 0 : (activeIndex + 1) % items.length;
+      } else if (event.key === "ArrowUp") {
+        nextIndex = activeIndex === -1 ? items.length - 1 : (activeIndex - 1 + items.length) % items.length;
+      }
+      items[nextIndex]?.focus();
     }
   }, [closeMoreMenu]);
+
+  const handleCopyImage = useCallback(async () => {
+    if (!menuImageSrc) return;
+    try {
+      await copyImageToClipboard(menuImageSrc);
+      useToast.getState().show("Image copied to clipboard", "success");
+    } catch {
+      useToast.getState().show("Couldn't copy image to clipboard", "error");
+    }
+  }, [menuImageSrc]);
 
   // Determine if controls should be visible
   const showControls = isHovered || selected;
@@ -391,7 +441,8 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
         left: `${position.x}px`,
         top: `${position.y - 26}px`,
         width: `${width}px`,
-        zIndex: selected ? 10000 : 9000,
+        // Keep an open contextual menu above every sibling header, including selected ones
+        zIndex: isMoreOpen ? 11000 : selected ? 10000 : 9000,
       }}
     >
       <div
@@ -596,21 +647,27 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
             </div>
           )}
 
-          {/* Run Button */}
+          {/* Run Button — shows the estimated per-run cost when pricing is known */}
           {canRun && onRunNode && (
             <div className="relative shrink-0 group">
               <button
                 onClick={() => onRunNode(id)}
                 disabled={isExecuting}
                 className="current-media-action current-media-action--primary current-node-header__run nodrag nopan"
-                title="Run this node"
+                title={
+                  runCost === null
+                    ? "Run this node"
+                    : runCost === 0
+                      ? "Run this node (free — runs locally)"
+                      : `Run this node (est. ${formatCost(runCost)})`
+                }
                 aria-label="Run this node"
               >
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <span className="max-w-0 opacity-0 whitespace-nowrap text-[10px] transition-all duration-200 ease-in-out overflow-hidden group-hover:max-w-[60px] group-hover:opacity-100 group-hover:ml-1">
-                  Run node
+                <span className="max-w-0 opacity-0 whitespace-nowrap text-[10px] transition-all duration-200 ease-in-out overflow-hidden group-hover:max-w-[96px] group-hover:opacity-100 group-hover:ml-1">
+                  {runCost === null ? "Run node" : runCost === 0 ? "Run · free" : `Run · ${formatCost(runCost)}`}
                 </span>
               </button>
             </div>
@@ -627,11 +684,11 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
               aria-expanded={isMoreOpen}
               aria-controls={isMoreOpen ? `node-actions-${id}` : undefined}
               title="More node actions"
-              onClick={() => setIsMoreOpen((open) => !open)}
+              onClick={() => (isMoreOpen ? closeMoreMenu() : openMoreMenu())}
               onKeyDown={(event) => {
                 if (event.key === "ArrowDown") {
                   event.preventDefault();
-                  setIsMoreOpen(true);
+                  openMoreMenu();
                 }
               }}
             >
@@ -653,9 +710,56 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                 <button
                   type="button"
                   role="menuitem"
+                  onClick={() => {
+                    closeMoreMenu();
+                    duplicateNodes([id]);
+                  }}
+                >
+                  Duplicate
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={isWorkflowRunning}
+                  title={isWorkflowRunning ? "A workflow is already running" : "Run this node and everything after it"}
+                  onClick={() => {
+                    closeMoreMenu();
+                    executeWorkflow(id);
+                  }}
+                >
+                  Run from Here
+                </button>
+                {menuImageSrc && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      closeMoreMenu();
+                      handleCopyImage();
+                    }}
+                  >
+                    Copy Image
+                  </button>
+                )}
+                {(type === "nanoBanana" || type === "generateVideo") && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      closeMoreMenu();
+                      useMediaViewerStore.getState().open(id);
+                    }}
+                  >
+                    Open in Viewer
+                  </button>
+                )}
+                <div className="current-node-header__menu-separator" role="separator" />
+                <button
+                  type="button"
+                  role="menuitem"
                   className="current-node-header__menu-danger"
                   onClick={() => {
-                    setIsMoreOpen(false);
+                    closeMoreMenu();
                     removeNode(id);
                   }}
                 >

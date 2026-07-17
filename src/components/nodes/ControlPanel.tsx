@@ -2,12 +2,15 @@
 
 import { useMemo, useState, useCallback, useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useShallow } from "zustand/shallow";
 import { Node } from "@xyflow/react";
-import { useWorkflowStore, saveNanoBananaDefaults, useProviderApiKeys } from "@/store/workflowStore";
+import { useWorkflowStore, saveGenerateImageDefaults, useProviderApiKeys } from "@/store/workflowStore";
 import { NodeType, NanoBananaNodeData, LLMGenerateNodeData, GenerateVideoNodeData, Generate3DNodeData, GenerateAudioNodeData, EaseCurveNodeData, ConditionalSwitchNodeData, AspectRatio, Resolution, ModelType, MODEL_DISPLAY_NAMES, ProviderType, SelectedModel, LLMProvider, LLMModelType, MatchMode, ConditionalSwitchRule } from "@/types";
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { ModelParameters } from "./ModelParameters";
+import { VariantCountPicker } from "./VariantCountPicker";
+import { BulkParametersPanel, BULK_EDITABLE_NODE_TYPES } from "./BulkParametersPanel";
 import { CubicBezierEditor } from "@/components/CubicBezierEditor";
 import { deduplicatedFetch } from "@/utils/deduplicatedFetch";
 import { evaluateRule } from "@/store/utils/ruleEvaluation";
@@ -81,14 +84,31 @@ function generateEasingPolyline(
  * Displays controls for the currently selected node
  */
 export function ControlPanel({ onClose }: { onClose: () => void }) {
-  const selectedNode = useWorkflowStore((state) => {
-    const selected = state.nodes.filter((n) => n.selected);
-    return selected.length === 1 ? selected[0] : null;
-  });
+  const selectedNodes = useWorkflowStore(
+    useShallow((state) => state.nodes.filter((n) => n.selected))
+  );
+  const selectedNode = selectedNodes.length === 1 ? selectedNodes[0] : null;
   const { inlineParametersEnabled } = useInlineParameters();
 
   // Check if the selected node is configurable
   const isConfigurable = selectedNode && INSPECTOR_CONFIGURABLE_NODE_TYPES.includes(selectedNode.type as NodeType);
+
+  // Bulk edit: 2+ nodes of the same editable type selected
+  const isBulk =
+    selectedNodes.length >= 2 &&
+    BULK_EDITABLE_NODE_TYPES.has(selectedNodes[0].type as string) &&
+    selectedNodes.every((n) => n.type === selectedNodes[0].type);
+
+  if (isBulk) {
+    return (
+      <CurrentPanel side="right" title="Inspector" onClose={onClose}>
+        <div className="current-inspector__selection">{getNodeTypeTitle(selectedNodes[0].type as NodeType)}</div>
+        <div className="space-y-4 mt-4">
+          <BulkParametersPanel nodes={selectedNodes} />
+        </div>
+      </CurrentPanel>
+    );
+  }
 
   // If no single node selected or not configurable, hide panel
   if (!selectedNode || !isConfigurable) {
@@ -273,7 +293,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const model = e.target.value as ModelType;
       updateNodeData(node.id, { model });
-      saveNanoBananaDefaults({ model });
+      saveGenerateImageDefaults({ model });
 
       const newSelectedModel: SelectedModel = {
         provider: "gemini",
@@ -289,7 +309,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const aspectRatio = e.target.value as AspectRatio;
       updateNodeData(node.id, { aspectRatio });
-      saveNanoBananaDefaults({ aspectRatio });
+      saveGenerateImageDefaults({ aspectRatio });
     },
     [node.id, updateNodeData]
   );
@@ -298,7 +318,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const resolution = e.target.value as Resolution;
       updateNodeData(node.id, { resolution });
-      saveNanoBananaDefaults({ resolution });
+      saveGenerateImageDefaults({ resolution });
     },
     [node.id, updateNodeData]
   );
@@ -307,7 +327,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const useGoogleSearch = e.target.checked;
       updateNodeData(node.id, { useGoogleSearch });
-      saveNanoBananaDefaults({ useGoogleSearch });
+      saveGenerateImageDefaults({ useGoogleSearch });
     },
     [node.id, updateNodeData]
   );
@@ -316,7 +336,7 @@ function GenerateImageControls({ node }: { node: Node }) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const useImageSearch = e.target.checked;
       updateNodeData(node.id, { useImageSearch });
-      saveNanoBananaDefaults({ useImageSearch });
+      saveGenerateImageDefaults({ useImageSearch });
     },
     [node.id, updateNodeData]
   );
@@ -349,6 +369,7 @@ function GenerateImageControls({ node }: { node: Node }) {
   return (
     <>
       <div className="space-y-3 current-inspector__controls">
+        <VariantCountPicker nodeId={node.id} value={nodeData.variantCount} />
         {/* Model name + provider with link — sits directly under title divider */}
         <div className="current-inspector__model">
           <div className="flex items-start gap-2">
@@ -519,6 +540,7 @@ function GenerateVideoControls({ node }: { node: Node }) {
   return (
     <>
       <div className="space-y-3">
+        <VariantCountPicker nodeId={node.id} value={nodeData.variantCount} />
         {/* Model name + provider with link */}
         <div className="border-t border-neutral-700 pt-3">
           <div className="flex items-start gap-2">

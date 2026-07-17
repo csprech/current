@@ -2502,7 +2502,7 @@ describe("workflowStore integration tests", () => {
       store.updateCanvasNavigationSettings(settings);
 
       // Verify persistence by reading back from localStorage
-      const stored = localStorage.getItem("node-banana-canvas-navigation");
+      const stored = localStorage.getItem("current-canvas-navigation");
       expect(stored).not.toBeNull();
       expect(JSON.parse(stored!)).toEqual(settings);
     });

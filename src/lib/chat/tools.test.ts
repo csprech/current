@@ -119,17 +119,24 @@ describe("buildEditSystemPrompt", () => {
       expect(prompt).toContain("## EDITABLE NODE PROPERTIES");
     });
 
-    it("contains node type descriptions", () => {
+    it("contains node type descriptions for the full catalog", () => {
       const context = buildWorkflowContext([], []);
       const prompt = buildEditSystemPrompt(context);
 
-      expect(prompt).toContain("### Image Input");
-      expect(prompt).toContain("### Prompt");
-      expect(prompt).toContain("### Generate Image");
-      expect(prompt).toContain("### LLM Text Generation");
-      expect(prompt).toContain("### Split Grid");
-      expect(prompt).toContain("### Annotation");
-      expect(prompt).toContain("### Output");
+      // Every node type in the catalog appears in the reference section
+      for (const type of [
+        "imageInput", "audioInput", "videoInput", "glbViewer", "prompt", "array",
+        "promptConstructor", "nanoBanana", "generateVideo", "generate3d",
+        "generateAudio", "llmGenerate", "annotation", "splitGrid", "videoStitch",
+        "videoTrim", "easeCurve", "videoFrameGrab", "removeBackground",
+        "imageAction", "videoAction",
+        "imageCompare", "router", "switch", "conditionalSwitch", "output",
+        "outputGallery",
+      ]) {
+        expect(prompt).toContain(`**${type}**`);
+      }
+      expect(prompt).toContain("Variations");
+      expect(prompt).toContain("inlinePrompt");
     });
   });
 

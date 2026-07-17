@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { calculatePredictedCost, formatCost, hasNonGeminiProviders } from "@/utils/costCalculator";
+import { calculatePredictedCost, formatCost } from "@/utils/costCalculator";
 import { CostDialog } from "./CostDialog";
 
 export function CostIndicator() {
@@ -14,22 +14,26 @@ export function CostIndicator() {
     return calculatePredictedCost(nodes);
   }, [nodes]);
 
-  const nonGemini = useMemo(() => hasNonGeminiProviders(nodes), [nodes]);
   const hasAnyNodes = predictedCost.nodeCount > 0;
 
-  if (nonGemini || (!hasAnyNodes && incurredCost === 0)) {
+  if (!hasAnyNodes && incurredCost === 0) {
     return null;
   }
 
-  // Always show dollar format (external provider costs not included in total)
-  const displayCost = formatCost(predictedCost.totalCost);
+  // Show the total of priced models; a trailing "+" marks unpriced generations
+  const unknown = predictedCost.unknownPricingCount;
+  const displayCost = `${formatCost(predictedCost.totalCost)}${unknown > 0 ? "+" : ""}`;
+  const title =
+    unknown > 0
+      ? `Estimated cost of priced models — ${unknown} generation${unknown === 1 ? "" : "s"} without pricing data`
+      : "View cost details";
 
   return (
     <>
       <button
         onClick={() => setShowDialog(true)}
         className="px-2 py-0.5 rounded text-xs text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
-        title="View cost details"
+        title={title}
       >
         {displayCost}
       </button>

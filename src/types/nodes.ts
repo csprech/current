@@ -43,6 +43,8 @@ export type NodeType =
   | "videoTrim"
   | "videoFrameGrab"
   | "removeBackground"
+  | "imageAction"
+  | "videoAction"
   | "router"
   | "switch"
   | "conditionalSwitch"
@@ -187,6 +189,8 @@ export interface NanoBananaNodeData extends BaseNodeData {
   inputImages: string[]; // Now supports multiple images
   inputImageRefs?: string[]; // External image references for storage optimization
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
+  variantCount?: number; // Variations generated per run (1-4, default 1)
   outputImage: string | null;
   outputImageRef?: string; // External image reference for storage optimization
   aspectRatio: AspectRatio;
@@ -217,6 +221,8 @@ export interface GenerateVideoNodeData extends BaseNodeData {
   inputImages: string[];
   inputImageRefs?: string[]; // External image references for storage optimization
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
+  variantCount?: number; // Variations generated per run (1-4, default 1)
   outputVideo: string | null; // Video data URL or URL
   outputVideoRef?: string; // External video reference for storage optimization
   selectedModel?: SelectedModel; // Required for video generation (no legacy fallback)
@@ -242,6 +248,7 @@ export interface Generate3DNodeData extends BaseNodeData {
   inputImages: string[];
   inputImageRefs?: string[];
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   output3dUrl: string | null;
   savedFilename: string | null;
   savedFilePath: string | null;
@@ -274,6 +281,7 @@ export interface CarouselAudioItem {
  */
 export interface GenerateAudioNodeData extends BaseNodeData {
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   outputAudio: string | null; // Audio data URL
   outputAudioRef?: string; // External audio reference for storage optimization
   selectedModel?: SelectedModel; // Required for audio generation
@@ -299,6 +307,7 @@ export interface GenerateAudioNodeData extends BaseNodeData {
  */
 export interface LLMGenerateNodeData extends BaseNodeData {
   inputPrompt: string | null;
+  inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   inputImages: string[];
   inputImageRefs?: string[]; // External image references for storage optimization
   outputText: string | null;
@@ -431,6 +440,33 @@ export interface RemoveBackgroundNodeData extends BaseNodeData {
 }
 
 /**
+ * Image Action node - deterministic local image operations (rotate, flip,
+ * blur, adjust, aspect change, composite, text). Runs on-device at no cost.
+ */
+export interface ImageActionNodeData extends BaseNodeData {
+  operation: string; // ImageActionOperation from utils/imageOps
+  params: Record<string, unknown>;
+  outputImage: string | null;
+  outputImageRef?: string;
+  status: NodeStatus;
+  error: string | null;
+}
+
+/**
+ * Video Action node - deterministic local video operations (reverse, speed,
+ * boomerang, mute). Re-encodes on-device via WebCodecs at no cost.
+ */
+export interface VideoActionNodeData extends BaseNodeData {
+  operation: string; // VideoActionOperation from utils/videoOps
+  params: Record<string, unknown>;
+  outputVideo: string | null;
+  status: NodeStatus;
+  error: string | null;
+  progress: number;
+  encoderSupported: boolean | null;
+}
+
+/**
  * Router node - pure passthrough routing node with dynamic multi-type handles
  */
 export interface RouterNodeData extends BaseNodeData {
@@ -536,6 +572,8 @@ export type WorkflowNodeData =
   | VideoTrimNodeData
   | VideoFrameGrabNodeData
   | RemoveBackgroundNodeData
+  | ImageActionNodeData
+  | VideoActionNodeData
   | RouterNodeData
   | SwitchNodeData
   | ConditionalSwitchNodeData

@@ -20,6 +20,19 @@ describe("CurrentMark", () => {
     }
   });
 
+  it("renders the adaptive iso icon assets for the icon variant", () => {
+    const { container } = render(<CurrentMark variant="icon" />);
+
+    expect(screen.getByRole("img", { name: "Current" })).toBeInTheDocument();
+    expect(container.querySelector(".current-brand-icon")).toBeInTheDocument();
+    expect(container.querySelector(".current-brand-wordmark")).not.toBeInTheDocument();
+    expect(container.querySelectorAll('img[src="/brand/current-icon-iso-black.svg"]')).toHaveLength(1);
+    expect(container.querySelectorAll('img[src="/brand/current-icon-iso-white.svg"]')).toHaveLength(1);
+    for (const legacyAsset of ["current-icon-color.svg", "current-icon-white.svg"]) {
+      expect(container.querySelectorAll(`img[src="/brand/${legacyAsset}"]`)).toHaveLength(0);
+    }
+  });
+
   it("contributes one accessible name when composed in a button", () => {
     render(
       <button type="button">

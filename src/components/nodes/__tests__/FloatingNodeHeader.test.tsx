@@ -5,6 +5,26 @@ import { FloatingNodeHeader } from "@/components/nodes/FloatingNodeHeader";
 const setNodes = vi.fn();
 const getNodes = vi.fn(() => []);
 const removeNode = vi.fn();
+const duplicateNodes = vi.fn();
+const executeWorkflow = vi.fn();
+const showToast = vi.fn();
+
+const storeState = {
+  hoveredNodeId: null,
+  removeNode,
+  duplicateNodes,
+  executeWorkflow,
+  isRunning: false,
+  nodes: [
+    {
+      id: "generate-1",
+      type: "nanoBanana",
+      position: { x: 0, y: 0 },
+      data: { outputImage: "data:image/png;base64,abc" },
+    },
+    { id: "router-1", type: "router", position: { x: 0, y: 0 }, data: {} },
+  ],
+};
 
 vi.mock("@xyflow/react", () => ({
   useReactFlow: () => ({
@@ -14,9 +34,14 @@ vi.mock("@xyflow/react", () => ({
   }),
 }));
 
-vi.mock("@/store/workflowStore", () => ({
-  useWorkflowStore: (selector: (state: unknown) => unknown) =>
-    selector({ hoveredNodeId: null, removeNode }),
+vi.mock("@/store/workflowStore", () => {
+  const useWorkflowStore = (selector: (state: unknown) => unknown) => selector(storeState);
+  useWorkflowStore.getState = () => storeState;
+  return { useWorkflowStore };
+});
+
+vi.mock("@/components/Toast", () => ({
+  useToast: { getState: () => ({ show: showToast }) },
 }));
 
 describe("FloatingNodeHeader", () => {
@@ -123,7 +148,7 @@ describe("FloatingNodeHeader", () => {
     fireEvent.keyDown(more, { key: "ArrowDown" });
 
     expect(screen.getByRole("menu", { name: "Node actions" })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: "Delete Node" })).toHaveFocus();
+    expect(screen.getByRole("menuitem", { name: "Duplicate" })).toHaveFocus();
 
     fireEvent.keyDown(screen.getByRole("menu"), { key: "Escape" });
     expect(screen.queryByRole("menu", { name: "Node actions" })).not.toBeInTheDocument();
@@ -153,5 +178,61 @@ describe("FloatingNodeHeader", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
     fireEvent.pointerDown(document.body);
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("duplicates the node and runs from it via the contextual menu", () => {
+    render(
+      <FloatingNodeHeader
+        id="generate-1"
+        type="nanoBanana"
+        position={{ x: 10, y: 20 }}
+        width={320}
+        selected
+        title="Generate Image"
+      />
+    );
+
+    const more = screen.getByRole("button", { name: "More node actions" });
+
+    fireEvent.click(more);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Duplicate" }));
+    expect(duplicateNodes).toHaveBeenCalledExactlyOnceWith(["generate-1"]);
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+
+    fireEvent.click(more);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Run from Here" }));
+    expect(executeWorkflow).toHaveBeenCalledExactlyOnceWith("generate-1");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("offers Copy Image only for nodes with an image output", () => {
+    const { rerender } = render(
+      <FloatingNodeHeader
+        id="generate-1"
+        type="nanoBanana"
+        position={{ x: 10, y: 20 }}
+        width={320}
+        selected
+        title="Generate Image"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "More node actions" }));
+    expect(screen.getByRole("menuitem", { name: "Copy Image" })).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole("menu"), { key: "Escape" });
+
+    rerender(
+      <FloatingNodeHeader
+        id="router-1"
+        type="router"
+        position={{ x: 10, y: 20 }}
+        width={320}
+        selected
+        title="Router"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "More node actions" }));
+    expect(screen.queryByRole("menuitem", { name: "Copy Image" })).not.toBeInTheDocument();
   });
 });

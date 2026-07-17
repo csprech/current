@@ -21,6 +21,8 @@ import {
   VideoTrimNodeData,
   VideoFrameGrabNodeData,
   RemoveBackgroundNodeData,
+  ImageActionNodeData,
+  VideoActionNodeData,
   PromptNodeData,
   ArrayNodeData,
   PromptConstructorNodeData,
@@ -93,6 +95,8 @@ export function getSourceOutput(
     return { type: "video", value: (sourceNode.data as EaseCurveNodeData).outputVideo };
   } else if (sourceNode.type === "videoTrim") {
     return { type: "video", value: (sourceNode.data as VideoTrimNodeData).outputVideo };
+  } else if (sourceNode.type === "videoAction") {
+    return { type: "video", value: (sourceNode.data as VideoActionNodeData).outputVideo };
   } else if (sourceNode.type === "prompt") {
     return { type: "text", value: (sourceNode.data as PromptNodeData).prompt };
   } else if (sourceNode.type === "array") {
@@ -120,6 +124,8 @@ export function getSourceOutput(
     return { type: "image", value: (sourceNode.data as VideoFrameGrabNodeData).outputImage };
   } else if (sourceNode.type === "removeBackground") {
     return { type: "image", value: (sourceNode.data as RemoveBackgroundNodeData).outputImage };
+  } else if (sourceNode.type === "imageAction") {
+    return { type: "image", value: (sourceNode.data as ImageActionNodeData).outputImage };
   } else if (sourceNode.type === "glbViewer") {
     return { type: "image", value: (sourceNode.data as GLBViewerNodeData).capturedImage };
   }
@@ -415,6 +421,7 @@ export function validateWorkflowPure(
 
   // Check each Nano Banana node has required inputs (text required, image optional)
   // Loop edges are excluded because they carry no data on the first iteration.
+  // A prompt typed directly on the node satisfies the text requirement.
   nodes
     .filter((n) => n.type === "nanoBanana")
     .forEach((node) => {
@@ -423,7 +430,8 @@ export function validateWorkflowPure(
                !e.data?.isLoop &&
                (e.targetHandle === "text" || e.targetHandle?.startsWith("text-"))
       );
-      if (!textConnected) {
+      const hasInlinePrompt = !!(node.data as { inlinePrompt?: string }).inlinePrompt?.trim();
+      if (!textConnected && !hasInlinePrompt) {
         errors.push(`Generate node "${node.id}" missing text input`);
       }
     });
@@ -443,7 +451,8 @@ export function validateWorkflowPure(
                 e.targetHandle === "video" || e.targetHandle?.startsWith("video-") ||
                 e.targetHandle === "audio" || e.targetHandle?.startsWith("audio-"))
       );
-      if (!hasInput) {
+      const hasInlinePrompt = !!(node.data as { inlinePrompt?: string }).inlinePrompt?.trim();
+      if (!hasInput && !hasInlinePrompt) {
         errors.push(`Video node "${node.id}" missing input`);
       }
     });

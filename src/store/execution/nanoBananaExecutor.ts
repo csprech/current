@@ -13,6 +13,7 @@ import { calculateGenerationCost } from "@/utils/costCalculator";
 import { buildGenerateHeaders } from "@/store/utils/buildApiHeaders";
 import { pollGenerateTask } from "./pollTaskCompletion";
 import { runWithFallback } from "./runWithFallback";
+import { runWithVariants } from "./variantExecution";
 import type { NodeExecutionContext } from "./types";
 
 export interface NanoBananaOptions {
@@ -21,6 +22,13 @@ export interface NanoBananaOptions {
 }
 
 export async function executeNanoBanana(
+  ctx: NodeExecutionContext,
+  options: NanoBananaOptions = {}
+): Promise<void> {
+  await runWithVariants(ctx, () => executeNanoBananaOnce(ctx, options));
+}
+
+async function executeNanoBananaOnce(
   ctx: NodeExecutionContext,
   options: NanoBananaOptions = {}
 ): Promise<void> {
@@ -54,14 +62,14 @@ export async function executeNanoBanana(
 
   if (useStoredFallback) {
     images = connectedImages.length > 0 ? connectedImages : nodeData.inputImages;
-    promptText = connectedText ?? nodeData.inputPrompt;
+    promptText = connectedText ?? (nodeData.inlinePrompt || nodeData.inputPrompt);
   } else {
     images = connectedImages;
     // For dynamic inputs, check if we have at least a prompt
     const promptFromDynamic = Array.isArray(dynamicInputs.prompt)
       ? dynamicInputs.prompt[0]
       : dynamicInputs.prompt;
-    promptText = connectedText || promptFromDynamic || null;
+    promptText = connectedText || promptFromDynamic || nodeData.inlinePrompt || null;
   }
 
   // Defensive: ensure promptText is actually a string at runtime

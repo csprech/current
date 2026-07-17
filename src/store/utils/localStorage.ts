@@ -12,16 +12,57 @@ import {
 } from "@/types";
 
 // Storage keys
-export const STORAGE_KEY = "node-banana-workflow-configs";
-export const COST_DATA_STORAGE_KEY = "node-banana-workflow-costs";
-export const GENERATE_IMAGE_DEFAULTS_KEY = "node-banana-nanoBanana-defaults";
-export const PROVIDER_SETTINGS_KEY = "node-banana-provider-settings";
-export const RECENT_MODELS_KEY = "node-banana-recent-models";
-export const NODE_DEFAULTS_KEY = "node-banana-node-defaults";
-export const CANVAS_NAVIGATION_KEY = "node-banana-canvas-navigation";
-export const LAST_PROJECT_BASE_DIR_KEY = "node-banana-last-project-dir";
-export const WORKFLOWS_DIRECTORY_KEY = "node-banana-workflows-directory";
-export const FTUX_COMPLETED_KEY = "node-banana-ftux-completed";
+export const STORAGE_KEY = "current-workflow-configs";
+export const COST_DATA_STORAGE_KEY = "current-workflow-costs";
+export const GENERATE_IMAGE_DEFAULTS_KEY = "current-generate-image-defaults";
+export const PROVIDER_SETTINGS_KEY = "current-provider-settings";
+export const RECENT_MODELS_KEY = "current-recent-models";
+export const NODE_DEFAULTS_KEY = "current-node-defaults";
+export const CANVAS_NAVIGATION_KEY = "current-canvas-navigation";
+export const LAST_PROJECT_BASE_DIR_KEY = "current-last-project-dir";
+export const WORKFLOWS_DIRECTORY_KEY = "current-workflows-directory";
+export const FTUX_COMPLETED_KEY = "current-ftux-completed";
+
+/**
+ * One-time migration from the legacy "node-banana-*" storage prefix to
+ * "current-*". Copies every legacy key (never overwriting a value the user
+ * already has under the new name), then removes the legacy entry. Idempotent
+ * and safe to call on every boot; runs once because the legacy keys are gone
+ * after the first pass.
+ */
+const LEGACY_STORAGE_PREFIX = "node-banana-";
+const STORAGE_PREFIX = "current-";
+const LEGACY_KEY_RENAMES: Record<string, string> = {
+  // The image-generation defaults key also dropped its old model nickname.
+  [`${LEGACY_STORAGE_PREFIX}nanoBanana-defaults`]: GENERATE_IMAGE_DEFAULTS_KEY,
+};
+
+export function migrateLegacyLocalStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const legacyKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(LEGACY_STORAGE_PREFIX)) legacyKeys.push(key);
+    }
+    for (const legacyKey of legacyKeys) {
+      const nextKey =
+        LEGACY_KEY_RENAMES[legacyKey] ??
+        `${STORAGE_PREFIX}${legacyKey.slice(LEGACY_STORAGE_PREFIX.length)}`;
+      const value = localStorage.getItem(legacyKey);
+      if (value !== null && localStorage.getItem(nextKey) === null) {
+        localStorage.setItem(nextKey, value);
+      }
+      localStorage.removeItem(legacyKey);
+    }
+  } catch {
+    // Storage unavailable (private mode/quota) — never block boot on this.
+  }
+}
+
+// Run as soon as this module loads in the browser so every consumer —
+// including modules that keep their own key constants — reads migrated data.
+migrateLegacyLocalStorage();
 
 // Maximum recent models to store (show 4 in UI, keep 8 for persistence)
 export const MAX_RECENT_MODELS = 8;
@@ -293,18 +334,3 @@ export const setFTUXCompleted = (completed: boolean): void => {
   if (typeof window === "undefined") return;
   localStorage.setItem(FTUX_COMPLETED_KEY, completed ? "true" : "false");
 };
-
-/**
- * @deprecated Backward-compatible alias. Use `GenerateImageDefaults` instead.
- */
-export type NanoBananaDefaults = GenerateImageDefaults;
-
-/**
- * @deprecated Backward-compatible alias. Use `loadGenerateImageDefaults` instead.
- */
-export const loadNanoBananaDefaults = loadGenerateImageDefaults;
-
-/**
- * @deprecated Backward-compatible alias. Use `saveGenerateImageDefaults` instead.
- */
-export const saveNanoBananaDefaults = saveGenerateImageDefaults;

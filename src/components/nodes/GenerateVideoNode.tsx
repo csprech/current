@@ -17,6 +17,9 @@ import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
 import { useVideoAutoplay } from "@/hooks/useVideoAutoplay";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
+import { InlinePromptField } from "./InlinePromptField";
+import { VariantCountPicker } from "./VariantCountPicker";
+import { useMediaViewerStore } from "@/store/mediaViewerStore";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { downloadMedia } from "@/utils/downloadMedia";
@@ -421,7 +424,10 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
             />
           )}
 
-          {/* Primary tab: external provider parameters */}
+          {/* Primary tab: variations + external provider parameters */}
+          {settingsTab === "primary" && (
+            <VariantCountPicker nodeId={id} value={nodeData.variantCount} />
+          )}
           {settingsTab === "primary" && nodeData.selectedModel?.modelId && (
             <ModelParameters
               modelId={nodeData.selectedModel.modelId}
@@ -786,8 +792,21 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
                 </svg>
               </div>
             )}
-            {/* Download + Clear buttons */}
+            {/* Viewer + Download + Clear buttons */}
             <div className="absolute top-1 right-1 flex items-center gap-0.5">
+              <button
+                onClick={() => useMediaViewerStore.getState().open(id)}
+                aria-label="Open media viewer"
+                className="current-media-action current-media-action--overlay"
+                title="Open media viewer (F)"
+              >
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <polyline points="15 3 21 3 21 9" />
+                  <polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+              </button>
               <button
                 onClick={() => downloadMedia(nodeData.outputVideo!, "video").catch(() => {})}
                 aria-label="Download video"
@@ -872,6 +891,18 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
             )}
           </div>
         )}
+
+        <InlinePromptField
+          nodeId={id}
+          value={nodeData.inlinePrompt}
+          className={
+            nodeData.outputVideo
+              ? hasCarouselVideos
+                ? "bottom-[4.75rem]"
+                : "bottom-12"
+              : "bottom-1"
+          }
+        />
       </div>
 
     </BaseNode>

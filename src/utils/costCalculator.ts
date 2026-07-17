@@ -1,4 +1,4 @@
-import { ModelType, Resolution, MODEL_DISPLAY_NAMES, NanoBananaNodeData, GenerateVideoNodeData, Generate3DNodeData, SplitGridNodeData, WorkflowNode, ProviderType } from "@/types";
+import { ModelType, Resolution, MODEL_DISPLAY_NAMES, NanoBananaNodeData, GenerateVideoNodeData, Generate3DNodeData, GenerateAudioNodeData, SplitGridNodeData, WorkflowNode, ProviderType, SelectedModelPricing } from "@/types";
 
 // Pricing in USD per image (Gemini API)
 export const PRICING = {
@@ -48,6 +48,62 @@ export function getModelCost(pricing: { type: 'per-run' | 'per-second'; amount: 
     unitCost: pricing.amount,
     unit: pricing.type === 'per-run' ? 'image' : 'second',
   };
+}
+
+/** Clamp a node's variants-per-run setting to the supported 1–4 range. */
+function clampVariantCount(value: number | undefined): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 1;
+  return Math.max(1, Math.min(4, Math.round(value)));
+}
+
+/**
+ * Hardcoded Gemini pricing for legacy models.
+ */
+function getGeminiPricing(
+  provider: ProviderType,
+  modelId: string,
+  resolution?: Resolution
+): { unitCost: number; unit: string } | null {
+  if (provider !== "gemini") return null;
+  if (modelId === "nano-banana" || modelId === "gemini-2.5-flash-image") {
+    return { unitCost: PRICING["nano-banana"]["1K"], unit: "image" };
+  }
+  if (modelId === "nano-banana-pro" || modelId === "gemini-3-pro-image-preview") {
+    return { unitCost: PRICING["nano-banana-pro"][resolution || "1K"], unit: "image" };
+  }
+  if (modelId === "nano-banana-2" || modelId === "gemini-3.1-flash-image-preview") {
+    return { unitCost: PRICING["nano-banana-2"][resolution || "1K"], unit: "image" };
+  }
+  return null;
+}
+
+/**
+ * Estimate the cost of running a single node once.
+ * Returns null when the node's model has no pricing data (e.g. Replicate),
+ * and 0 for nodes that run locally at no cost.
+ */
+export function estimateNodeRunCost(node: WorkflowNode): number | null {
+  if (node.type === "removeBackground" || node.type === "imageAction" || node.type === "videoAction") {
+    return 0; // runs on-device
+  }
+
+  if (node.type === "nanoBanana") {
+    const data = node.data as NanoBananaNodeData;
+    if (data.selectedModel) {
+      const pricing =
+        getModelCost(data.selectedModel.pricing) ??
+        getGeminiPricing(data.selectedModel.provider, data.selectedModel.modelId, data.resolution);
+      return pricing?.unitCost ?? null;
+    }
+    return getGeminiPricing("gemini", data.model, data.model === "nano-banana" ? "1K" : data.resolution)?.unitCost ?? null;
+  }
+
+  if (node.type === "generateVideo" || node.type === "generateAudio" || node.type === "generate3d") {
+    const data = node.data as GenerateVideoNodeData | GenerateAudioNodeData | Generate3DNodeData;
+    return getModelCost(data.selectedModel?.pricing)?.unitCost ?? null;
+  }
+
+  return null; // llmGenerate and other types: token-based or unknown
 }
 
 /**
@@ -140,35 +196,27 @@ export function calculatePredictedCost(
 
   /**
    * Get pricing for a model.
-   * First checks modelPricing map, then falls back to hardcoded Gemini pricing.
+   * Checks the modelPricing map, then pricing carried on the node's selected
+   * model, then falls back to hardcoded Gemini pricing.
    */
   function getPricing(
     provider: ProviderType,
     modelId: string,
-    resolution?: Resolution
+    resolution?: Resolution,
+    selectedModelPricing?: SelectedModelPricing | null
   ): { unitCost: number; unit: string } | null {
     // Check external pricing map first
     if (modelPricing?.has(modelId)) {
       return modelPricing.get(modelId)!;
     }
 
-    // Fallback to hardcoded Gemini pricing for legacy models
-    if (provider === "gemini") {
-      if (modelId === "nano-banana" || modelId === "gemini-2.5-flash-image") {
-        return { unitCost: PRICING["nano-banana"]["1K"], unit: "image" };
-      }
-      if (modelId === "nano-banana-pro" || modelId === "gemini-3-pro-image-preview") {
-        const res = resolution || "1K";
-        return { unitCost: PRICING["nano-banana-pro"][res], unit: "image" };
-      }
-      if (modelId === "nano-banana-2" || modelId === "gemini-3.1-flash-image-preview") {
-        const res = resolution || "1K";
-        return { unitCost: PRICING["nano-banana-2"][res], unit: "image" };
-      }
+    // Pricing stored on the node when the model was selected (fal/Kie models)
+    const carried = getModelCost(selectedModelPricing);
+    if (carried) {
+      return carried;
     }
 
-    // No pricing available (e.g., Replicate)
-    return null;
+    return getGeminiPricing(provider, modelId, resolution);
   }
 
   nodes.forEach((node) => {
@@ -194,28 +242,34 @@ export function calculatePredictedCost(
       }
 
       const resolution = data.model === "nano-banana" ? "1K" : data.resolution;
-      const pricing = getPricing(provider, modelId, resolution);
+      const pricing = getPricing(provider, modelId, resolution, data.selectedModel?.pricing);
       const unitCost = pricing?.unitCost ?? null;
       const unit = pricing?.unit ?? "image";
 
-      addToBreakdown(provider, modelId, modelName, unit, unitCost);
+      addToBreakdown(provider, modelId, modelName, unit, unitCost, clampVariantCount(data.variantCount));
     }
 
-    // Handle generateVideo nodes
-    if (node.type === "generateVideo") {
-      const data = node.data as GenerateVideoNodeData;
+    // Handle generateVideo / generateAudio / generate3d nodes — these require
+    // selectedModel (no legacy fallback); pricing rides on the selected model.
+    if (node.type === "generateVideo" || node.type === "generateAudio" || node.type === "generate3d") {
+      const data = node.data as GenerateVideoNodeData | GenerateAudioNodeData | Generate3DNodeData;
+      const fallbackUnit =
+        node.type === "generateVideo" ? "video" : node.type === "generateAudio" ? "audio" : "model";
 
-      // generateVideo requires selectedModel (no legacy fallback)
       if (data.selectedModel) {
         const provider = data.selectedModel.provider;
         const modelId = data.selectedModel.modelId;
         const modelName = data.selectedModel.displayName;
 
-        const pricing = getPricing(provider, modelId);
+        const pricing = getPricing(provider, modelId, undefined, data.selectedModel.pricing);
         const unitCost = pricing?.unitCost ?? null;
-        const unit = pricing?.unit ?? "video";
+        // Per-run pricing reports a generic "image" unit — relabel per media type
+        const unit = !pricing || pricing.unit === "image" ? fallbackUnit : pricing.unit;
 
-        addToBreakdown(provider, modelId, modelName, unit, unitCost);
+        const count = node.type === "generateVideo"
+          ? clampVariantCount((data as GenerateVideoNodeData).variantCount)
+          : 1;
+        addToBreakdown(provider, modelId, modelName, unit, unitCost, count);
       }
     }
 
@@ -250,31 +304,6 @@ export function calculatePredictedCost(
     nodeCount,
     unknownPricingCount,
   };
-}
-
-/**
- * Check whether any generation node in the workflow uses a non-Gemini provider.
- * Used to hide the CostIndicator when pricing data would be incomplete/misleading.
- */
-export function hasNonGeminiProviders(nodes: WorkflowNode[]): boolean {
-  return nodes.some((node) => {
-    if (node.type === "nanoBanana") {
-      const data = node.data as NanoBananaNodeData;
-      return data.selectedModel?.provider !== undefined && data.selectedModel.provider !== "gemini";
-    }
-    if (node.type === "generateVideo") {
-      const data = node.data as GenerateVideoNodeData;
-      return data.selectedModel?.provider !== undefined && data.selectedModel.provider !== "gemini";
-    }
-    if (node.type === "generate3d") {
-      const data = node.data as Generate3DNodeData;
-      return data.selectedModel?.provider !== undefined && data.selectedModel.provider !== "gemini";
-    }
-    if (node.type === "generateAudio") {
-      return true; // Audio nodes are always non-Gemini
-    }
-    return false;
-  });
 }
 
 export function formatCost(cost: number): string {

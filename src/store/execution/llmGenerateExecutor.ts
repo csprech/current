@@ -57,7 +57,7 @@ export async function executeLlmGenerate(
   let text: string | null;
 
   images = inputs.images.length > 0 ? inputs.images : nodeData.inputImages;
-  text = inputs.text ?? nodeData.inputPrompt;
+  text = inputs.text ?? (nodeData.inlinePrompt || nodeData.inputPrompt);
 
   if (!text) {
     updateNodeData(node.id, {

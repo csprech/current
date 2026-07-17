@@ -103,6 +103,7 @@ describe("GenerateImageNode", () => {
     // Default mock implementation
     mockUseWorkflowStore.mockImplementation((selector) => {
       const state = {
+        edges: [],
         updateNodeData: mockUpdateNodeData,
         regenerateNode: mockRegenerateNode,
         addNode: mockAddNode,
@@ -585,10 +586,10 @@ describe("GenerateImageNode", () => {
   describe("Fallback Settings Tab", () => {
     beforeEach(() => {
       // Enable inline parameters for tab bar tests
-      localStorage.setItem("node-banana-inline-parameters", "true");
+      localStorage.setItem("current-inline-parameters", "true");
     });
     afterEach(() => {
-      localStorage.removeItem("node-banana-inline-parameters");
+      localStorage.removeItem("current-inline-parameters");
     });
 
     it("shows tab bar when fallbackModel is set", () => {

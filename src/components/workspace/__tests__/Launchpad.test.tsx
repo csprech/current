@@ -61,7 +61,7 @@ describe("Launchpad", () => {
   });
 
   it("shows recent projects ordered by existing last-saved metadata", () => {
-    localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
+    localStorage.setItem("current-workflow-configs", JSON.stringify({
       older: { workflowId: "older", name: "Older project", directoryPath: "/work/older", generationsPath: null, lastSavedAt: 100 },
       newer: { workflowId: "newer", name: "Newest project", directoryPath: "/work/newer", generationsPath: null, lastSavedAt: 200 },
     }));
@@ -74,7 +74,7 @@ describe("Launchpad", () => {
   });
 
   it("keeps the server launchpad free of browser-only recent projects", () => {
-    localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
+    localStorage.setItem("current-workflow-configs", JSON.stringify({
       recent: { workflowId: "recent", name: "Recent project", directoryPath: "/work/recent", generationsPath: null, lastSavedAt: 100 },
     }));
 
@@ -84,7 +84,7 @@ describe("Launchpad", () => {
   });
 
   it("prefers last-opened metadata and falls back to legacy last-saved timestamps", () => {
-    localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
+    localStorage.setItem("current-workflow-configs", JSON.stringify({
       savedLater: { workflowId: "savedLater", name: "Saved later", directoryPath: "/work/saved", generationsPath: null, lastSavedAt: 500 },
       openedLater: { workflowId: "openedLater", name: "Opened later", directoryPath: "/work/opened", generationsPath: null, lastSavedAt: 100, lastOpenedAt: 900 },
       malformed: { workflowId: "malformed", name: "Malformed", directoryPath: 42, lastSavedAt: "yesterday" },
@@ -100,7 +100,7 @@ describe("Launchpad", () => {
 
   it("opens a selected recent project through the existing workflow load endpoint", async () => {
     const workflow = { id: "recent", version: 1, name: "Recent project", edgeStyle: "curved", nodes: [], edges: [] };
-    localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
+    localStorage.setItem("current-workflow-configs", JSON.stringify({
       recent: { workflowId: "recent", name: "Recent project", directoryPath: "/work/recent", generationsPath: null, lastSavedAt: 100 },
       other: { workflowId: "other", name: "Other project", directoryPath: "/work/other", generationsPath: "/work/other/generations", lastSavedAt: 200 },
     }));
@@ -111,7 +111,7 @@ describe("Launchpad", () => {
 
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/workflow?path=%2Fwork%2Frecent&load=true"));
     await waitFor(() => expect(props.onWorkflowGenerated).toHaveBeenCalledWith(workflow, "/work/recent"));
-    const persisted = JSON.parse(localStorage.getItem("node-banana-workflow-configs")!);
+    const persisted = JSON.parse(localStorage.getItem("current-workflow-configs")!);
     expect(persisted.recent.lastOpenedAt).toEqual(expect.any(Number));
     expect(persisted.recent).toEqual(expect.objectContaining({ name: "Recent project", directoryPath: "/work/recent", lastSavedAt: 100 }));
     expect(persisted.other).toEqual(expect.objectContaining({ name: "Other project", generationsPath: "/work/other/generations" }));
@@ -123,7 +123,7 @@ describe("Launchpad", () => {
 
   it("continues opening a recent project when recency persistence fails", async () => {
     const workflow = { id: "recent", version: 1, name: "Recent project", edgeStyle: "curved", nodes: [], edges: [] };
-    localStorage.setItem("node-banana-workflow-configs", JSON.stringify({
+    localStorage.setItem("current-workflow-configs", JSON.stringify({
       recent: { workflowId: "recent", name: "Recent project", directoryPath: "/work/recent", generationsPath: null, lastSavedAt: 100 },
     }));
     vi.mocked(global.fetch).mockResolvedValue({ ok: true, json: async () => ({ success: true, workflow }) } as Response);
@@ -138,7 +138,7 @@ describe("Launchpad", () => {
   });
 
   it("safely ignores malformed recent-project storage", () => {
-    localStorage.setItem("node-banana-workflow-configs", "not-json");
+    localStorage.setItem("current-workflow-configs", "not-json");
     expect(() => render(<Launchpad {...props} />)).not.toThrow();
     expect(screen.queryByText("Recent projects")).not.toBeInTheDocument();
   });

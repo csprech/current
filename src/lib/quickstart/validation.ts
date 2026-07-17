@@ -33,6 +33,8 @@ const VALID_NODE_TYPES: NodeType[] = [
   "videoTrim",
   "videoFrameGrab",
   "removeBackground",
+  "imageAction",
+  "videoAction",
   "router",
   "switch",
   "conditionalSwitch",
@@ -64,6 +66,8 @@ const DEFAULT_DIMENSIONS: Record<NodeType, { width: number; height: number }> = 
   videoTrim: { width: 360, height: 360 },
   videoFrameGrab: { width: 320, height: 320 },
   removeBackground: { width: 320, height: 320 },
+  imageAction: { width: 320, height: 340 },
+  videoAction: { width: 320, height: 340 },
   router: { width: 200, height: 80 },
   switch: { width: 220, height: 120 },
   conditionalSwitch: { width: 260, height: 180 },
@@ -414,6 +418,24 @@ function createDefaultNodeData(type: NodeType): WorkflowNodeData {
         status: "idle",
         error: null,
         progress: 0,
+      };
+    case "imageAction":
+      return {
+        operation: "rotate",
+        params: {},
+        outputImage: null,
+        status: "idle",
+        error: null,
+      };
+    case "videoAction":
+      return {
+        operation: "reverse",
+        params: {},
+        outputVideo: null,
+        status: "idle",
+        error: null,
+        progress: 0,
+        encoderSupported: null,
       };
     case "router":
       return {};

@@ -361,6 +361,27 @@ describe("validateWorkflowPure", () => {
     expect(result.errors[0]).toContain("missing input");
   });
 
+  it("should accept an inline prompt in place of a text connection on nanoBanana", () => {
+    const nodes = [makeNode("gen", "nanoBanana", { inlinePrompt: "a red fox" })];
+    const result = validateWorkflowPure(nodes, []);
+    expect(result.errors).toEqual([]);
+    expect(result.valid).toBe(true);
+  });
+
+  it("should reject a whitespace-only inline prompt on nanoBanana", () => {
+    const nodes = [makeNode("gen", "nanoBanana", { inlinePrompt: "   " })];
+    const result = validateWorkflowPure(nodes, []);
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain("missing text input");
+  });
+
+  it("should accept an inline prompt in place of connections on generateVideo", () => {
+    const nodes = [makeNode("vid", "generateVideo", { inlinePrompt: "a rolling wave" })];
+    const result = validateWorkflowPure(nodes, []);
+    expect(result.errors).toEqual([]);
+    expect(result.valid).toBe(true);
+  });
+
   it("should pass generateVideo with only a video input connected (no prompt required)", () => {
     const nodes = [
       makeNode("src", "videoInput", { video: "data:video/mp4;base64,v" }),

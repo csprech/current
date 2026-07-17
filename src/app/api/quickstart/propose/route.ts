@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { buildProposalPrompt } from "@/lib/quickstart/proposalPrompt";
 import { parseJSONFromResponse } from "@/lib/quickstart/validation";
+import { AI_NODE_TYPES } from "@/lib/nodeCatalogForAI";
 import type { WorkflowProposal, WorkflowComplexity, NodeType } from "@/types";
 
 export const maxDuration = 60; // 1 minute timeout
@@ -40,16 +41,7 @@ function validateProposalShape(data: unknown): string | null {
     return "Proposal must have a nodes array";
   }
 
-  const validNodeTypes: NodeType[] = [
-    "imageInput",
-    "annotation",
-    "prompt",
-    "nanoBanana",
-    "generateVideo",
-    "llmGenerate",
-    "splitGrid",
-    "output",
-  ];
+  const validNodeTypes: NodeType[] = AI_NODE_TYPES;
 
   for (let i = 0; i < proposal.nodes.length; i++) {
     const node = proposal.nodes[i] as Record<string, unknown>;

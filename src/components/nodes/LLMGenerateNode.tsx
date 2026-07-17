@@ -8,6 +8,7 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { LLMGenerateNodeData, LLMProvider, LLMModelType } from "@/types";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
+import { InlinePromptField } from "./InlinePromptField";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
@@ -393,6 +394,12 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
             </span>
           </div>
         )}
+
+        <InlinePromptField
+          nodeId={id}
+          value={nodeData.inlinePrompt}
+          placeholder="Instructions for the model…"
+        />
       </div>
 
     </BaseNode>

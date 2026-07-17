@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { FTUX_COMPLETED_KEY } from "./utils/localStorage";
 
 export interface TutorialLink {
   text: string;
@@ -47,8 +48,6 @@ export interface FTUXState {
   setNanoBananaAddedFromMenu: (added: boolean) => void;
   loadTutorialSampleImage: () => Promise<void>;
 }
-
-const FTUX_COMPLETED_KEY = "node-banana-ftux-completed";
 
 /**
  * Marks FTUX as completed in localStorage.
@@ -211,7 +210,7 @@ const initialTutorialSteps: TutorialStep[] = [
     position: "left",
     waitForClick: true,
     links: [
-      { text: "Join our Discord community", url: "https://discord.gg/node-banana" },
+      { text: "Star Current on GitHub", url: "https://github.com/csprech/current" },
     ],
     completed: false,
   },
