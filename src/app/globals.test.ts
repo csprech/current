@@ -143,6 +143,12 @@ describe("Current Add Palette brand colors", () => {
     expect(runValidation).toContain("var(--current-surface-elevated)");
   });
 
+  it("gives add-palette category labels comfortable pill padding", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(css).toMatch(/\.current-add-palette__categories button\s*\{[^}]*padding:\s*8px 14px/);
+  });
+
   it("keeps adaptive chrome free of fixed light-only and dark-only color bypasses", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
