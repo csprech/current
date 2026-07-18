@@ -90,6 +90,7 @@ import { useFTUXStore } from "@/store/ftuxStore";
 import { recordRecentNode } from "@/components/workspace/nodeCatalog";
 import { WorkspacePanelHost } from "@/components/workspace/WorkspacePanelHost";
 import { OutputsWorkspace } from "@/components/workspace/OutputsWorkspace";
+import { AppWorkspace } from "@/components/workspace/AppWorkspace";
 import { InlineNotice } from "@/components/current";
 
 const nodeTypes: NodeTypes = {
@@ -1885,7 +1886,7 @@ export function WorkflowCanvas({ onPaneDoubleClick }: WorkflowCanvasProps = {}) 
   // user-positioned first node disarms the fit instead of being teleported.
   const deferredFitRef = useRef(true);
   useEffect(() => {
-    if (workspaceView === "outputs") {
+    if (workspaceView !== "canvas") {
       // ReactFlow remounts on return; behave like a fresh init
       deferredFitRef.current = true;
       return;
@@ -2229,7 +2230,7 @@ export function WorkflowCanvas({ onPaneDoubleClick }: WorkflowCanvasProps = {}) 
         aria-hidden={showQuickstart ? true : undefined}
         inert={showQuickstart ? true : undefined}
       >
-      {workspaceView === "outputs" ? <OutputsWorkspace /> : <ReactFlow
+      {workspaceView === "outputs" ? <OutputsWorkspace /> : workspaceView === "app" ? <AppWorkspace /> : <ReactFlow
         nodes={allNodes}
         edges={edges}
         onNodesChange={onNodesChange}

@@ -173,6 +173,10 @@ The `Record<NodeType, …>` maps are exhaustive on purpose: after adding the typ
 18. `src/lib/headless/runWorkflow.ts` — add to `SUPPORTED_NODE_TYPES` or leave canvas-only (unsupported types get a clear error)
 19. Tests: unit tests for the op + executor; update the `AddPalette` catalog-count test and the `nodePresentation`/chat-tools catalog assertions
 
+## Templates & the App view
+
+`src/lib/workflow/templateInterface.ts` is the typed contract for running a workflow as a form: input-family nodes (prompt, image/video/audio input) become typed fields unless marked `isTemplateInput: false` (a `BaseNodeData` flag), output nodes are the results. Keys match custom titles / node ids — the same names `POST /api/run` `inputs` and the CLI's `--input` flags resolve. The **App workspace view** (`AppWorkspace.tsx`, third option in the command-bar view switcher) renders that interface as a form over the live store: fields write through `updateNodeData`, Run calls `executeWorkflow()`, results come from `getConnectedInputs` on output nodes. Shareable exports embed `templateInterface`, and `/api/run` `validateOnly` responses return it.
+
 ## Headless runner & MCP
 
 - `POST /api/run` executes `{workflow: {nodes, edges}, inputs?, validateOnly?}`; provider keys come from the server env or forwarded `X-*-Key` headers.

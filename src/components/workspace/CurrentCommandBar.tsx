@@ -19,6 +19,7 @@ import { RunControl } from "./RunControl";
 
 const VIEW_OPTIONS = [
   { value: "canvas", label: "Canvas" },
+  { value: "app", label: "App" },
   { value: "outputs", label: "Outputs" },
 ] as const;
 

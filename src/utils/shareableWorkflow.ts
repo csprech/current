@@ -12,6 +12,7 @@
  */
 import type { WorkflowNode, WorkflowEdge, NodeGroup } from "@/types";
 import type { WorkflowFile, EdgeStyle } from "@/store/workflowStore";
+import { describeTemplateInterface } from "@/lib/workflow/templateInterface";
 
 // Fields that point at external files relative to a local save directory.
 const REF_FIELDS = [
@@ -55,6 +56,9 @@ export function buildShareableWorkflow(input: ShareableWorkflowInput): WorkflowF
     edges: input.edges,
     edgeStyle: input.edgeStyle,
     groups: input.groups && Object.keys(input.groups).length > 0 ? input.groups : undefined,
+    // Typed contract for running this workflow as a form, via POST /api/run
+    // inputs, or the CLI's --input flags (keys match custom titles / node ids).
+    templateInterface: describeTemplateInterface(input.nodes),
   };
 }
 

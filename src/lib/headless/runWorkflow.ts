@@ -23,6 +23,7 @@ import type {
   WorkflowNodeData,
 } from "@/types";
 import { getConnectedInputsPure, validateWorkflowPure } from "@/store/utils/connectedInputs";
+import { describeTemplateInterface, type TemplateInterface } from "@/lib/workflow/templateInterface";
 import { groupNodesByLevel } from "@/store/utils/executionUtils";
 
 export const SUPPORTED_NODE_TYPES = new Set([
@@ -73,6 +74,8 @@ export interface HeadlessRunResult {
   error?: string;
   outputs: HeadlessOutput[];
   nodeResults: HeadlessNodeResult[];
+  /** Typed inputs/outputs of the workflow (present on validateOnly responses). */
+  templateInterface?: TemplateInterface;
 }
 
 export interface HeadlessRunContext {
@@ -373,7 +376,12 @@ export async function runWorkflowHeadless(
   }
 
   if (request.validateOnly) {
-    return { success: true, outputs: [], nodeResults };
+    return {
+      success: true,
+      outputs: [],
+      nodeResults,
+      templateInterface: describeTemplateInterface(nodes),
+    };
   }
 
   const levels = groupNodesByLevel(nodes, edges);

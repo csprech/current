@@ -36,6 +36,7 @@ Arrange typed nodes on an infinite canvas, connect them, and run the graph in de
 | Local models | Ollama LLMs and ComfyUI image checkpoints run fully offline on your hardware — free, private, no API key. |
 | Fullscreen viewer | Press `F` on a generation node for a fullscreen viewer with history grid, promote-to-input, and downloads. |
 | Bulk editing | Select several generators and change model, aspect ratio, or variations across all of them at once. |
+| Run as an app | Switch to the App view and any workflow becomes a typed form — fill the inputs, hit Run, collect results. No graph in sight. |
 | Headless runs | Execute any workflow from the CLI or `POST /api/run` — no browser required. |
 | MCP server | Let AI agents validate and run your local workflows and browse the node/model catalogs. |
 | Local projects | Save workflow files and media to a local project directory; costs are tracked per workflow. |

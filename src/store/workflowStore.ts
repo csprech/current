@@ -227,6 +227,8 @@ export interface WorkflowFile {
   edges: WorkflowEdge[];
   edgeStyle: EdgeStyle;
   groups?: Record<string, NodeGroup>;  // Optional for backward compatibility
+  /** Typed template interface (shareable exports) — how to drive this workflow as a form/API. */
+  templateInterface?: import("@/lib/workflow/templateInterface").TemplateInterface;
 }
 
 // Clipboard data structure for copy/paste
@@ -237,7 +239,7 @@ interface ClipboardData {
 
 export type LeftWorkspacePanel = "library" | null;
 export type RightWorkspacePanel = "assistant" | "activity" | null;
-export type WorkspaceView = "canvas" | "outputs";
+export type WorkspaceView = "canvas" | "app" | "outputs";
 
 interface WorkflowStore {
   nodes: WorkflowNode[];
