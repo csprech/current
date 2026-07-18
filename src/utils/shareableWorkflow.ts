@@ -12,6 +12,7 @@
  */
 import type { WorkflowNode, WorkflowEdge, NodeGroup } from "@/types";
 import type { WorkflowFile, EdgeStyle } from "@/store/workflowStore";
+import { describeTemplateInterface } from "@/lib/workflow/templateInterface";
 
 // Fields that point at external files relative to a local save directory.
 const REF_FIELDS = [
@@ -55,7 +56,49 @@ export function buildShareableWorkflow(input: ShareableWorkflowInput): WorkflowF
     edges: input.edges,
     edgeStyle: input.edgeStyle,
     groups: input.groups && Object.keys(input.groups).length > 0 ? input.groups : undefined,
+    // Typed contract for running this workflow as a form, via POST /api/run
+    // inputs, or the CLI's --input flags (keys match custom titles / node ids).
+    templateInterface: describeTemplateInterface(input.nodes),
   };
+}
+
+// Generated results and run state — cleared for template publishing so
+// community files stay small and open fresh. Input media is kept: a
+// template's example inputs are part of what it teaches.
+const GENERATED_FIELDS = [
+  "outputImage",
+  "outputVideo",
+  "outputAudio",
+  "outputText",
+  "outputMask",
+  "imageHistory",
+  "selectedHistoryIndex",
+  "status",
+  "error",
+] as const;
+
+/**
+ * A publish-ready copy of a shareable workflow: generated outputs, run
+ * history, and run state stripped; output nodes emptied. The typed
+ * templateInterface is recomputed from the cleaned nodes.
+ */
+export function stripGeneratedMedia(workflow: WorkflowFile): WorkflowFile {
+  const nodes = workflow.nodes.map((node) => {
+    const data = { ...(node.data as Record<string, unknown>) };
+    for (const field of GENERATED_FIELDS) {
+      if (field in data) {
+        data[field] = Array.isArray(data[field]) ? [] : null;
+      }
+    }
+    if (node.type === "output" || node.type === "outputGallery") {
+      data.image = null;
+      data.video = null;
+      data.audio = null;
+    }
+    return { ...node, data } as WorkflowNode;
+  });
+
+  return { ...workflow, nodes, templateInterface: describeTemplateInterface(nodes) };
 }
 
 /** Filesystem-safe filename (no extension) derived from a workflow name. */

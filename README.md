@@ -32,9 +32,11 @@ Arrange typed nodes on an infinite canvas, connect them, and run the graph in de
 | In-node everything | Inline prompts, model pickers, 1–4 variations per run, and a Run button that shows the estimated cost. |
 | Inpainting masks | Paint a mask in the annotation editor; the generator edits only that region. Pad-then-mask gives you outpainting. |
 | Local action nodes | Image Action and Video Action run deterministic edits on-device — free, instant, offline. |
-| Many providers | Gemini, OpenAI, Anthropic, Replicate, fal.ai, Kie.ai, and WaveSpeed models from a single workflow. |
+| Many providers | Gemini, OpenAI, Anthropic, Replicate, fal.ai, Kie.ai, WaveSpeed, and ElevenLabs audio from a single workflow. |
+| Local models | Ollama LLMs and ComfyUI image checkpoints run fully offline on your hardware — free, private, no API key. |
 | Fullscreen viewer | Press `F` on a generation node for a fullscreen viewer with history grid, promote-to-input, and downloads. |
 | Bulk editing | Select several generators and change model, aspect ratio, or variations across all of them at once. |
+| Run as an app | Switch to the App view and any workflow becomes a typed form — fill the inputs, hit Run, collect results. No graph in sight. |
 | Headless runs | Execute any workflow from the CLI or `POST /api/run` — no browser required. |
 | MCP server | Let AI agents validate and run your local workflows and browse the node/model catalogs. |
 | Local projects | Save workflow files and media to a local project directory; costs are tracked per workflow. |
@@ -72,6 +74,9 @@ REPLICATE_API_KEY=your_replicate_key    # Replicate models
 FAL_API_KEY=your_fal_key                # fal.ai models
 KIE_API_KEY=your_kie_api_key            # Kie.ai models (Sora, Veo, Kling, ...)
 WAVESPEED_API_KEY=your_wavespeed_key    # WaveSpeed models
+ELEVENLABS_API_KEY=your_elevenlabs_key  # ElevenLabs TTS / sound effects / music
+OLLAMA_URL=http://localhost:11434       # Local Ollama daemon (optional; no key needed)
+COMFYUI_URL=http://localhost:8188       # Local ComfyUI daemon (optional; no key needed)
 ```
 
 Keep `.env.local` private. It should never be committed.

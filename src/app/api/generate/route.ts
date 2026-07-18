@@ -15,6 +15,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { GenerateRequest, GenerateResponse, ModelType, SelectedModel, ProviderType } from "@/types";
 import { GenerationInput, ModelCapability } from "@/lib/providers/types";
 import { generateWithGemini, submitGeminiVideoTask } from "./providers/gemini";
+import { generateWithElevenLabs } from "./providers/elevenlabs";
+import { submitComfyUITask, resolveComfyUIBaseUrl, comfyUIUnreachableError } from "./providers/comfyui";
 import { submitReplicateTask } from "./providers/replicate";
 import { clearFalInputMappingCache as _clearFalInputMappingCache, submitFalTask } from "./providers/fal";
 import { submitKieTask } from "./providers/kie";
@@ -37,6 +39,8 @@ interface MultiProviderGenerateRequest extends GenerateRequest {
   dynamicInputs?: Record<string, string | string[]>;
   /** White-on-black inpainting mask; white marks the only region to edit. */
   maskImage?: string;
+  /** ControlNet hint image (ComfyUI): edge/depth map or a photo for a daemon-side preprocessor. */
+  controlImage?: string;
 }
 
 /**
@@ -117,6 +121,7 @@ export async function POST(request: NextRequest) {
       dynamicInputs,
       mediaType,
       maskImage,
+      controlImage,
     } = body;
 
     // Prompt is required unless:
@@ -165,6 +170,113 @@ export async function POST(request: NextRequest) {
     console.log(`[API:${requestId}] Provider: ${provider}, Model: ${selectedModel?.modelId || model}`);
 
     // Route to appropriate provider
+    if (provider === "elevenlabs") {
+      if (!selectedModel?.modelId) {
+        return NextResponse.json<GenerateResponse>(
+          { success: false, error: "selectedModel with modelId is required for ElevenLabs" },
+          { status: 400 }
+        );
+      }
+
+      const elevenLabsKey = request.headers.get("X-ElevenLabs-Key") || process.env.ELEVENLABS_API_KEY;
+      if (!elevenLabsKey) {
+        return NextResponse.json<GenerateResponse>(
+          {
+            success: false,
+            error: "ElevenLabs API key not configured. Add ELEVENLABS_API_KEY to .env.local or configure in Settings.",
+          },
+          { status: 401 }
+        );
+      }
+
+      if (!prompt) {
+        return NextResponse.json<GenerateResponse>(
+          { success: false, error: "ElevenLabs models need a text prompt" },
+          { status: 400 }
+        );
+      }
+
+      // TTS/SFX answer in seconds and music inside the route ceiling, so this
+      // completes inline like the Gemini image path — no submit+poll.
+      const result = await generateWithElevenLabs("el-" + requestId, elevenLabsKey, {
+        model: {
+          id: selectedModel.modelId,
+          name: selectedModel.displayName || selectedModel.modelId,
+          provider: "elevenlabs",
+          capabilities: ["text-to-audio"],
+          description: null,
+        },
+        prompt,
+        parameters,
+      });
+
+      if (!result.success || !result.outputs?.[0]) {
+        return NextResponse.json<GenerateResponse>(
+          { success: false, error: result.error || "ElevenLabs generation failed" },
+          { status: 500 }
+        );
+      }
+      return buildMediaResponse(result.outputs[0]);
+    }
+
+    if (provider === "comfyui") {
+      if (!selectedModel?.modelId) {
+        return NextResponse.json<GenerateResponse>(
+          { success: false, error: "selectedModel with a checkpoint modelId is required for ComfyUI" },
+          { status: 400 }
+        );
+      }
+
+      const baseUrl = resolveComfyUIBaseUrl(request.headers.get("X-ComfyUI-URL"));
+
+      // The generic mask plumbing appends the mask as a final reference image
+      // plus a text instruction — meaningless to Stable Diffusion checkpoints.
+      // Strip both; ComfyUI inpainting needs a dedicated graph (out of v1 scope).
+      let comfyImages = images ? [...images] : [];
+      let comfyPrompt = prompt || "";
+      if (typeof maskImage === "string" && maskImage.length > 0) {
+        comfyImages = comfyImages.filter((img) => img !== maskImage);
+        comfyPrompt = comfyPrompt.replace(MASK_INSTRUCTION, "").trim();
+      }
+
+      const genInput: GenerationInput = {
+        model: {
+          id: selectedModel.modelId,
+          name: selectedModel.displayName || selectedModel.modelId,
+          provider: "comfyui",
+          capabilities: capabilitiesForMediaType(mediaType),
+          description: null,
+        },
+        prompt: comfyPrompt,
+        images: comfyImages,
+        parameters,
+      };
+
+      try {
+        const { taskId } = await submitComfyUITask(requestId, baseUrl, genInput, aspectRatio, controlImage);
+        return NextResponse.json<GenerateResponse>({
+          success: true,
+          polling: true,
+          taskId,
+          pollProvider: 'comfyui',
+          pollModelId: selectedModel.modelId,
+          pollModelName: selectedModel.displayName || selectedModel.modelId,
+          pollMediaType: 'image',
+        });
+      } catch (error) {
+        const unreachable = error instanceof TypeError;
+        return NextResponse.json<GenerateResponse>(
+          {
+            success: false,
+            error: unreachable
+              ? comfyUIUnreachableError(baseUrl)
+              : error instanceof Error ? error.message : "ComfyUI task submission failed",
+          },
+          { status: unreachable ? 502 : 500 }
+        );
+      }
+    }
+
     if (provider === "replicate") {
       if (!selectedModel?.modelId || !selectedModel?.displayName) {
         return NextResponse.json<GenerateResponse>(

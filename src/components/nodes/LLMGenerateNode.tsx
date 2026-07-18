@@ -13,30 +13,8 @@ import { SettingsTabBar } from "./SettingsTabBar";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 
-// LLM providers and models
-const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
-  { value: "google", label: "Google" },
-  { value: "openai", label: "OpenAI" },
-  { value: "anthropic", label: "Anthropic" },
-];
-
-const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
-  google: [
-    { value: "gemini-3-flash-preview", label: "Gemini 3 Flash" },
-    { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-    { value: "gemini-3-pro-preview", label: "Gemini 3.0 Pro" },
-    { value: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro" },
-  ],
-  openai: [
-    { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
-    { value: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
-  ],
-  anthropic: [
-    { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
-    { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
-    { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
-  ],
-};
+import { LLM_PROVIDERS, LLM_MODELS, getDefaultModelForProvider } from "@/lib/llmCatalog";
+import { useOllamaModels } from "@/hooks/useOllamaModels";
 
 type LLMGenerateNodeType = Node<LLMGenerateNodeData, "llmGenerate">;
 
@@ -91,10 +69,9 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
   const handleProviderChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const newProvider = e.target.value as LLMProvider;
-      const firstModelForProvider = LLM_MODELS[newProvider][0].value;
       const updates: Partial<LLMGenerateNodeData> = {
         provider: newProvider,
-        model: firstModelForProvider,
+        model: getDefaultModelForProvider(newProvider),
       };
       if (newProvider === "anthropic" && (nodeData.temperature ?? 0.7) > 1) {
         updates.temperature = 1;
@@ -105,7 +82,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
   );
 
   const handleModelChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
       updateNodeData(id, { model: e.target.value as LLMModelType });
     },
     [id, updateNodeData]
@@ -127,6 +104,8 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
 
   const provider = nodeData.provider || "google";
   const availableModels = LLM_MODELS[provider] || LLM_MODELS.google;
+  const isOllama = provider === "ollama";
+  const ollama = useOllamaModels(isOllama);
 
   return (
     <BaseNode
@@ -171,19 +150,46 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
                 </select>
               </div>
 
-              {/* Model */}
+              {/* Model — Ollama models are free-typed with local discovery */}
               <div className="flex items-center gap-2">
                 <label className="text-[11px] text-neutral-400 shrink-0">Model</label>
-                <select
-                  value={nodeData.model || availableModels[0].value}
-                  onChange={handleModelChange}
-                  className="nodrag nopan flex-1 min-w-0 text-[11px] py-1 px-2 bg-neutral-800 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 text-white"
-                >
-                  {availableModels.map(m => (
-                    <option key={m.value} value={m.value}>{m.label}</option>
-                  ))}
-                </select>
+                {isOllama ? (
+                  <input
+                    type="text"
+                    list={`ollama-models-${id}`}
+                    value={nodeData.model || ""}
+                    onChange={handleModelChange}
+                    placeholder="llama3.2"
+                    aria-label="Ollama model"
+                    className="nodrag nopan flex-1 min-w-0 text-[11px] py-1 px-2 bg-neutral-800 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 text-white"
+                  />
+                ) : (
+                  <select
+                    value={nodeData.model || getDefaultModelForProvider(provider)}
+                    onChange={handleModelChange}
+                    className="nodrag nopan flex-1 min-w-0 text-[11px] py-1 px-2 bg-neutral-800 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 text-white"
+                  >
+                    {availableModels.map(m => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
+              {isOllama && (
+                <datalist id={`ollama-models-${id}`}>
+                  {ollama.models.map((m) => (
+                    <option key={m.id} value={m.id} />
+                  ))}
+                </datalist>
+              )}
+              {isOllama && ollama.error && (
+                <p className="text-[10px] text-neutral-500">{ollama.error}</p>
+              )}
+              {isOllama && !ollama.error && !ollama.loading && (
+                <p className="text-[10px] text-neutral-500">
+                  Runs locally — free, private, no API key.
+                </p>
+              )}
 
               {/* Temperature */}
               <div className="flex flex-col gap-0.5">

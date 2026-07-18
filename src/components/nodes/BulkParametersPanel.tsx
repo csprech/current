@@ -25,29 +25,7 @@ const BULK_TYPE_LABELS: Record<string, string> = {
   llmGenerate: "Generate Text",
 };
 
-const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
-  { value: "google", label: "Google" },
-  { value: "openai", label: "OpenAI" },
-  { value: "anthropic", label: "Anthropic" },
-];
-
-const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
-  google: [
-    { value: "gemini-3-flash-preview", label: "Gemini 3 Flash" },
-    { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-    { value: "gemini-3-pro-preview", label: "Gemini 3.0 Pro" },
-    { value: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro" },
-  ],
-  openai: [
-    { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
-    { value: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
-  ],
-  anthropic: [
-    { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
-    { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
-    { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
-  ],
-};
+import { LLM_PROVIDERS, LLM_MODELS, getDefaultModelForProvider } from "@/lib/llmCatalog";
 
 const MIXED = "__mixed__";
 
@@ -242,7 +220,7 @@ function BulkLlmFields({ nodes, applyToAll }: { nodes: WorkflowNode[]; applyToAl
           onChange={(e) => {
             const next = e.target.value as LLMProvider;
             if ((e.target.value as string) === MIXED) return;
-            applyToAll({ provider: next, model: LLM_MODELS[next][0].value });
+            applyToAll({ provider: next, model: getDefaultModelForProvider(next) });
           }}
         >
           {provider.mixed && <option value={MIXED}>Mixed</option>}
@@ -252,7 +230,7 @@ function BulkLlmFields({ nodes, applyToAll }: { nodes: WorkflowNode[]; applyToAl
         </select>
       </FieldRow>
 
-      {!provider.mixed && provider.value && (
+      {!provider.mixed && provider.value && provider.value !== "ollama" && (
         <FieldRow label="Model">
           <select
             aria-label="Model (all selected)"
@@ -268,6 +246,20 @@ function BulkLlmFields({ nodes, applyToAll }: { nodes: WorkflowNode[]; applyToAl
               <option key={m.value} value={m.value}>{m.label}</option>
             ))}
           </select>
+        </FieldRow>
+      )}
+
+      {!provider.mixed && provider.value === "ollama" && (
+        <FieldRow label="Model">
+          <input
+            type="text"
+            aria-label="Model (all selected)"
+            className={selectClass}
+            placeholder={model.mixed ? "Mixed" : "llama3.2"}
+            value={model.mixed ? "" : (model.value as string) ?? ""}
+            onChange={(e) => applyToAll({ model: e.target.value as LLMModelType })}
+          />
+          {model.mixed && <MixedTag />}
         </FieldRow>
       )}
 

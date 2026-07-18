@@ -227,6 +227,8 @@ export interface WorkflowFile {
   edges: WorkflowEdge[];
   edgeStyle: EdgeStyle;
   groups?: Record<string, NodeGroup>;  // Optional for backward compatibility
+  /** Typed template interface (shareable exports) — how to drive this workflow as a form/API. */
+  templateInterface?: import("@/lib/workflow/templateInterface").TemplateInterface;
 }
 
 // Clipboard data structure for copy/paste
@@ -237,7 +239,7 @@ interface ClipboardData {
 
 export type LeftWorkspacePanel = "library" | null;
 export type RightWorkspacePanel = "assistant" | "activity" | null;
-export type WorkspaceView = "canvas" | "outputs";
+export type WorkspaceView = "canvas" | "app" | "outputs";
 
 interface WorkflowStore {
   nodes: WorkflowNode[];
@@ -374,6 +376,7 @@ interface WorkflowStore {
   // Provider settings actions
   updateProviderSettings: (settings: ProviderSettings) => void;
   updateProviderApiKey: (providerId: ProviderType, apiKey: string | null) => void;
+  updateProviderBaseUrl: (providerId: ProviderType, baseUrl: string | null) => void;
   toggleProvider: (providerId: ProviderType, enabled: boolean) => void;
 
   // Model search dialog state
@@ -2830,6 +2833,21 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
     saveProviderSettings(updated);
   },
 
+  updateProviderBaseUrl: (providerId: ProviderType, baseUrl: string | null) => {
+    const { providerSettings } = get();
+    const updated: ProviderSettings = {
+      providers: {
+        ...providerSettings.providers,
+        [providerId]: {
+          ...providerSettings.providers[providerId],
+          baseUrl,
+        },
+      },
+    };
+    set({ providerSettings: updated });
+    saveProviderSettings(updated);
+  },
+
   toggleProvider: (providerId: ProviderType, enabled: boolean) => {
     const { providerSettings } = get();
     const updated: ProviderSettings = {
@@ -3044,6 +3062,7 @@ export function useProviderApiKeys() {
       falApiKey: state.providerSettings.providers.fal?.apiKey ?? null,
       kieApiKey: state.providerSettings.providers.kie?.apiKey ?? null,
       wavespeedApiKey: state.providerSettings.providers.wavespeed?.apiKey ?? null,
+      elevenlabsApiKey: state.providerSettings.providers.elevenlabs?.apiKey ?? null,
       // Provider enabled states (for conditional UI)
       replicateEnabled: state.providerSettings.providers.replicate?.enabled ?? false,
       kieEnabled: state.providerSettings.providers.kie?.enabled ?? false,

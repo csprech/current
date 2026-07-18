@@ -281,7 +281,11 @@ describe("/api/models route", () => {
       expect(data.providers.replicate.cached).toBe(true);
       expect(data.providers.fal.cached).toBe(true);
       // Fetch should not have been called
-      expect(mockFetch).not.toHaveBeenCalled();
+      // Only the local ComfyUI probe may fire — no cloud provider fetches
+      const cloudCalls = mockFetch.mock.calls.filter(
+        ([url]: [string]) => !String(url).includes("localhost:8188")
+      );
+      expect(cloudCalls).toHaveLength(0);
     });
 
     it("GET: should return cached=false when fresh fetch", async () => {
@@ -356,7 +360,11 @@ describe("/api/models route", () => {
 
       expect(response.status).toBe(200);
       expect(data.cached).toBe(true);
-      expect(mockFetch).not.toHaveBeenCalled();
+      // Only the local ComfyUI probe may fire — no cloud provider fetches
+      const cloudCalls = mockFetch.mock.calls.filter(
+        ([url]: [string]) => !String(url).includes("localhost:8188")
+      );
+      expect(cloudCalls).toHaveLength(0);
     });
 
     it("GET: should bypass cache when refresh=true", async () => {
@@ -952,6 +960,148 @@ describe("/api/models route", () => {
       expect(response.status).toBe(200);
       expect(searchApiCalled).toBe(false);
       expect(data.models.length).toBeGreaterThanOrEqual(5);
+    });
+  });
+
+  describe("ComfyUI local provider", () => {
+    const OBJECT_INFO_URL = "http://localhost:8188/object_info/CheckpointLoaderSimple";
+
+    it("lists installed checkpoints as $0 models when the daemon responds", async () => {
+      mockFetch.mockImplementation((url: string) => {
+        if (url === OBJECT_INFO_URL) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              CheckpointLoaderSimple: {
+                input: { required: { ckpt_name: [["sd_xl_base_1.0.safetensors", "dreamshaper_8.ckpt"], {}] } },
+              },
+            }),
+          });
+        }
+        return Promise.reject(new TypeError("fetch failed"));
+      });
+
+      const response = await GET(createMockGetRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      const comfyModels = data.models.filter((m: { provider: string }) => m.provider === "comfyui");
+      expect(comfyModels).toHaveLength(2);
+      const sdxl = comfyModels.find((m: { id: string }) => m.id === "sd_xl_base_1.0.safetensors");
+      expect(sdxl).toMatchObject({
+        name: "sd_xl_base_1.0",
+        pricing: { type: "per-run", amount: 0 },
+        capabilities: ["text-to-image", "image-to-image"],
+      });
+      expect(data.availableProviders).toContain("comfyui");
+    });
+
+    it("stays out of the catalog silently when the daemon is down", async () => {
+      mockFetch.mockRejectedValue(new TypeError("fetch failed"));
+
+      const response = await GET(createMockGetRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.models.some((m: { provider: string }) => m.provider === "comfyui")).toBe(false);
+      expect(data.availableProviders).not.toContain("comfyui");
+      expect(data.providers.comfyui).toBeUndefined();
+    });
+
+    it("probes the daemon named by X-ComfyUI-URL", async () => {
+      const seen: string[] = [];
+      mockFetch.mockImplementation((url: string) => {
+        seen.push(url);
+        return Promise.reject(new TypeError("fetch failed"));
+      });
+
+      await GET(createMockGetRequest({}, { "X-ComfyUI-URL": "http://gpu-box:8188" }));
+      expect(seen).toContain("http://gpu-box:8188/object_info/CheckpointLoaderSimple");
+    });
+
+    it("returns an explicit 502 with a hint when comfyui is requested but unreachable", async () => {
+      mockFetch.mockRejectedValue(new TypeError("fetch failed"));
+
+      const response = await GET(createMockGetRequest({ provider: "comfyui" }));
+      const data = await response.json();
+
+      expect(response.status).toBe(502);
+      expect(data.success).toBe(false);
+      expect(data.error).toContain("Could not reach ComfyUI at http://localhost:8188");
+    });
+
+    it("serves only comfyui models for the explicit provider filter", async () => {
+      mockFetch.mockImplementation((url: string) => {
+        if (url === OBJECT_INFO_URL) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              CheckpointLoaderSimple: { input: { required: { ckpt_name: [["flux1-dev.sft"], {}] } } },
+            }),
+          });
+        }
+        return Promise.reject(new TypeError("fetch failed"));
+      });
+
+      const response = await GET(createMockGetRequest({ provider: "comfyui" }));
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.models).toHaveLength(1);
+      expect(data.models[0]).toMatchObject({ id: "flux1-dev.sft", name: "flux1-dev", provider: "comfyui" });
+      expect(data.providers).toEqual({ comfyui: { success: true, count: 1 } });
+    });
+  });
+
+  describe("ElevenLabs BYO-key provider", () => {
+    it("lists the hardcoded audio models when a key is present", async () => {
+      mockFetch.mockRejectedValue(new TypeError("fetch failed")); // comfyui probe fails silently
+
+      const response = await GET(createMockGetRequest({}, { "X-ElevenLabs-Key": "xi-test" }));
+      const data = await response.json();
+
+      const elModels = data.models.filter((m: { provider: string }) => m.provider === "elevenlabs");
+      expect(elModels.map((m: { id: string }) => m.id).sort()).toEqual([
+        "music",
+        "sound-effects",
+        "tts/eleven_multilingual_v2",
+        "tts/eleven_turbo_v2_5",
+        "tts/eleven_v3",
+      ]);
+      expect(elModels.every((m: { capabilities: string[] }) => m.capabilities.includes("text-to-audio"))).toBe(true);
+      expect(data.availableProviders).toContain("elevenlabs");
+    });
+
+    it("hides ElevenLabs entirely without a key", async () => {
+      mockFetch.mockRejectedValue(new TypeError("fetch failed"));
+
+      const response = await GET(createMockGetRequest());
+      const data = await response.json();
+
+      expect(data.models.some((m: { provider: string }) => m.provider === "elevenlabs")).toBe(false);
+      expect(data.availableProviders).not.toContain("elevenlabs");
+    });
+
+    it("serves only ElevenLabs models for the explicit filter with a key", async () => {
+      mockFetch.mockRejectedValue(new TypeError("fetch failed"));
+
+      const response = await GET(
+        createMockGetRequest({ provider: "elevenlabs", capabilities: "text-to-audio" }, { "X-ElevenLabs-Key": "xi-test" })
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.models.length).toBe(5);
+      expect(data.models.every((m: { provider: string }) => m.provider === "elevenlabs")).toBe(true);
+    });
+
+    it("rejects an explicit elevenlabs filter without a key", async () => {
+      const response = await GET(createMockGetRequest({ provider: "elevenlabs" }));
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("ElevenLabs API key required");
     });
   });
 });

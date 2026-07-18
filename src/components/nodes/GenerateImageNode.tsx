@@ -19,6 +19,7 @@ import { InlinePromptField } from "./InlinePromptField";
 import { VariantCountPicker } from "./VariantCountPicker";
 import { useMediaViewerStore } from "@/store/mediaViewerStore";
 import { SettingsTabBar } from "./SettingsTabBar";
+import { ComfyUIParameters } from "./ComfyUIParameters";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { downloadMedia } from "@/utils/downloadMedia";
@@ -83,6 +84,9 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
 
   // Get the current selected provider (default to gemini)
   const currentProvider: ProviderType = nodeData.selectedModel?.provider || "gemini";
+  const hasControlImage = useWorkflowStore((state) =>
+    state.edges.some((edge) => edge.target === id && edge.targetHandle === "control")
+  );
 
   // Get enabled providers
   const enabledProviders = useMemo(() => {
@@ -633,8 +637,17 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                 );
               })()}
 
+              {/* Local ComfyUI checkpoints get sampler + ControlNet controls */}
+              {currentProvider === "comfyui" && nodeData.selectedModel?.modelId && (
+                <ComfyUIParameters
+                  parameters={nodeData.parameters || {}}
+                  onParametersChange={handleParametersChange}
+                  hasControlImage={hasControlImage}
+                />
+              )}
+
               {/* External provider parameters - reuse ModelParameters component */}
-              {!isGeminiProvider && nodeData.selectedModel?.modelId && (
+              {!isGeminiProvider && currentProvider !== "comfyui" && nodeData.selectedModel?.modelId && (
                 <ModelParameters
                   modelId={nodeData.selectedModel.modelId}
                   provider={currentProvider}
@@ -691,6 +704,20 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
         isConnectable={true}
       />
       <HandleLabel label="Mask" side="target" color="var(--handle-color-image)" top="calc(85% - 18px)" visible={showLabels} />
+      {/* ControlNet hint input — only meaningful for local ComfyUI models */}
+      {currentProvider === "comfyui" && (
+        <>
+          <Handle
+            type="target"
+            position={Position.Left}
+            id="control"
+            style={{ top: "50%", zIndex: 10 }}
+            data-handletype="image"
+            isConnectable={true}
+          />
+          <HandleLabel label="Control" side="target" color="var(--handle-color-image)" top="calc(50% - 18px)" visible={showLabels} />
+        </>
+      )}
       {/* Output handle */}
       <Handle
         type="source"

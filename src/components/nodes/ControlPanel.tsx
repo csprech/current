@@ -7,6 +7,8 @@ import { Node } from "@xyflow/react";
 import { useWorkflowStore, saveGenerateImageDefaults, useProviderApiKeys } from "@/store/workflowStore";
 import { NodeType, NanoBananaNodeData, LLMGenerateNodeData, GenerateVideoNodeData, Generate3DNodeData, GenerateAudioNodeData, EaseCurveNodeData, ConditionalSwitchNodeData, AspectRatio, Resolution, ModelType, MODEL_DISPLAY_NAMES, ProviderType, SelectedModel, LLMProvider, LLMModelType, MatchMode, ConditionalSwitchRule } from "@/types";
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
+import { LLM_PROVIDERS, LLM_MODELS, getDefaultModelForProvider } from "@/lib/llmCatalog";
+import { useOllamaModels } from "@/hooks/useOllamaModels";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { ModelParameters } from "./ModelParameters";
 import { VariantCountPicker } from "./VariantCountPicker";
@@ -29,30 +31,7 @@ import {
 } from "@/lib/nanoBananaOptions";
 
 // List of node types that have configurable parameters
-// LLM providers and models
-const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
-  { value: "google", label: "Google" },
-  { value: "openai", label: "OpenAI" },
-  { value: "anthropic", label: "Anthropic" },
-];
-
-const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
-  google: [
-    { value: "gemini-3-flash-preview", label: "Gemini 3 Flash" },
-    { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-    { value: "gemini-3-pro-preview", label: "Gemini 3.0 Pro" },
-    { value: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro" },
-  ],
-  openai: [
-    { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
-    { value: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
-  ],
-  anthropic: [
-    { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
-    { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
-    { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
-  ],
-};
+// LLM providers and models come from the shared catalog (lib/llmCatalog).
 
 // Image/video/audio/3d generation capabilities
 const IMAGE_CAPABILITIES: ModelCapability[] = ["text-to-image", "image-to-image"];
@@ -754,10 +733,9 @@ function LLMControls({ node }: { node: Node }) {
   const handleProviderChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const newProvider = e.target.value as LLMProvider;
-      const firstModelForProvider = LLM_MODELS[newProvider][0].value;
       const updates: Partial<LLMGenerateNodeData> = {
         provider: newProvider,
-        model: firstModelForProvider,
+        model: getDefaultModelForProvider(newProvider),
       };
       if (newProvider === "anthropic" && nodeData.temperature > 1) {
         updates.temperature = 1;
@@ -768,7 +746,7 @@ function LLMControls({ node }: { node: Node }) {
   );
 
   const handleModelChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
       updateNodeData(node.id, { model: e.target.value as LLMModelType });
     },
     [node.id, updateNodeData]
@@ -790,6 +768,8 @@ function LLMControls({ node }: { node: Node }) {
 
   const provider = nodeData.provider || "google";
   const availableModels = LLM_MODELS[provider] || LLM_MODELS.google;
+  const isOllama = provider === "ollama";
+  const ollama = useOllamaModels(isOllama);
 
   return (
     <div className="space-y-3">
@@ -808,15 +788,37 @@ function LLMControls({ node }: { node: Node }) {
 
       <div>
         <label className="block text-xs font-medium text-neutral-300 mb-1">Model</label>
-        <select
-          value={nodeData.model || availableModels[0].value}
-          onChange={handleModelChange}
-          className="nodrag nopan w-full px-2 py-1 text-xs bg-neutral-700 border border-neutral-600 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          {availableModels.map(m => (
-            <option key={m.value} value={m.value}>{m.label}</option>
-          ))}
-        </select>
+        {isOllama ? (
+          <>
+            <input
+              type="text"
+              list={`ollama-models-inspector-${node.id}`}
+              value={nodeData.model || ""}
+              onChange={handleModelChange}
+              placeholder="llama3.2"
+              aria-label="Ollama model"
+              className="nodrag nopan w-full px-2 py-1 text-xs bg-neutral-700 border border-neutral-600 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <datalist id={`ollama-models-inspector-${node.id}`}>
+              {ollama.models.map((m) => (
+                <option key={m.id} value={m.id} />
+              ))}
+            </datalist>
+            <p className="mt-1 text-[10px] text-neutral-500">
+              {ollama.error ?? "Runs locally — free, private, no API key."}
+            </p>
+          </>
+        ) : (
+          <select
+            value={nodeData.model || getDefaultModelForProvider(provider)}
+            onChange={handleModelChange}
+            className="nodrag nopan w-full px-2 py-1 text-xs bg-neutral-700 border border-neutral-600 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            {availableModels.map(m => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div>

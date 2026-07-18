@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useReactFlow } from "@xyflow/react";
 import { useWorkflowStore } from "@/store/workflowStore";
+import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import type { NodeType } from "@/types";
 import {
   NODE_CATALOG,
@@ -35,9 +36,11 @@ function paneCenter() {
 export interface AddPaletteProps {
   open: boolean;
   onClose: () => void;
+  /** Flow-space point to center the created node on (canvas double-click); pane center when absent. */
+  insertAt?: { x: number; y: number } | null;
 }
 
-export function AddPalette({ open, onClose }: AddPaletteProps) {
+export function AddPalette({ open, onClose, insertAt }: AddPaletteProps) {
   const addNode = useWorkflowStore((state) => state.addNode);
   const edgeStyle = useWorkflowStore((state) => state.edgeStyle);
   const setEdgeStyle = useWorkflowStore((state) => state.setEdgeStyle);
@@ -135,10 +138,14 @@ export function AddPalette({ open, onClose }: AddPaletteProps) {
   }, [results.length]);
 
   const createNode = useCallback((type: NodeType) => {
-    addNode(type, screenToFlowPosition(paneCenter()));
+    const dims = defaultNodeDimensions[type];
+    const position = insertAt
+      ? { x: insertAt.x - dims.width / 2, y: insertAt.y - dims.height / 2 }
+      : screenToFlowPosition(paneCenter());
+    addNode(type, position);
     recordRecentNode(type);
     close();
-  }, [addNode, close, screenToFlowPosition]);
+  }, [addNode, close, insertAt, screenToFlowPosition]);
 
   const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (results.length === 0) return;

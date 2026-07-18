@@ -48,6 +48,7 @@ function classifyCommunityOutcome(workflow: CommunityWorkflowMeta): Exclude<Outc
 
 export function TemplateExplorerView({ onBack, onWorkflowSelected }: TemplateExplorerViewProps) {
   const [communityWorkflows, setCommunityWorkflows] = useState<CommunityWorkflowMeta[]>([]);
+  const [communitySource, setCommunitySource] = useState<{ repo: string; browseUrl: string } | null>(null);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [loadingWorkflowId, setLoadingWorkflowId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +76,11 @@ export function TemplateExplorerView({ onBack, onWorkflowSelected }: TemplateExp
     let active = true;
     fetch("/api/community-workflows")
       .then((response) => response.json())
-      .then((result) => { if (active && result.success) setCommunityWorkflows(result.workflows); })
+      .then((result) => {
+        if (!active) return;
+        if (result.success) setCommunityWorkflows(result.workflows);
+        if (result.source) setCommunitySource(result.source);
+      })
       .catch(() => undefined)
       .finally(() => { if (active) setIsLoadingList(false); });
     return () => { active = false; };
@@ -197,6 +202,21 @@ export function TemplateExplorerView({ onBack, onWorkflowSelected }: TemplateExp
             </section>
           )}
           {error && <InlineNotice tone="error">{error}</InlineNotice>}
+
+          {communitySource && (
+            <p className="text-[11px] text-neutral-500 mt-4">
+              Community templates live in{" "}
+              <a
+                href={communitySource.browseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-neutral-300"
+              >
+                {communitySource.repo}
+              </a>{" "}
+              on GitHub — publish yours from the Project menu (a pull request is the review queue).
+            </p>
+          )}
         </div>
       </div>
     </div>

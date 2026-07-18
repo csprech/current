@@ -8,6 +8,9 @@ export interface EnvStatusResponse {
   fal: boolean;
   kie: boolean;
   wavespeed: boolean;
+  elevenlabs: boolean;
+  ollama: boolean;
+  comfyui: boolean;
 }
 
 export async function GET() {
@@ -20,6 +23,10 @@ export async function GET() {
     fal: !!process.env.FAL_API_KEY,
     kie: !!process.env.KIE_API_KEY,
     wavespeed: !!process.env.WAVESPEED_API_KEY,
+    elevenlabs: !!process.env.ELEVENLABS_API_KEY,
+    // Local daemons need no key; these report explicit URL overrides
+    ollama: !!process.env.OLLAMA_URL,
+    comfyui: !!process.env.COMFYUI_URL,
   };
 
   return NextResponse.json(status);

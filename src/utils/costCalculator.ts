@@ -1,4 +1,4 @@
-import { ModelType, Resolution, MODEL_DISPLAY_NAMES, NanoBananaNodeData, GenerateVideoNodeData, Generate3DNodeData, GenerateAudioNodeData, SplitGridNodeData, WorkflowNode, ProviderType, SelectedModelPricing } from "@/types";
+import { ModelType, Resolution, MODEL_DISPLAY_NAMES, NanoBananaNodeData, GenerateVideoNodeData, Generate3DNodeData, GenerateAudioNodeData, LLMGenerateNodeData, SplitGridNodeData, WorkflowNode, ProviderType, SelectedModelPricing } from "@/types";
 
 // Pricing in USD per image (Gemini API)
 export const PRICING = {
@@ -89,6 +89,9 @@ export function estimateNodeRunCost(node: WorkflowNode): number | null {
 
   if (node.type === "nanoBanana") {
     const data = node.data as NanoBananaNodeData;
+    if (data.selectedModel?.provider === "comfyui") {
+      return 0; // local daemon — free
+    }
     if (data.selectedModel) {
       const pricing =
         getModelCost(data.selectedModel.pricing) ??
@@ -101,6 +104,10 @@ export function estimateNodeRunCost(node: WorkflowNode): number | null {
   if (node.type === "generateVideo" || node.type === "generateAudio" || node.type === "generate3d") {
     const data = node.data as GenerateVideoNodeData | GenerateAudioNodeData | Generate3DNodeData;
     return getModelCost(data.selectedModel?.pricing)?.unitCost ?? null;
+  }
+
+  if (node.type === "llmGenerate" && (node.data as LLMGenerateNodeData).provider === "ollama") {
+    return 0; // local daemon — free
   }
 
   return null; // llmGenerate and other types: token-based or unknown
@@ -205,6 +212,11 @@ export function calculatePredictedCost(
     resolution?: Resolution,
     selectedModelPricing?: SelectedModelPricing | null
   ): { unitCost: number; unit: string } | null {
+    // Local daemons run free regardless of any carried pricing
+    if (provider === "comfyui") {
+      return { unitCost: 0, unit: "image" };
+    }
+
     // Check external pricing map first
     if (modelPricing?.has(modelId)) {
       return modelPricing.get(modelId)!;

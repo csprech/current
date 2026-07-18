@@ -13,6 +13,12 @@ export interface BaseNodeData extends Record<string, unknown> {
   label?: string;
   customTitle?: string;
   comment?: string;
+  /**
+   * Template-input marking for the App (run-as-form) view. Input-family nodes
+   * (prompt, image/video/audio input) appear as form fields unless explicitly
+   * set to false; other node types ignore this.
+   */
+  isTemplateInput?: boolean;
 }
 
 // Shape type discriminator

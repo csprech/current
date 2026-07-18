@@ -10,7 +10,7 @@ import { ProjectSetupModal, type ProjectSetupTab } from "@/components/ProjectSet
 import { WorkflowBrowserModal } from "@/components/WorkflowBrowserModal";
 import { WorkflowVersionHistory } from "@/components/WorkflowVersionHistory";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { shareableFilename } from "@/utils/shareableWorkflow";
+import { shareableFilename, stripGeneratedMedia } from "@/utils/shareableWorkflow";
 import { CurrentAlert, InlineNotice } from "@/components/current";
 
 function SaveIcon() {
@@ -191,6 +191,34 @@ export function ProjectMenu() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+
+  /**
+   * Publish to the community: download a publish-ready copy (generated media
+   * stripped, typed interface embedded) and open the template repo's upload
+   * page — GitHub turns the upload into a pull request, which is the review
+   * queue.
+   */
+  const handlePublishTemplate = async () => {
+    const workflow = stripGeneratedMedia(getShareableWorkflow());
+    const url = URL.createObjectURL(new Blob([JSON.stringify(workflow, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${shareableFilename(workflow.name)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    let submitUrl = "https://github.com/csprech/current-templates";
+    try {
+      const response = await fetch("/api/community-workflows");
+      const data = await response.json();
+      if (data?.source?.submitUrl) submitUrl = data.source.submitUrl;
+    } catch {
+      // fall back to the repo home
+    }
+    window.open(submitUrl, "_blank", "noopener,noreferrer");
+  };
   const handleRevert = useCallback(() => setShowRevertAlert(true), []);
 
   return (
@@ -232,6 +260,7 @@ export function ProjectMenu() {
             <button type="button" role="menuitem" onClick={() => closeAnd(() => setShowWorkflowBrowser(true))}>Open project</button>
             <button type="button" role="menuitem" disabled={!saveDirectoryPath} onClick={() => closeAnd(() => { void handleOpenDirectory(); })}>Open project folder</button>
             <button type="button" role="menuitem" onClick={() => closeAnd(handleExportShareable)}>Export shareable workflow</button>
+            <button type="button" role="menuitem" onClick={() => closeAnd(() => { void handlePublishTemplate(); })}>Publish to community…</button>
             {previousWorkflowSnapshot && (
               <button type="button" role="menuitem" onClick={() => closeAnd(handleRevert)}>Revert AI changes</button>
             )}

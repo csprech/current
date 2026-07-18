@@ -38,6 +38,9 @@ REPLICATE_API_KEY=...   # Replicate models
 FAL_API_KEY=...         # fal.ai models
 KIE_API_KEY=...         # Kie.ai models (Sora, Veo, Kling, ...)
 WAVESPEED_API_KEY=...   # WaveSpeed models
+ELEVENLABS_API_KEY=...  # ElevenLabs audio (TTS / sound effects / music)
+OLLAMA_URL=...          # Local Ollama daemon (defaults to http://localhost:11434; no key needed)
+COMFYUI_URL=...         # Local ComfyUI daemon (defaults to http://localhost:8188; no key needed)
 ```
 
 ## Architecture Overview
@@ -105,8 +108,13 @@ LLM models:
 - Google: `gemini-2.5-flash`, `gemini-3-flash-preview`, `gemini-3-pro-preview`
 - OpenAI: `gpt-4.1-mini`, `gpt-4.1-nano`
 - Anthropic via provider settings
+- Ollama (local, free, no key): free-text model name; installed models are discovered from the daemon via `/api/ollama/models` (`GET {base}/api/tags`). The shared provider/model catalog lives in `src/lib/llmCatalog.ts` — LLM UI surfaces import it instead of hardcoding lists. Base URL precedence: `X-Ollama-URL` header → `OLLAMA_URL` env → `http://localhost:11434`. Ollama LLM runs cost $0 in estimation.
 
-Additional providers (Replicate, fal.ai, Kie.ai, WaveSpeed) expose their catalogs through `/api/models`; the model browser and MCP `list_models` tool read from it.
+Additional providers (Replicate, fal.ai, Kie.ai, WaveSpeed) expose their catalogs through `/api/models`; the model browser and MCP `list_models` tool read from it. ElevenLabs audio (TTS via `tts/<model_id>` with a voice picker fed by `/api/elevenlabs/voices`, plus `sound-effects` and `music`) is BYO-key and synchronous — `src/app/api/generate/providers/elevenlabs.ts` completes inline like the Gemini image path; models are listed only when `ELEVENLABS_API_KEY` (or the in-app key) is present.
+
+Image generation via local ComfyUI (`src/app/api/generate/providers/comfyui.ts`): installed checkpoints are discovered from `GET {base}/object_info/CheckpointLoaderSimple` and appear in the model browser as $0 models when the daemon is reachable (absent daemon = silently out of the catalog). Generation submits a standard checkpoint→KSampler graph to `POST /prompt` and polls `/history/{id}` through the shared submit+poll pipeline; img2img uploads the first reference image. Base URL precedence: `X-ComfyUI-URL` header → `COMFYUI_URL` env → `http://localhost:8188`. ComfyUI runs cost $0 in estimation.
+
+**ControlNet (ComfyUI only)**: the image generator grows a `control` target handle when its provider is comfyui; the connected image flows `ConnectedInputs.control` → executor `controlImage` → `/api/generate`. Node parameters `controlNetModel` / `controlNetStrength` / `controlPreprocessor` (`none|canny|depth`) drive a `ControlNetLoader`+`ControlNetApplyAdvanced` graph section — `canny` uses ComfyUI's builtin Canny node, `depth` requires the `comfyui_controlnet_aux` pack (detected via object_info; its required inputs are filled generically from the node's own spec). Installed ControlNets are discovered through `GET /api/comfyui/controlnets` (`useComfyUIControlNets` hook → `ComfyUIParameters` panel). The Image Action node's on-device Canny op produces ready-made hint maps (`preprocessor: none`).
 
 ## Node Types (27)
 
@@ -140,6 +148,7 @@ Additional providers (Replicate, fal.ai, Kie.ai, WaveSpeed) expose their catalog
 3. Image inputs accept multiple connections; text inputs accept one.
 4. **Video connections are gated by an explicit allowlist of target node types in `isValidConnection()` (`WorkflowCanvas.tsx`)** — a new video-consuming node must be added there or its connections silently fail.
 5. **Inpainting**: the annotation node's Mask tool paints a white-on-black `outputMask` exposed on a `mask` source handle; the image generator's `mask` target handle routes it into `ConnectedInputs.mask` → the executor's `maskImage` → `/api/generate`, which appends it as the final image with `MASK_INSTRUCTION`. `mask` handles are image-typed (`getHandleType`). Outpainting recipe: Image Action "Change aspect ratio → Pad" → mask the padded borders → generate.
+6. **ControlNet**: the image generator's `control` target handle (rendered only for the comfyui provider; image-typed in `getHandleType`) routes a hint image into `ConnectedInputs.control` → executor `controlImage` → `/api/generate`. Recipe: Image Action "Edge detect (Canny)" → control handle → generate with a canny ControlNet, preprocessor None.
 
 ## Adding a New Node Type — the real checklist
 
@@ -164,6 +173,10 @@ The `Record<NodeType, …>` maps are exhaustive on purpose: after adding the typ
 17. `src/utils/clipboardMedia.ts` — if the node outputs a copyable image
 18. `src/lib/headless/runWorkflow.ts` — add to `SUPPORTED_NODE_TYPES` or leave canvas-only (unsupported types get a clear error)
 19. Tests: unit tests for the op + executor; update the `AddPalette` catalog-count test and the `nodePresentation`/chat-tools catalog assertions
+
+## Templates & the App view
+
+`src/lib/workflow/templateInterface.ts` is the typed contract for running a workflow as a form: input-family nodes (prompt, image/video/audio input) become typed fields unless marked `isTemplateInput: false` (a `BaseNodeData` flag), output nodes are the results. Keys match custom titles / node ids — the same names `POST /api/run` `inputs` and the CLI's `--input` flags resolve. The **App workspace view** (`AppWorkspace.tsx`, third option in the command-bar view switcher) renders that interface as a form over the live store: fields write through `updateNodeData`, Run calls `executeWorkflow()`, results come from `getConnectedInputs` on output nodes. Shareable exports embed `templateInterface`, and `/api/run` `validateOnly` responses return it.
 
 ## Headless runner & MCP
 

@@ -23,6 +23,7 @@ import type {
   WorkflowNodeData,
 } from "@/types";
 import { getConnectedInputsPure, validateWorkflowPure } from "@/store/utils/connectedInputs";
+import { describeTemplateInterface, type TemplateInterface } from "@/lib/workflow/templateInterface";
 import { groupNodesByLevel } from "@/store/utils/executionUtils";
 
 export const SUPPORTED_NODE_TYPES = new Set([
@@ -73,6 +74,8 @@ export interface HeadlessRunResult {
   error?: string;
   outputs: HeadlessOutput[];
   nodeResults: HeadlessNodeResult[];
+  /** Typed inputs/outputs of the workflow (present on validateOnly responses). */
+  templateInterface?: TemplateInterface;
 }
 
 export interface HeadlessRunContext {
@@ -191,7 +194,8 @@ async function runGenerateNode(
   videos: string[],
   audio: string[],
   text: string | null,
-  dynamicInputs: Record<string, string | string[]>
+  dynamicInputs: Record<string, string | string[]>,
+  control: string | null
 ): Promise<void> {
   const data = node.data as Record<string, unknown>;
 
@@ -229,6 +233,7 @@ async function runGenerateNode(
       selectedModel: nb.selectedModel,
       parameters: nb.parameters,
       dynamicInputs,
+      ...(control ? { controlImage: control } : {}),
     });
     result = await pollUntilDone(ctx, result);
     if (!result.success || !result.image) {
@@ -371,7 +376,12 @@ export async function runWorkflowHeadless(
   }
 
   if (request.validateOnly) {
-    return { success: true, outputs: [], nodeResults };
+    return {
+      success: true,
+      outputs: [],
+      nodeResults,
+      templateInterface: describeTemplateInterface(nodes),
+    };
   }
 
   const levels = groupNodesByLevel(nodes, edges);
@@ -401,7 +411,8 @@ export async function runWorkflowHeadless(
             inputs.videos,
             inputs.audio,
             inputs.text,
-            inputs.dynamicInputs
+            inputs.dynamicInputs,
+            inputs.control ?? null
           );
         }
         // input and output nodes need no work here

@@ -6,6 +6,7 @@ import { Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { ProviderBadge } from "./ProviderBadge";
 import { ModelParameters } from "./ModelParameters";
+import { ElevenLabsParameters } from "./ElevenLabsParameters";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { GenerateAudioNodeData, ProviderType, SelectedModel, ModelInputDef } from "@/types";
 import { ProviderModel } from "@/lib/providers/types";
@@ -299,8 +300,17 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
                   </button>
                 </div>
 
+                {/* ElevenLabs models get voice/duration controls */}
+                {currentProvider === "elevenlabs" && nodeData.selectedModel?.modelId && (
+                  <ElevenLabsParameters
+                    modelId={nodeData.selectedModel.modelId}
+                    parameters={nodeData.parameters || {}}
+                    onParametersChange={handleParametersChange}
+                  />
+                )}
+
                 {/* External provider parameters */}
-                {nodeData.selectedModel?.modelId && (
+                {currentProvider !== "elevenlabs" && nodeData.selectedModel?.modelId && (
                   <ModelParameters
                     modelId={nodeData.selectedModel.modelId}
                     provider={currentProvider}
@@ -325,7 +335,16 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
         ) : undefined}
       >
         {/* Model parameters (hidden when inline enabled - shown in panel below) */}
-        {!inlineParametersEnabled && nodeData.selectedModel?.modelId && (
+        {!inlineParametersEnabled && currentProvider === "elevenlabs" && nodeData.selectedModel?.modelId && (
+          <div className="space-y-1.5">
+            <ElevenLabsParameters
+              modelId={nodeData.selectedModel.modelId}
+              parameters={nodeData.parameters || {}}
+              onParametersChange={handleParametersChange}
+            />
+          </div>
+        )}
+        {!inlineParametersEnabled && currentProvider !== "elevenlabs" && nodeData.selectedModel?.modelId && (
           <ModelParameters
             provider={currentProvider}
             modelId={nodeData.selectedModel.modelId}

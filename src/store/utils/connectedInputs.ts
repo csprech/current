@@ -47,6 +47,8 @@ export interface ConnectedInputs {
   easeCurve: { bezierHandles: [number, number, number, number]; easingPreset: string | null; outputDuration: number } | null;
   /** Inpainting mask connected to a generator's "mask" handle (white = edit region). */
   mask?: string | null;
+  /** ControlNet hint image connected to a generator's "control" handle (ComfyUI). */
+  control?: string | null;
 }
 
 /**
@@ -196,6 +198,7 @@ export function getConnectedInputsPure(
   const dynamicInputs: Record<string, string | string[]> = {};
   let easeCurve: ConnectedInputs["easeCurve"] = null;
   let mask: string | null = null;
+  let control: string | null = null;
 
   // Get the target node to check for inputSchema
   const targetNode = nodes.find((n) => n.id === nodeId);
@@ -378,6 +381,9 @@ export function getConnectedInputsPure(
       if (handleId === "mask" && type === "image") {
         // Inpainting mask handle: single image, kept out of the images array
         if (!mask) mask = value;
+      } else if (handleId === "control" && type === "image") {
+        // ControlNet hint handle: single image, kept out of the images array
+        if (!control) control = value;
       } else if (type === "3d") {
         model3d = value;
       } else if (type === "video") {
@@ -411,7 +417,7 @@ export function getConnectedInputsPure(
     }
   }
 
-  return { images, videos, audio, model3d, text, textItems, dynamicInputs, easeCurve, mask };
+  return { images, videos, audio, model3d, text, textItems, dynamicInputs, easeCurve, mask, control };
 }
 
 /**

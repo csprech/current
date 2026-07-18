@@ -11,6 +11,7 @@ export type ImageActionOperation =
   | "grayscale"
   | "blur"
   | "adjust"
+  | "canny"
   | "resizeAspect"
   | "sideBySide"
   | "addText";
@@ -86,6 +87,15 @@ export const IMAGE_ACTIONS: ImageActionDef[] = [
       { key: "brightness", label: "Brightness", type: "number", min: -100, max: 100, step: 5, default: 0 },
       { key: "contrast", label: "Contrast", type: "number", min: -100, max: 100, step: 5, default: 0 },
       { key: "saturation", label: "Saturation", type: "number", min: -100, max: 100, step: 5, default: 0 },
+    ],
+  },
+  {
+    operation: "canny",
+    label: "Edge detect (Canny)",
+    imageCount: 1,
+    options: [
+      { key: "lowThreshold", label: "Low threshold", type: "number", min: 1, max: 254, step: 1, default: 100 },
+      { key: "highThreshold", label: "High threshold", type: "number", min: 2, max: 255, step: 1, default: 200 },
     ],
   },
   {
@@ -200,6 +210,126 @@ function parseAspect(aspect: string): number {
   return w / h;
 }
 
+/** Minimal pixel-buffer shape shared with ImageData so the kernel is testable headlessly. */
+export interface PixelBuffer {
+  data: Uint8ClampedArray;
+  width: number;
+  height: number;
+}
+
+/**
+ * Full Canny edge detector on RGBA pixels: grayscale → 5×5 gaussian →
+ * Sobel gradients → non-maximum suppression → double threshold with
+ * hysteresis. Returns the ControlNet-standard map: white edges on black.
+ * Pure and canvas-free so it runs (and tests) anywhere.
+ */
+export function cannyEdges(source: PixelBuffer, lowThreshold: number, highThreshold: number): PixelBuffer {
+  const { width, height } = source;
+  const size = width * height;
+  const low = Math.min(lowThreshold, highThreshold);
+  const high = Math.max(lowThreshold, highThreshold);
+
+  // 1. Grayscale (Rec. 601 luma)
+  const gray = new Float32Array(size);
+  for (let i = 0; i < size; i++) {
+    const o = i * 4;
+    gray[i] = 0.299 * source.data[o] + 0.587 * source.data[o + 1] + 0.114 * source.data[o + 2];
+  }
+
+  // 2. 5×5 gaussian blur (σ≈1.4), edges clamped
+  const G = [2, 4, 5, 4, 2, 4, 9, 12, 9, 4, 5, 12, 15, 12, 5, 4, 9, 12, 9, 4, 2, 4, 5, 4, 2];
+  const blurred = new Float32Array(size);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let acc = 0;
+      for (let ky = -2; ky <= 2; ky++) {
+        const sy = Math.min(height - 1, Math.max(0, y + ky));
+        for (let kx = -2; kx <= 2; kx++) {
+          const sx = Math.min(width - 1, Math.max(0, x + kx));
+          acc += gray[sy * width + sx] * G[(ky + 2) * 5 + (kx + 2)];
+        }
+      }
+      blurred[y * width + x] = acc / 159;
+    }
+  }
+
+  // 3. Sobel gradients (magnitude + direction)
+  const magnitude = new Float32Array(size);
+  const direction = new Float32Array(size);
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const i = y * width + x;
+      const tl = blurred[i - width - 1], t = blurred[i - width], tr = blurred[i - width + 1];
+      const l = blurred[i - 1], r = blurred[i + 1];
+      const bl = blurred[i + width - 1], b = blurred[i + width], br = blurred[i + width + 1];
+      const gx = -tl - 2 * l - bl + tr + 2 * r + br;
+      const gy = -tl - 2 * t - tr + bl + 2 * b + br;
+      magnitude[i] = Math.hypot(gx, gy);
+      direction[i] = Math.atan2(gy, gx);
+    }
+  }
+
+  // 4. Non-maximum suppression along the quantized gradient direction
+  const thinned = new Float32Array(size);
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const i = y * width + x;
+      const mag = magnitude[i];
+      if (mag === 0) continue;
+      // Quantize direction to one of 4 sectors (0°, 45°, 90°, 135°)
+      const angle = ((direction[i] * 180) / Math.PI + 180) % 180;
+      let n1: number, n2: number;
+      if (angle < 22.5 || angle >= 157.5) {
+        n1 = magnitude[i - 1]; n2 = magnitude[i + 1];
+      } else if (angle < 67.5) {
+        n1 = magnitude[i - width + 1]; n2 = magnitude[i + width - 1];
+      } else if (angle < 112.5) {
+        n1 = magnitude[i - width]; n2 = magnitude[i + width];
+      } else {
+        n1 = magnitude[i - width - 1]; n2 = magnitude[i + width + 1];
+      }
+      if (mag >= n1 && mag >= n2) thinned[i] = mag;
+    }
+  }
+
+  // 5. Double threshold + hysteresis: strong edges seed, weak edges join if connected
+  const STRONG = 2, WEAK = 1;
+  const marks = new Uint8Array(size);
+  const stack: number[] = [];
+  for (let i = 0; i < size; i++) {
+    if (thinned[i] >= high) {
+      marks[i] = STRONG;
+      stack.push(i);
+    } else if (thinned[i] >= low) {
+      marks[i] = WEAK;
+    }
+  }
+  while (stack.length > 0) {
+    const i = stack.pop() as number;
+    const x = i % width, y = (i - x) / width;
+    for (let ky = -1; ky <= 1; ky++) {
+      for (let kx = -1; kx <= 1; kx++) {
+        const nx = x + kx, ny = y + ky;
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        const n = ny * width + nx;
+        if (marks[n] === WEAK) {
+          marks[n] = STRONG;
+          stack.push(n);
+        }
+      }
+    }
+  }
+
+  // 6. Render: white edge pixels on black
+  const out = new Uint8ClampedArray(size * 4);
+  for (let i = 0; i < size; i++) {
+    const v = marks[i] === STRONG ? 255 : 0;
+    const o = i * 4;
+    out[o] = v; out[o + 1] = v; out[o + 2] = v; out[o + 3] = 255;
+  }
+  return { data: out, width, height };
+}
+
 /**
  * Apply an image operation. `images` come from the node's connected inputs in
  * connection order; most operations use the first, sideBySide uses two.
@@ -261,6 +391,21 @@ export async function applyImageOperation(
         ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
       }
       ctx.drawImage(first, 0, 0);
+      return canvas.toDataURL("image/png");
+    }
+
+    case "canny": {
+      const { canvas, ctx } = makeCanvas(first.width, first.height);
+      ctx.drawImage(first, 0, 0);
+      const source = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const edges = cannyEdges(
+        { data: source.data, width: source.width, height: source.height },
+        Number(params.lowThreshold),
+        Number(params.highThreshold)
+      );
+      const output = ctx.createImageData(edges.width, edges.height);
+      output.data.set(edges.data);
+      ctx.putImageData(output, 0, 0);
       return canvas.toDataURL("image/png");
     }
 

@@ -19,30 +19,7 @@ import type {
   ProviderType,
   SelectedModel,
 } from "@/types";
-
-const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
-  { value: "google", label: "Google" },
-  { value: "openai", label: "OpenAI" },
-  { value: "anthropic", label: "Anthropic" },
-];
-
-const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
-  google: [
-    { value: "gemini-3-flash-preview", label: "Gemini 3 Flash" },
-    { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-    { value: "gemini-3-pro-preview", label: "Gemini 3.0 Pro" },
-    { value: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro" },
-  ],
-  openai: [
-    { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
-    { value: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
-  ],
-  anthropic: [
-    { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
-    { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
-    { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
-  ],
-};
+import { LLM_PROVIDERS, LLM_MODELS, getDefaultModelForProvider } from "@/lib/llmCatalog";
 
 const mapLlmToProviderType = (p: LLMProvider): ProviderType =>
   p === "google" ? "gemini" : p;
@@ -65,15 +42,16 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
     ? mapProviderTypeToLlm(existing.provider)
     : "anthropic";
   const initialModel: LLMModelType = (existing?.modelId as LLMModelType) ||
-    LLM_MODELS[initialProvider][0].value;
+    getDefaultModelForProvider(initialProvider);
 
   const [provider, setProvider] = useState<LLMProvider>(initialProvider);
   const [model, setModel] = useState<LLMModelType>(initialModel);
 
-  // Ensure model is valid whenever provider changes
+  // Ensure model is valid whenever provider changes (Ollama is free-text)
   useEffect(() => {
+    if (provider === "ollama") return;
     const valid = LLM_MODELS[provider].some((m) => m.value === model);
-    if (!valid) setModel(LLM_MODELS[provider][0].value);
+    if (!valid) setModel(getDefaultModelForProvider(provider));
   }, [provider, model]);
 
   const handleSave = () => {
@@ -122,17 +100,27 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
         </select>
 
         <label className="block text-xs text-neutral-400 mb-1">Model</label>
-        <select
-          value={model}
-          onChange={(e) => setModel(e.target.value as LLMModelType)}
-          className="w-full mb-4 px-2 py-1.5 text-sm bg-neutral-800 border border-neutral-700 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-neutral-600"
-        >
-          {LLM_MODELS[provider].map((m) => (
-            <option key={m.value} value={m.value}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+        {provider === "ollama" ? (
+          <input
+            type="text"
+            value={model}
+            placeholder="llama3.2"
+            onChange={(e) => setModel(e.target.value as LLMModelType)}
+            className="w-full mb-4 px-2 py-1.5 text-sm bg-neutral-800 border border-neutral-700 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-neutral-600"
+          />
+        ) : (
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value as LLMModelType)}
+            className="w-full mb-4 px-2 py-1.5 text-sm bg-neutral-800 border border-neutral-700 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-neutral-600"
+          >
+            {LLM_MODELS[provider].map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        )}
 
         <div className="flex items-center justify-between gap-2">
           <button

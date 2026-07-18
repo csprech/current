@@ -1,50 +1,60 @@
 import { NextResponse } from "next/server";
-
-const COMMUNITY_WORKFLOWS_API_URL =
-  "https://nodebananapro.com/api/public/community-workflows";
+import {
+  resolveCommunityRepo,
+  communityRawUrl,
+  communitySubmitUrl,
+  communityBrowseUrl,
+  parseCommunityIndex,
+  toCommunityWorkflowMeta,
+} from "@/lib/templates/communityRepo";
 
 /**
- * GET: List all community workflows from the remote API
+ * GET: list community templates from the GitHub-backed repo.
  *
- * This proxies to the hosted community-workflows service which stores
- * community workflows in R2 storage.
+ * Reads index.json from raw.githubusercontent.com — no hosted service, no
+ * token. A missing repo or index is a normal state (the marketplace just has
+ * nothing in it yet), reported as an empty list rather than an error. The
+ * response includes the repo source so the client can link to browsing and
+ * PR-based publishing.
  */
 export async function GET() {
+  const repo = resolveCommunityRepo();
+  const source = {
+    repo: `${repo.owner}/${repo.repo}`,
+    branch: repo.branch,
+    browseUrl: communityBrowseUrl(repo),
+    submitUrl: communitySubmitUrl(repo),
+  };
+
   try {
-    const response = await fetch(COMMUNITY_WORKFLOWS_API_URL, {
-      headers: {
-        Accept: "application/json",
-      },
+    const response = await fetch(communityRawUrl(repo, "index.json"), {
+      headers: { Accept: "application/json" },
       // Cache for 5 minutes
       next: { revalidate: 300 },
     });
 
+    if (response.status === 404) {
+      return NextResponse.json({ success: true, workflows: [], source });
+    }
+
     if (!response.ok) {
-      console.error(
-        "Error fetching community workflows:",
-        response.status,
-        response.statusText
-      );
       return NextResponse.json(
-        {
-          success: false,
-          error: "Failed to fetch community workflows",
-        },
-        { status: response.status }
+        { success: false, error: `Community repo responded with ${response.status}`, source },
+        { status: 502 }
       );
     }
 
-    const data = await response.json();
-
-    return NextResponse.json(data);
+    const entries = parseCommunityIndex(await response.json());
+    return NextResponse.json({
+      success: true,
+      workflows: entries.map(toCommunityWorkflowMeta),
+      source,
+    });
   } catch (error) {
-    console.error("Error listing community workflows:", error);
+    console.error("Error listing community templates:", error);
     return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to list community workflows",
-      },
-      { status: 500 }
+      { success: false, error: "Could not reach the community template repo", source },
+      { status: 502 }
     );
   }
 }
