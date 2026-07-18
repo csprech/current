@@ -38,6 +38,8 @@ interface MultiProviderGenerateRequest extends GenerateRequest {
   dynamicInputs?: Record<string, string | string[]>;
   /** White-on-black inpainting mask; white marks the only region to edit. */
   maskImage?: string;
+  /** ControlNet hint image (ComfyUI): edge/depth map or a photo for a daemon-side preprocessor. */
+  controlImage?: string;
 }
 
 /**
@@ -118,6 +120,7 @@ export async function POST(request: NextRequest) {
       dynamicInputs,
       mediaType,
       maskImage,
+      controlImage,
     } = body;
 
     // Prompt is required unless:
@@ -200,7 +203,7 @@ export async function POST(request: NextRequest) {
       };
 
       try {
-        const { taskId } = await submitComfyUITask(requestId, baseUrl, genInput, aspectRatio);
+        const { taskId } = await submitComfyUITask(requestId, baseUrl, genInput, aspectRatio, controlImage);
         return NextResponse.json<GenerateResponse>({
           success: true,
           polling: true,

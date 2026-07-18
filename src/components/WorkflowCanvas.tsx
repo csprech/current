@@ -145,8 +145,9 @@ const getHandleType = (handleId: string | null | undefined): "image" | "text" | 
   if (handleId === "video") return "video";
   if (handleId === "audio" || handleId.startsWith("audio")) return "audio";
   if (handleId === "image" || handleId === "text") return handleId;
-  // Inpainting mask handles carry image data
+  // Inpainting mask and ControlNet hint handles carry image data
   if (handleId === "mask") return "image";
+  if (handleId === "control") return "image";
   // Dynamic handles - check naming patterns (including indexed: text-0, image-0)
   if (handleId.includes("video")) return "video";
   if (handleId.startsWith("image-") || handleId.includes("image") || handleId.includes("frame")) return "image";

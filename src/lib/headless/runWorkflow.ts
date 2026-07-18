@@ -191,7 +191,8 @@ async function runGenerateNode(
   videos: string[],
   audio: string[],
   text: string | null,
-  dynamicInputs: Record<string, string | string[]>
+  dynamicInputs: Record<string, string | string[]>,
+  control: string | null
 ): Promise<void> {
   const data = node.data as Record<string, unknown>;
 
@@ -229,6 +230,7 @@ async function runGenerateNode(
       selectedModel: nb.selectedModel,
       parameters: nb.parameters,
       dynamicInputs,
+      ...(control ? { controlImage: control } : {}),
     });
     result = await pollUntilDone(ctx, result);
     if (!result.success || !result.image) {
@@ -401,7 +403,8 @@ export async function runWorkflowHeadless(
             inputs.videos,
             inputs.audio,
             inputs.text,
-            inputs.dynamicInputs
+            inputs.dynamicInputs,
+            inputs.control ?? null
           );
         }
         // input and output nodes need no work here

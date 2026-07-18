@@ -46,6 +46,21 @@ const ASPECT_DIMENSIONS: Record<string, { width: number; height: number }> = {
   "21:9": { width: 1536, height: 640 },
 };
 
+export interface ComfyUIControlNetOptions {
+  /** ControlNet model filename installed in the daemon. */
+  modelName: string;
+  /** Uploaded control-image filename. */
+  controlImageName: string;
+  /** Conditioning strength (0–2, 1 = full). */
+  strength: number;
+  /**
+   * Preprocessor node to run on the control image inside the daemon, with its
+   * non-image inputs pre-filled. null = the image already is a hint map
+   * (e.g. a Canny map from the Image Action node).
+   */
+  preprocessor: { classType: string; inputs: Record<string, unknown> } | null;
+}
+
 interface ComfyUIGraphOptions {
   checkpoint: string;
   prompt: string;
@@ -61,6 +76,8 @@ interface ComfyUIGraphOptions {
   inputImageName?: string;
   /** KSampler denoise — 1 for txt2img, lower keeps more of the input image. */
   denoise: number;
+  /** ControlNet conditioning applied to both prompts; omit for none. */
+  controlNet?: ComfyUIControlNetOptions;
 }
 
 /**
@@ -71,8 +88,12 @@ interface ComfyUIGraphOptions {
 export function buildComfyUIGraph(options: ComfyUIGraphOptions): Record<string, unknown> {
   const {
     checkpoint, prompt, negativePrompt, width, height,
-    seed, steps, cfg, samplerName, scheduler, inputImageName, denoise,
+    seed, steps, cfg, samplerName, scheduler, inputImageName, denoise, controlNet,
   } = options;
+
+  // With a ControlNet, the sampler takes its conditioning from the apply node
+  const positive = controlNet ? ["23", 0] : ["6", 0];
+  const negative = controlNet ? ["23", 1] : ["7", 0];
 
   const graph: Record<string, unknown> = {
     "4": { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: checkpoint } },
@@ -88,8 +109,8 @@ export function buildComfyUIGraph(options: ComfyUIGraphOptions): Record<string, 
         scheduler,
         denoise,
         model: ["4", 0],
-        positive: ["6", 0],
-        negative: ["7", 0],
+        positive,
+        negative,
         latent_image: inputImageName ? ["11", 0] : ["5", 0],
       },
     },
@@ -102,6 +123,31 @@ export function buildComfyUIGraph(options: ComfyUIGraphOptions): Record<string, 
     graph["11"] = { class_type: "VAEEncode", inputs: { pixels: ["10", 0], vae: ["4", 2] } };
   } else {
     graph["5"] = { class_type: "EmptyLatentImage", inputs: { width, height, batch_size: 1 } };
+  }
+
+  if (controlNet) {
+    graph["20"] = { class_type: "LoadImage", inputs: { image: controlNet.controlImageName } };
+    let hintSource: [string, number] = ["20", 0];
+    if (controlNet.preprocessor) {
+      graph["21"] = {
+        class_type: controlNet.preprocessor.classType,
+        inputs: { ...controlNet.preprocessor.inputs, image: ["20", 0] },
+      };
+      hintSource = ["21", 0];
+    }
+    graph["22"] = { class_type: "ControlNetLoader", inputs: { control_net_name: controlNet.modelName } };
+    graph["23"] = {
+      class_type: "ControlNetApplyAdvanced",
+      inputs: {
+        positive: ["6", 0],
+        negative: ["7", 0],
+        control_net: ["22", 0],
+        image: hintSource,
+        strength: controlNet.strength,
+        start_percent: 0,
+        end_percent: 1,
+      },
+    };
   }
 
   return graph;
@@ -160,6 +206,83 @@ async function uploadComfyUIImage(
   return data.subfolder ? `${data.subfolder}/${data.name}` : data.name;
 }
 
+/** Depth preprocessor classes from the comfyui_controlnet_aux pack, in preference order. */
+export const DEPTH_PREPROCESSOR_CLASSES = [
+  "DepthAnythingV2Preprocessor",
+  "MiDaS-DepthMapPreprocessor",
+];
+
+interface ComfyUINodeSpec {
+  input?: {
+    required?: Record<string, [unknown, { default?: unknown }?]>;
+  };
+}
+
+/**
+ * Fetch a node class's input spec from the daemon; null when the class is not
+ * installed (ComfyUI answers unknown classes with an empty object or an error).
+ */
+export async function fetchComfyUINodeSpec(
+  baseUrl: string,
+  classType: string
+): Promise<ComfyUINodeSpec | null> {
+  try {
+    const response = await fetch(`${baseUrl}/object_info/${encodeURIComponent(classType)}`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as Record<string, ComfyUINodeSpec>;
+    return data[classType] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fill a preprocessor node's required inputs from its declared defaults so the
+ * graph stays valid across aux-pack versions (image is wired by the graph).
+ * Combo inputs without a default fall back to their first option.
+ */
+export function buildPreprocessorInputs(spec: ComfyUINodeSpec): Record<string, unknown> {
+  const inputs: Record<string, unknown> = {};
+  for (const [name, def] of Object.entries(spec.input?.required ?? {})) {
+    if (name === "image") continue;
+    const [typeOrOptions, config] = def;
+    if (config && config.default !== undefined) {
+      inputs[name] = config.default;
+    } else if (Array.isArray(typeOrOptions) && typeOrOptions.length > 0) {
+      inputs[name] = typeOrOptions[0];
+    }
+  }
+  return inputs;
+}
+
+/**
+ * Resolve the preprocessor selection to a concrete node. "canny" uses the
+ * builtin Canny node; "depth" uses the first installed aux depth preprocessor
+ * and throws a friendly error when the pack is missing.
+ */
+async function resolvePreprocessor(
+  baseUrl: string,
+  selection: string
+): Promise<{ classType: string; inputs: Record<string, unknown> } | null> {
+  if (selection === "canny") {
+    return { classType: "Canny", inputs: { low_threshold: 0.4, high_threshold: 0.8 } };
+  }
+  if (selection === "depth") {
+    for (const classType of DEPTH_PREPROCESSOR_CLASSES) {
+      const spec = await fetchComfyUINodeSpec(baseUrl, classType);
+      if (spec) {
+        return { classType, inputs: buildPreprocessorInputs(spec) };
+      }
+    }
+    throw new Error(
+      "Depth preprocessing needs the comfyui_controlnet_aux custom-node pack. Install it in ComfyUI, or connect a ready-made depth map and set the preprocessor to None."
+    );
+  }
+  return null; // "none" — the control image is already a hint map
+}
+
 /**
  * Queue a generation on the daemon. Returns the prompt_id used as the task id.
  */
@@ -167,7 +290,8 @@ export async function submitComfyUITask(
   requestId: string,
   baseUrl: string,
   input: GenerationInput,
-  aspectRatio?: string
+  aspectRatio?: string,
+  controlImage?: string | null
 ): Promise<{ taskId: string }> {
   const parameters = input.parameters ?? {};
   const { width, height } = dimensionsForAspect(aspectRatio, parameters);
@@ -178,6 +302,24 @@ export async function submitComfyUITask(
   const firstImage = input.images?.[0];
   if (firstImage) {
     inputImageName = await uploadComfyUIImage(requestId, baseUrl, firstImage);
+  }
+
+  // ControlNet conditioning: needs both a connected control image and a model
+  let controlNet: ComfyUIControlNetOptions | undefined;
+  const controlNetModel = typeof parameters.controlNetModel === "string" ? parameters.controlNetModel : "";
+  if (controlImage && controlNetModel) {
+    const preprocessorSelection =
+      typeof parameters.controlPreprocessor === "string" ? parameters.controlPreprocessor : "none";
+    controlNet = {
+      modelName: controlNetModel,
+      controlImageName: await uploadComfyUIImage(`${requestId}-control`, baseUrl, controlImage),
+      strength: numberParam(parameters.controlNetStrength, 1, 0, 2),
+      preprocessor: await resolvePreprocessor(baseUrl, preprocessorSelection),
+    };
+  } else if (controlImage && !controlNetModel) {
+    throw new Error(
+      "A control image is connected but no ControlNet model is selected. Pick one in the node's ControlNet settings."
+    );
   }
 
   const graph = buildComfyUIGraph({
@@ -193,6 +335,7 @@ export async function submitComfyUITask(
     scheduler: typeof parameters.scheduler === "string" ? parameters.scheduler : "normal",
     inputImageName,
     denoise: inputImageName ? numberParam(parameters.denoise, 0.7, 0.01, 1) : 1,
+    controlNet,
   });
 
   console.log(`[API:${requestId}] ComfyUI submit: ${input.model.id} ${width}x${height} ${inputImageName ? "img2img" : "txt2img"}`);
@@ -317,4 +460,30 @@ export async function fetchComfyUICheckpoints(baseUrl: string): Promise<string[]
 export function checkpointDisplayName(checkpoint: string): string {
   const basename = checkpoint.split("/").pop() ?? checkpoint;
   return basename.replace(/\.(safetensors|ckpt|pt|pth|sft|gguf)$/i, "");
+}
+
+/**
+ * List ControlNet models installed in the daemon, from the ControlNetLoader
+ * node's input options. Throws when the daemon is unreachable.
+ */
+export async function fetchComfyUIControlNets(baseUrl: string): Promise<string[]> {
+  const response = await fetch(`${baseUrl}/object_info/ControlNetLoader`, {
+    signal: AbortSignal.timeout(3000),
+  });
+  if (!response.ok) {
+    throw new Error(`ComfyUI at ${baseUrl} responded with ${response.status}`);
+  }
+  const data = (await response.json()) as {
+    ControlNetLoader?: { input?: { required?: { control_net_name?: unknown[] } } };
+  };
+  const options = data.ControlNetLoader?.input?.required?.control_net_name?.[0];
+  return Array.isArray(options) ? options.filter((o): o is string => typeof o === "string") : [];
+}
+
+/** First installed aux depth preprocessor class, or null when the pack is absent. */
+export async function detectDepthPreprocessor(baseUrl: string): Promise<string | null> {
+  for (const classType of DEPTH_PREPROCESSOR_CLASSES) {
+    if (await fetchComfyUINodeSpec(baseUrl, classType)) return classType;
+  }
+  return null;
 }

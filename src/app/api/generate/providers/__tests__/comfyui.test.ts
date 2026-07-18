@@ -9,10 +9,12 @@ import {
   DEFAULT_COMFYUI_URL,
   resolveComfyUIBaseUrl,
   buildComfyUIGraph,
+  buildPreprocessorInputs,
   dimensionsForAspect,
   submitComfyUITask,
   checkComfyUITaskOnce,
   fetchComfyUICheckpoints,
+  fetchComfyUIControlNets,
   checkpointDisplayName,
 } from "../comfyui";
 import type { GenerationInput } from "@/lib/providers/types";
@@ -86,6 +88,78 @@ describe("buildComfyUIGraph", () => {
     expect(graph["11"].class_type).toBe("VAEEncode");
     expect(graph["3"].inputs.latent_image).toEqual(["11", 0]);
     expect(graph["3"].inputs.denoise).toBe(0.7);
+  });
+
+  it("routes conditioning through ControlNetApplyAdvanced when a ControlNet is set", () => {
+    const graph = buildComfyUIGraph({
+      ...base,
+      controlNet: {
+        modelName: "control_v11p_sd15_canny.pth",
+        controlImageName: "hint.png",
+        strength: 0.85,
+        preprocessor: null,
+      },
+    }) as Record<string, { class_type: string; inputs: Record<string, unknown> }>;
+
+    expect(graph["20"]).toEqual({ class_type: "LoadImage", inputs: { image: "hint.png" } });
+    expect(graph["21"]).toBeUndefined(); // no preprocessor — image already a hint map
+    expect(graph["22"]).toEqual({
+      class_type: "ControlNetLoader",
+      inputs: { control_net_name: "control_v11p_sd15_canny.pth" },
+    });
+    expect(graph["23"].inputs).toMatchObject({
+      positive: ["6", 0],
+      negative: ["7", 0],
+      control_net: ["22", 0],
+      image: ["20", 0],
+      strength: 0.85,
+      start_percent: 0,
+      end_percent: 1,
+    });
+    // Sampler now consumes the conditioned outputs
+    expect(graph["3"].inputs.positive).toEqual(["23", 0]);
+    expect(graph["3"].inputs.negative).toEqual(["23", 1]);
+  });
+
+  it("inserts the preprocessor between the control image and the apply node", () => {
+    const graph = buildComfyUIGraph({
+      ...base,
+      controlNet: {
+        modelName: "cn.safetensors",
+        controlImageName: "photo.png",
+        strength: 1,
+        preprocessor: { classType: "Canny", inputs: { low_threshold: 0.4, high_threshold: 0.8 } },
+      },
+    }) as Record<string, { class_type: string; inputs: Record<string, unknown> }>;
+
+    expect(graph["21"]).toEqual({
+      class_type: "Canny",
+      inputs: { low_threshold: 0.4, high_threshold: 0.8, image: ["20", 0] },
+    });
+    expect(graph["23"].inputs.image).toEqual(["21", 0]);
+  });
+});
+
+describe("buildPreprocessorInputs", () => {
+  it("fills required inputs from declared defaults, first combo option as fallback", () => {
+    const spec = {
+      input: {
+        required: {
+          image: [["IMAGE"]] as [unknown],
+          ckpt_name: [["depth_anything_v2_vits.pth", "other.pth"]] as [unknown],
+          resolution: [["INT"], { default: 512 }] as [unknown, { default?: unknown }],
+        },
+      },
+    };
+    expect(buildPreprocessorInputs(spec)).toEqual({
+      ckpt_name: "depth_anything_v2_vits.pth",
+      resolution: 512,
+    });
+  });
+
+  it("returns empty inputs for an image-only spec", () => {
+    expect(buildPreprocessorInputs({ input: { required: { image: [["IMAGE"]] as [unknown] } } })).toEqual({});
+    expect(buildPreprocessorInputs({})).toEqual({});
   });
 });
 
@@ -166,6 +240,116 @@ describe("submitComfyUITask", () => {
     await expect(submitComfyUITask("req3", "http://localhost:8188", makeInput())).rejects.toThrow(
       /Value not in list: ckpt_name/
     );
+  });
+
+  it("uploads the control image and wires ControlNet with the builtin Canny preprocessor", async () => {
+    fetchMock.mockImplementation((url: string, init?: { method?: string }) => {
+      if (String(url).endsWith("/upload/image")) {
+        return Promise.resolve({ ok: true, json: async () => ({ name: "hint-up.png", subfolder: "" }) });
+      }
+      if (String(url).endsWith("/prompt") && init?.method === "POST") {
+        return Promise.resolve({ ok: true, json: async () => ({ prompt_id: "cn-1", node_errors: {} }) });
+      }
+      return Promise.reject(new TypeError("unexpected url"));
+    });
+
+    await submitComfyUITask(
+      "req-cn",
+      "http://localhost:8188",
+      makeInput({
+        parameters: {
+          controlNetModel: "control_v11p_sd15_canny.pth",
+          controlNetStrength: 0.6,
+          controlPreprocessor: "canny",
+        },
+      }),
+      "1:1",
+      "data:image/png;base64,CCCC"
+    );
+
+    const promptCall = fetchMock.mock.calls.find(([u]) => String(u).endsWith("/prompt"));
+    const graph = JSON.parse(promptCall![1].body).prompt;
+    expect(graph["20"].inputs.image).toBe("hint-up.png");
+    expect(graph["21"].class_type).toBe("Canny");
+    expect(graph["22"].inputs.control_net_name).toBe("control_v11p_sd15_canny.pth");
+    expect(graph["23"].inputs.strength).toBe(0.6);
+    expect(graph["3"].inputs.positive).toEqual(["23", 0]);
+  });
+
+  it("resolves the depth preprocessor from the daemon's own spec", async () => {
+    fetchMock.mockImplementation((url: string, init?: { method?: string }) => {
+      const u = String(url);
+      if (u.endsWith("/upload/image")) {
+        return Promise.resolve({ ok: true, json: async () => ({ name: "photo-up.png", subfolder: "" }) });
+      }
+      if (u.includes("/object_info/DepthAnythingV2Preprocessor")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            DepthAnythingV2Preprocessor: {
+              input: {
+                required: {
+                  image: [["IMAGE"]],
+                  ckpt_name: [["depth_anything_v2_vits.pth"]],
+                  resolution: [["INT"], { default: 512 }],
+                },
+              },
+            },
+          }),
+        });
+      }
+      if (u.endsWith("/prompt") && init?.method === "POST") {
+        return Promise.resolve({ ok: true, json: async () => ({ prompt_id: "cn-2", node_errors: {} }) });
+      }
+      return Promise.reject(new TypeError("unexpected url"));
+    });
+
+    await submitComfyUITask(
+      "req-depth",
+      "http://localhost:8188",
+      makeInput({ parameters: { controlNetModel: "cn-depth.safetensors", controlPreprocessor: "depth" } }),
+      "1:1",
+      "data:image/png;base64,DDDD"
+    );
+
+    const promptCall = fetchMock.mock.calls.find(([u]) => String(u).endsWith("/prompt"));
+    const graph = JSON.parse(promptCall![1].body).prompt;
+    expect(graph["21"]).toEqual({
+      class_type: "DepthAnythingV2Preprocessor",
+      inputs: { ckpt_name: "depth_anything_v2_vits.pth", resolution: 512, image: ["20", 0] },
+    });
+  });
+
+  it("explains the missing aux pack when depth preprocessing is unavailable", async () => {
+    fetchMock.mockImplementation((url: string, init?: { method?: string }) => {
+      const u = String(url);
+      if (u.endsWith("/upload/image")) {
+        return Promise.resolve({ ok: true, json: async () => ({ name: "x.png", subfolder: "" }) });
+      }
+      if (u.includes("/object_info/")) {
+        return Promise.resolve({ ok: true, json: async () => ({}) }); // class not installed
+      }
+      if (u.endsWith("/prompt") && init?.method === "POST") {
+        return Promise.resolve({ ok: true, json: async () => ({ prompt_id: "never", node_errors: {} }) });
+      }
+      return Promise.reject(new TypeError("unexpected url"));
+    });
+
+    await expect(
+      submitComfyUITask(
+        "req-nodepth",
+        "http://localhost:8188",
+        makeInput({ parameters: { controlNetModel: "cn.safetensors", controlPreprocessor: "depth" } }),
+        "1:1",
+        "data:image/png;base64,EEEE"
+      )
+    ).rejects.toThrow(/comfyui_controlnet_aux/);
+  });
+
+  it("rejects a connected control image with no ControlNet model selected", async () => {
+    await expect(
+      submitComfyUITask("req-nocn", "http://localhost:8188", makeInput(), "1:1", "data:image/png;base64,FFFF")
+    ).rejects.toThrow(/no ControlNet model is selected/);
   });
 
   it("honors sampler parameters from the node", async () => {
@@ -282,5 +466,28 @@ describe("fetchComfyUICheckpoints", () => {
   it("throws when the daemon is unreachable so callers can decide the severity", async () => {
     fetchMock.mockRejectedValue(new TypeError("fetch failed"));
     await expect(fetchComfyUICheckpoints("http://localhost:8188")).rejects.toThrow();
+  });
+});
+
+describe("fetchComfyUIControlNets", () => {
+  const fetchMock = vi.fn();
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("reads installed ControlNet models from the loader node's options", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ControlNetLoader: {
+          input: { required: { control_net_name: [["control_v11p_sd15_canny.pth", "control_depth.safetensors"], {}] } },
+        },
+      }),
+    });
+    const models = await fetchComfyUIControlNets("http://localhost:8188");
+    expect(models).toEqual(["control_v11p_sd15_canny.pth", "control_depth.safetensors"]);
+    expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:8188/object_info/ControlNetLoader");
   });
 });

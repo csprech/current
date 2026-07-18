@@ -113,6 +113,8 @@ Additional providers (Replicate, fal.ai, Kie.ai, WaveSpeed) expose their catalog
 
 Image generation via local ComfyUI (`src/app/api/generate/providers/comfyui.ts`): installed checkpoints are discovered from `GET {base}/object_info/CheckpointLoaderSimple` and appear in the model browser as $0 models when the daemon is reachable (absent daemon = silently out of the catalog). Generation submits a standard checkpoint→KSampler graph to `POST /prompt` and polls `/history/{id}` through the shared submit+poll pipeline; img2img uploads the first reference image. Base URL precedence: `X-ComfyUI-URL` header → `COMFYUI_URL` env → `http://localhost:8188`. ComfyUI runs cost $0 in estimation.
 
+**ControlNet (ComfyUI only)**: the image generator grows a `control` target handle when its provider is comfyui; the connected image flows `ConnectedInputs.control` → executor `controlImage` → `/api/generate`. Node parameters `controlNetModel` / `controlNetStrength` / `controlPreprocessor` (`none|canny|depth`) drive a `ControlNetLoader`+`ControlNetApplyAdvanced` graph section — `canny` uses ComfyUI's builtin Canny node, `depth` requires the `comfyui_controlnet_aux` pack (detected via object_info; its required inputs are filled generically from the node's own spec). Installed ControlNets are discovered through `GET /api/comfyui/controlnets` (`useComfyUIControlNets` hook → `ComfyUIParameters` panel). The Image Action node's on-device Canny op produces ready-made hint maps (`preprocessor: none`).
+
 ## Node Types (27)
 
 | Family | Types |
@@ -145,6 +147,7 @@ Image generation via local ComfyUI (`src/app/api/generate/providers/comfyui.ts`)
 3. Image inputs accept multiple connections; text inputs accept one.
 4. **Video connections are gated by an explicit allowlist of target node types in `isValidConnection()` (`WorkflowCanvas.tsx`)** — a new video-consuming node must be added there or its connections silently fail.
 5. **Inpainting**: the annotation node's Mask tool paints a white-on-black `outputMask` exposed on a `mask` source handle; the image generator's `mask` target handle routes it into `ConnectedInputs.mask` → the executor's `maskImage` → `/api/generate`, which appends it as the final image with `MASK_INSTRUCTION`. `mask` handles are image-typed (`getHandleType`). Outpainting recipe: Image Action "Change aspect ratio → Pad" → mask the padded borders → generate.
+6. **ControlNet**: the image generator's `control` target handle (rendered only for the comfyui provider; image-typed in `getHandleType`) routes a hint image into `ConnectedInputs.control` → executor `controlImage` → `/api/generate`. Recipe: Image Action "Edge detect (Canny)" → control handle → generate with a canny ControlNet, preprocessor None.
 
 ## Adding a New Node Type — the real checklist
 
