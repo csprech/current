@@ -29,7 +29,7 @@ export const NODE_CATALOG = [
   { type: "easeCurve", label: "Ease curve", category: "Process", keywords: ["speed", "timing"] },
   { type: "videoFrameGrab", label: "Grab frame", category: "Process", keywords: ["still", "extract"] },
   { type: "removeBackground", label: "Remove background", category: "Process", keywords: ["cutout", "alpha"] },
-  { type: "imageAction", label: "Image action", category: "Process", keywords: ["rotate", "flip", "blur", "crop", "filter", "free"] },
+  { type: "imageAction", label: "Image action", category: "Process", keywords: ["rotate", "flip", "blur", "crop", "filter", "canny", "edge", "controlnet", "free"] },
   { type: "videoAction", label: "Video action", category: "Process", keywords: ["reverse", "speed", "boomerang", "mute", "free"] },
   { type: "imageCompare", label: "Compare images", category: "Process", keywords: ["before", "after"] },
   { type: "router", label: "Router", category: "Route", keywords: ["branch", "pass"] },
