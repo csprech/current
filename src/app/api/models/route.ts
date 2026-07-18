@@ -510,6 +510,56 @@ const KIE_MODELS: ProviderModel[] = [
   },
 ];
 
+// ElevenLabs models (hardcoded — their audio API has no discovery endpoint).
+// BYO-key: listed only when an ElevenLabs key is configured.
+const ELEVENLABS_MODELS: ProviderModel[] = [
+  {
+    id: "tts/eleven_multilingual_v2",
+    name: "ElevenLabs Multilingual v2",
+    description: "Natural text-to-speech in 29 languages, through your own ElevenLabs key at API cost.",
+    provider: "elevenlabs",
+    capabilities: ["text-to-audio"],
+    coverImage: undefined,
+    pageUrl: "https://elevenlabs.io/text-to-speech",
+  },
+  {
+    id: "tts/eleven_turbo_v2_5",
+    name: "ElevenLabs Turbo v2.5",
+    description: "Fast, low-latency text-to-speech, through your own ElevenLabs key.",
+    provider: "elevenlabs",
+    capabilities: ["text-to-audio"],
+    coverImage: undefined,
+    pageUrl: "https://elevenlabs.io/text-to-speech",
+  },
+  {
+    id: "tts/eleven_v3",
+    name: "ElevenLabs Eleven v3",
+    description: "ElevenLabs' most expressive speech model with audio-tag support, through your own key.",
+    provider: "elevenlabs",
+    capabilities: ["text-to-audio"],
+    coverImage: undefined,
+    pageUrl: "https://elevenlabs.io/text-to-speech",
+  },
+  {
+    id: "sound-effects",
+    name: "ElevenLabs Sound Effects",
+    description: "Generate sound effects from text (0.5–22s), through your own ElevenLabs key.",
+    provider: "elevenlabs",
+    capabilities: ["text-to-audio"],
+    coverImage: undefined,
+    pageUrl: "https://elevenlabs.io/sound-effects",
+  },
+  {
+    id: "music",
+    name: "ElevenLabs Music",
+    description: "Generate full tracks from a text prompt, through your own ElevenLabs key.",
+    provider: "elevenlabs",
+    capabilities: ["text-to-audio"],
+    coverImage: undefined,
+    pageUrl: "https://elevenlabs.io/music",
+  },
+];
+
 // Gemini image models (hardcoded - these don't come from an external API)
 const GEMINI_IMAGE_MODELS: ProviderModel[] = [
   {
@@ -1243,6 +1293,7 @@ export async function GET(
   const falKey = request.headers.get("X-Fal-Key") || process.env.FAL_API_KEY || null;
   const kieKey = request.headers.get("X-Kie-Key") || process.env.KIE_API_KEY || null;
   const wavespeedKey = request.headers.get("X-WaveSpeed-Key") || process.env.WAVESPEED_API_KEY || null;
+  const elevenLabsKey = request.headers.get("X-ElevenLabs-Key") || process.env.ELEVENLABS_API_KEY || null;
 
   // Build list of all available providers (have keys from env or client headers)
   const availableProviders: string[] = ["gemini"]; // Gemini always available
@@ -1250,6 +1301,7 @@ export async function GET(
   if (replicateKey) availableProviders.push("replicate");
   if (kieKey) availableProviders.push("kie");
   if (wavespeedKey) availableProviders.push("wavespeed");
+  if (elevenLabsKey) availableProviders.push("elevenlabs");
 
   // ComfyUI daemon address (local — needs no key, availability = reachability)
   const comfyUIBaseUrl = resolveComfyUIBaseUrl(request.headers.get("X-ComfyUI-URL"));
@@ -1259,6 +1311,7 @@ export async function GET(
   let includeGemini = false;
   let includeKie = false;
   let includeComfyUI = false;
+  let includeElevenLabs = false;
 
   if (providerFilter) {
     if (providerFilter === "gemini") {
@@ -1297,6 +1350,19 @@ export async function GET(
           { status: 400 }
         );
       }
+    } else if (providerFilter === "elevenlabs") {
+      // Only ElevenLabs requested — hardcoded models, key required (BYO-key)
+      if (elevenLabsKey) {
+        includeElevenLabs = true;
+      } else {
+        return NextResponse.json<ModelsErrorResponse>(
+          {
+            success: false,
+            error: "ElevenLabs API key required. Add ELEVENLABS_API_KEY to .env.local or configure in Settings.",
+          },
+          { status: 400 }
+        );
+      }
     } else if (providerFilter === "wavespeed") {
       if (wavespeedKey) {
         // WaveSpeed requested with key - fetch from API
@@ -1322,6 +1388,7 @@ export async function GET(
     includeGemini = true; // Gemini always available
     includeComfyUI = true; // probed below — an absent daemon is a normal state
     includeKie = kieKey ? true : false; // Kie only if API key is configured
+    includeElevenLabs = elevenLabsKey ? true : false; // ElevenLabs only with a key
     if (wavespeedKey) {
       providersToFetch.push("wavespeed"); // WaveSpeed if key is configured
     }
@@ -1334,7 +1401,7 @@ export async function GET(
   }
 
   // Gemini and Kie are always available (with key for Kie), so we don't fail if no external providers
-  if (providersToFetch.length === 0 && !includeGemini && !includeKie) {
+  if (providersToFetch.length === 0 && !includeGemini && !includeKie && !includeElevenLabs) {
     return NextResponse.json<ModelsErrorResponse>(
       {
         success: false,
@@ -1378,6 +1445,21 @@ export async function GET(
     providerResults["kie"] = {
       success: true,
       count: kieModels.length,
+      cached: true, // Hardcoded models are effectively "cached"
+    };
+    anyFromCache = true;
+  }
+
+  // Add ElevenLabs models if included (hardcoded, no API call needed)
+  if (includeElevenLabs) {
+    let elevenLabsModels = ELEVENLABS_MODELS;
+    if (searchQuery) {
+      elevenLabsModels = filterModelsBySearch(elevenLabsModels, searchQuery);
+    }
+    allModels.push(...elevenLabsModels);
+    providerResults["elevenlabs"] = {
+      success: true,
+      count: elevenLabsModels.length,
       cached: true, // Hardcoded models are effectively "cached"
     };
     anyFromCache = true;

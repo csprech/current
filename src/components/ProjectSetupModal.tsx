@@ -148,6 +148,7 @@ export function ProjectSetupModal({
     fal: false,
     kie: false,
     wavespeed: false,
+    elevenlabs: false,
     ollama: false,
     comfyui: false,
   });
@@ -159,6 +160,7 @@ export function ProjectSetupModal({
     fal: false,
     kie: false,
     wavespeed: false,
+    elevenlabs: false,
     ollama: false,
     comfyui: false,
   });
@@ -204,7 +206,7 @@ export function ProjectSetupModal({
 
       // Sync local providers state
       setLocalProviders(providerSettings);
-      setShowApiKey({ gemini: false, openai: false, anthropic: false, replicate: false, fal: false, kie: false, wavespeed: false, ollama: false, comfyui: false });
+      setShowApiKey({ gemini: false, openai: false, anthropic: false, replicate: false, fal: false, kie: false, wavespeed: false, elevenlabs: false, ollama: false, comfyui: false });
       // Initialize override as active if user already has a key set
       setOverrideActive({
         gemini: !!providerSettings.providers.gemini?.apiKey,
@@ -214,6 +216,7 @@ export function ProjectSetupModal({
         fal: !!providerSettings.providers.fal?.apiKey,
         kie: !!providerSettings.providers.kie?.apiKey,
         wavespeed: !!providerSettings.providers.wavespeed?.apiKey,
+        elevenlabs: !!providerSettings.providers.elevenlabs?.apiKey,
         ollama: false,
         comfyui: false,
       });
@@ -324,7 +327,7 @@ export function ProjectSetupModal({
 
   const handleSaveProviders = () => {
     // Save each provider's settings
-    const providerIds: ProviderType[] = ["gemini", "openai", "anthropic", "replicate", "fal", "kie", "wavespeed", "ollama", "comfyui"];
+    const providerIds: ProviderType[] = ["gemini", "openai", "anthropic", "replicate", "fal", "kie", "wavespeed", "elevenlabs", "ollama", "comfyui"];
     for (const providerId of providerIds) {
       const local = localProviders.providers[providerId];
       const current = providerSettings.providers[providerId];
@@ -852,6 +855,54 @@ export function ProjectSetupModal({
                         onClick={() => {
                           setOverrideActive((prev) => ({ ...prev, wavespeed: false }));
                           updateLocalProvider("wavespeed", { apiKey: null });
+                        }}
+                        className="text-xs text-neutral-500 hover:text-neutral-300"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ElevenLabs Provider */}
+            <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-neutral-100">ElevenLabs</span>
+                {envStatus?.elevenlabs && !overrideActive.elevenlabs ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[var(--current-success)]">Configured via .env</span>
+                    <button
+                      type="button"
+                      onClick={() => setOverrideActive((prev) => ({ ...prev, elevenlabs: true }))}
+                      className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+                    >
+                      Override
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type={showApiKey.elevenlabs ? "text" : "password"}
+                      value={localProviders.providers.elevenlabs?.apiKey || ""}
+                      onChange={(e) => updateLocalProvider("elevenlabs", { apiKey: e.target.value || null })}
+                      placeholder="xi-..."
+                      className="w-48 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded-lg text-neutral-100 text-xs focus:outline-none focus:border-neutral-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey((prev) => ({ ...prev, elevenlabs: !prev.elevenlabs }))}
+                      className="text-xs text-neutral-400 hover:text-neutral-200"
+                    >
+                      {showApiKey.elevenlabs ? "Hide" : "Show"}
+                    </button>
+                    {envStatus?.elevenlabs && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOverrideActive((prev) => ({ ...prev, elevenlabs: false }));
+                          updateLocalProvider("elevenlabs", { apiKey: null });
                         }}
                         className="text-xs text-neutral-500 hover:text-neutral-300"
                       >

@@ -18,6 +18,7 @@ const PROVIDER_HEADER_MAP: Record<ProviderType, string> = {
   wavespeed: "X-WaveSpeed-Key",
   openai: "X-OpenAI-API-Key",
   anthropic: "X-Anthropic-API-Key",
+  elevenlabs: "X-ElevenLabs-Key",
   ollama: "", // local daemon — configured by URL (X-Ollama-URL), not a key
   comfyui: "", // local daemon — configured by URL (X-ComfyUI-URL), not a key
 };

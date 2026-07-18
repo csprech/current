@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GenerateRequest, GenerateResponse, ModelType, SelectedModel, ProviderType } from "@/types";
 import { GenerationInput, ModelCapability } from "@/lib/providers/types";
 import { generateWithGemini, submitGeminiVideoTask } from "./providers/gemini";
+import { generateWithElevenLabs } from "./providers/elevenlabs";
 import { submitComfyUITask, resolveComfyUIBaseUrl, comfyUIUnreachableError } from "./providers/comfyui";
 import { submitReplicateTask } from "./providers/replicate";
 import { clearFalInputMappingCache as _clearFalInputMappingCache, submitFalTask } from "./providers/fal";
@@ -169,6 +170,55 @@ export async function POST(request: NextRequest) {
     console.log(`[API:${requestId}] Provider: ${provider}, Model: ${selectedModel?.modelId || model}`);
 
     // Route to appropriate provider
+    if (provider === "elevenlabs") {
+      if (!selectedModel?.modelId) {
+        return NextResponse.json<GenerateResponse>(
+          { success: false, error: "selectedModel with modelId is required for ElevenLabs" },
+          { status: 400 }
+        );
+      }
+
+      const elevenLabsKey = request.headers.get("X-ElevenLabs-Key") || process.env.ELEVENLABS_API_KEY;
+      if (!elevenLabsKey) {
+        return NextResponse.json<GenerateResponse>(
+          {
+            success: false,
+            error: "ElevenLabs API key not configured. Add ELEVENLABS_API_KEY to .env.local or configure in Settings.",
+          },
+          { status: 401 }
+        );
+      }
+
+      if (!prompt) {
+        return NextResponse.json<GenerateResponse>(
+          { success: false, error: "ElevenLabs models need a text prompt" },
+          { status: 400 }
+        );
+      }
+
+      // TTS/SFX answer in seconds and music inside the route ceiling, so this
+      // completes inline like the Gemini image path — no submit+poll.
+      const result = await generateWithElevenLabs("el-" + requestId, elevenLabsKey, {
+        model: {
+          id: selectedModel.modelId,
+          name: selectedModel.displayName || selectedModel.modelId,
+          provider: "elevenlabs",
+          capabilities: ["text-to-audio"],
+          description: null,
+        },
+        prompt,
+        parameters,
+      });
+
+      if (!result.success || !result.outputs?.[0]) {
+        return NextResponse.json<GenerateResponse>(
+          { success: false, error: result.error || "ElevenLabs generation failed" },
+          { status: 500 }
+        );
+      }
+      return buildMediaResponse(result.outputs[0]);
+    }
+
     if (provider === "comfyui") {
       if (!selectedModel?.modelId) {
         return NextResponse.json<GenerateResponse>(

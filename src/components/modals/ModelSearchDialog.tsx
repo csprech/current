@@ -77,6 +77,22 @@ const WaveSpeedIcon = () => (
   </svg>
 );
 
+const ElevenLabsIcon = () => (
+  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+    <rect x="7" y="3" width="3.4" height="18" />
+    <rect x="13.6" y="3" width="3.4" height="18" />
+  </svg>
+);
+
+const ComfyUIIcon = () => (
+  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="6" cy="6" r="2.4" />
+    <circle cx="18" cy="12" r="2.4" />
+    <circle cx="6" cy="18" r="2.4" />
+    <path d="M8.2 6.8 15.6 11M8.2 17.2 15.6 13" />
+  </svg>
+);
+
 // Get the center of the React Flow pane in screen coordinates
 function getPaneCenter() {
   const pane = document.querySelector(".react-flow");
@@ -136,7 +152,7 @@ export function ModelSearchDialog({
     trackModelUsage,
   } = useWorkflowStore();
   // Use stable selector for API keys to prevent unnecessary re-fetches
-  const { replicateApiKey, falApiKey, kieApiKey, wavespeedApiKey } = useProviderApiKeys();
+  const { replicateApiKey, falApiKey, kieApiKey, wavespeedApiKey, elevenlabsApiKey } = useProviderApiKeys();
   const { screenToFlowPosition } = useReactFlow();
 
   // State
@@ -242,6 +258,9 @@ export function ModelSearchDialog({
       if (wavespeedApiKey) {
         headers["X-WaveSpeed-Key"] = wavespeedApiKey;
       }
+      if (elevenlabsApiKey) {
+        headers["X-ElevenLabs-Key"] = elevenlabsApiKey;
+      }
       // ComfyUI is addressed by daemon URL, not a key — forward the configured
       // address so the server probes the right daemon for installed checkpoints
       const comfyUIBaseUrl = getProviderSettings().providers.comfyui?.baseUrl;
@@ -285,7 +304,7 @@ export function ModelSearchDialog({
         setIsLoading(false);
       }
     }
-  }, [debouncedSearch, providerFilter, capabilityFilter, replicateApiKey, falApiKey, kieApiKey, wavespeedApiKey]);
+  }, [debouncedSearch, providerFilter, capabilityFilter, replicateApiKey, falApiKey, kieApiKey, wavespeedApiKey, elevenlabsApiKey]);
 
   // Fetch models when filters change
   useEffect(() => {
@@ -387,6 +406,8 @@ export function ModelSearchDialog({
         return "WaveSpeed";
       case "comfyui":
         return "ComfyUI";
+      case "elevenlabs":
+        return "ElevenLabs";
       default:
         return provider;
     }
@@ -399,12 +420,13 @@ export function ModelSearchDialog({
     if (replicateApiKey) providers.add("replicate");
     if (kieApiKey) providers.add("kie");
     if (wavespeedApiKey) providers.add("wavespeed");
+    if (elevenlabsApiKey) providers.add("elevenlabs");
     // Server-side keys (from env vars, reported by /api/models)
     for (const p of serverAvailableProviders) {
       providers.add(p as ProviderType);
     }
     return providers;
-  }, [replicateApiKey, kieApiKey, wavespeedApiKey, serverAvailableProviders]);
+  }, [replicateApiKey, kieApiKey, wavespeedApiKey, elevenlabsApiKey, serverAvailableProviders]);
 
   // Reset provider filter if current selection becomes unavailable
   useEffect(() => {
@@ -627,6 +649,28 @@ export function ModelSearchDialog({
                   className="current-model-filter"
                 >
                   <WaveSpeedIcon />
+                </button>
+              )}
+              {availableProviders.has("elevenlabs") && (
+                <button
+                  onClick={() => setProviderFilter("elevenlabs")}
+                  aria-label="Filter by ElevenLabs"
+                  aria-pressed={providerFilter === "elevenlabs"}
+                  title="ElevenLabs"
+                  className="current-model-filter"
+                >
+                  <ElevenLabsIcon />
+                </button>
+              )}
+              {availableProviders.has("comfyui") && (
+                <button
+                  onClick={() => setProviderFilter("comfyui")}
+                  aria-label="Filter by ComfyUI"
+                  aria-pressed={providerFilter === "comfyui"}
+                  title="ComfyUI"
+                  className="current-model-filter"
+                >
+                  <ComfyUIIcon />
                 </button>
               )}
             </div>

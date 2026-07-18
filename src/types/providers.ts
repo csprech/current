@@ -6,7 +6,7 @@
  */
 
 // Provider Types for multi-provider support (image/video generation + local LLMs)
-export type ProviderType = "gemini" | "openai" | "anthropic" | "replicate" | "fal" | "kie" | "wavespeed" | "ollama" | "comfyui";
+export type ProviderType = "gemini" | "openai" | "anthropic" | "replicate" | "fal" | "kie" | "wavespeed" | "elevenlabs" | "ollama" | "comfyui";
 
 // Model pricing info (stored when model is selected)
 export interface SelectedModelPricing {

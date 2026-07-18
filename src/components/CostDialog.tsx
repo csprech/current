@@ -26,6 +26,7 @@ function ProviderIcon({ provider }: { provider: ProviderType }) {
     wavespeed: "W",
     ollama: "L",
     comfyui: "C",
+    elevenlabs: "E",
   };
 
   return (
@@ -49,6 +50,7 @@ function getProviderDisplayName(provider: ProviderType): string {
     wavespeed: "WaveSpeed",
     ollama: "Ollama",
     comfyui: "ComfyUI",
+    elevenlabs: "ElevenLabs",
   };
   return names[provider] || provider;
 }
