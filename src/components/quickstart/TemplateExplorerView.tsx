@@ -112,7 +112,17 @@ export function TemplateExplorerView({ onBack, onWorkflowSelected }: TemplateExp
       const response = await fetch(`/api/community-workflows/${workflowId}`);
       const result = await response.json();
       if (!response.ok || !result.success || !result.downloadUrl) throw new Error(result.error || "Failed to get download URL");
-      const workflowResponse = await fetch(result.downloadUrl);
+      // Primary: fetch straight from GitHub's CDN (CORS-open, no server load).
+      // Fallback: the server relay, for networks that block githubusercontent.
+      let workflowResponse: Response | null = null;
+      try {
+        workflowResponse = await fetch(result.downloadUrl);
+      } catch {
+        workflowResponse = null;
+      }
+      if (!workflowResponse || !workflowResponse.ok) {
+        workflowResponse = await fetch(`/api/community-workflows/${workflowId}/file`);
+      }
       if (!workflowResponse.ok) throw new Error("Failed to download workflow");
       onWorkflowSelected(await workflowResponse.json());
     } catch (caught) {
