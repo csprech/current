@@ -406,6 +406,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       fullBleed
+      contentClassName="flex-1 min-h-0 relative flex flex-col"
       settingsExpanded={inlineParametersEnabled && isParamsExpanded}
       aspectFitMedia={nodeData.outputVideo}
       settingsPanel={inlineParametersEnabled ? (
@@ -708,7 +709,9 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
       {/* Output label */}
       <HandleLabel label="Video" side="source" color="var(--handle-color-video)" visible={showLabels} />
 
-      <div className="relative w-full h-full min-h-0 overflow-hidden rounded-lg">
+      {/* Media area: square-cornered (flat container) and never covered by the
+          prompt — the prompt field sits below it in normal flow. */}
+      <div className="relative w-full flex-1 min-h-0 overflow-hidden" data-media-area>
         {/* Preview area */}
         {nodeData.outputVideo ? (
           <>
@@ -892,18 +895,14 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
           </div>
         )}
 
-        <InlinePromptField
-          nodeId={id}
-          value={nodeData.inlinePrompt}
-          className={
-            nodeData.outputVideo
-              ? hasCarouselVideos
-                ? "bottom-[4.75rem]"
-                : "bottom-12"
-              : "bottom-1"
-          }
-        />
       </div>
+
+      <InlinePromptField
+        nodeId={id}
+        value={nodeData.inlinePrompt}
+        variant="block"
+        className="mt-1"
+      />
 
     </BaseNode>
 

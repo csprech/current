@@ -285,7 +285,14 @@ export function BaseNode({
       if (!thisNode) return;
 
       const nodeHeight = getNodeDimension(thisNode, "height");
-      const contentHeight = nodeHeight - trackedSettingsHeightRef.current;
+      // Content chrome that is NOT the media (e.g. an inline prompt bar below
+      // the image). Measured live so aspect fit sizes the media area itself.
+      const contentEl = contentRef.current;
+      const mediaEl = contentEl?.querySelector<HTMLElement>("[data-media-area]");
+      const mediaChromeHeight = contentEl && mediaEl
+        ? Math.max(0, contentEl.offsetHeight - mediaEl.offsetHeight)
+        : 0;
+      const contentHeight = nodeHeight - trackedSettingsHeightRef.current - mediaChromeHeight;
 
       const newSize = calculateAspectFitSize(
         dims.width / dims.height,
@@ -294,7 +301,7 @@ export function BaseNode({
         fullBleed
       );
 
-      const finalHeight = newSize.height + trackedSettingsHeightRef.current;
+      const finalHeight = newSize.height + trackedSettingsHeightRef.current + mediaChromeHeight;
 
       setNodes((nds) =>
         nds.map((n) => {

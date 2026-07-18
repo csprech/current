@@ -516,6 +516,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       fullBleed
+      contentClassName="flex-1 min-h-0 relative flex flex-col"
       settingsExpanded={inlineParametersEnabled && isParamsExpanded}
       aspectFitMedia={nodeData.outputImage}
       dataTutorial="generate-image-node"
@@ -729,9 +730,12 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
       {/* Output label */}
       <HandleLabel label="Image" side="source" color="var(--handle-color-image)" visible={showLabels} />
 
+      {/* Media area: square-cornered (flat container) and never covered by the
+          prompt — the prompt field sits below it in normal flow. */}
       <div
-        className="relative w-full h-full min-h-0 overflow-hidden rounded-lg"
+        className="relative w-full flex-1 min-h-0 overflow-hidden"
         data-tutorial="generate-output-area"
+        data-media-area
       >
         {/* Preview area */}
         {nodeData.outputImage ? (
@@ -913,12 +917,14 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
           </div>
         )}
 
-        <InlinePromptField
-          nodeId={id}
-          value={nodeData.inlinePrompt}
-          className={hasCarouselImages ? "bottom-9" : "bottom-1"}
-        />
       </div>
+
+      <InlinePromptField
+        nodeId={id}
+        value={nodeData.inlinePrompt}
+        variant="block"
+        className="mt-1"
+      />
 
     </BaseNode>
 
