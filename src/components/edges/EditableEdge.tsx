@@ -9,7 +9,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { NanoBananaNodeData, WorkflowEdgeData } from "@/types";
+import { WorkflowEdgeData } from "@/types";
 import { getSharedGradientId } from "./SharedEdgeGradients";
 import { getHandlePresentation, normalizeHandleType } from "@/components/nodes/nodePresentation";
 
@@ -51,11 +51,12 @@ export function EditableEdge({
   const offsetY = edgeData?.offsetY ?? 0;
   const hasPause = edgeData?.hasPause ?? false;
 
-  // Narrow selector: only re-renders when target loading status changes
+  // Narrow selector: only re-renders when target loading status changes.
+  // Any node type that is currently executing lights up its incoming wires —
+  // generators, LLMs, local action nodes, all of them set status "loading".
   const isTargetLoading = useWorkflowStore((state) => {
     const targetNode = state.nodes.find((n) => n.id === target);
-    if (targetNode?.type !== "nanoBanana") return false;
-    return (targetNode.data as NanoBananaNodeData).status === "loading";
+    return (targetNode?.data as { status?: string } | undefined)?.status === "loading";
   });
 
   // Status colors are reserved for semantic states; typed edges use the Current family.
@@ -211,12 +212,14 @@ export function EditableEdge({
         }}
       />
 
-      {/* Animated pulse overlay when target is loading */}
+      {/* Animated pulse overlay while the target node executes: a soft halo
+          plus dashes flowing source → target. The flow animation lives on the
+          dashed path (the halo has no dasharray to animate) and disables
+          under prefers-reduced-motion, leaving the static halo as the cue. */}
       {isTargetLoading && (
         <>
           {/* Outer glow — replaces blur(6px) filter for better perf on Windows */}
           <path
-            className="current-connector-pulse"
             d={edgePath}
             fill="none"
             stroke={`url(#${gradientId})`}
@@ -235,8 +238,10 @@ export function EditableEdge({
             strokeLinejoin="round"
             opacity={0.12}
           />
-          {/* Animated flowing pulse using stroke-dasharray */}
+          {/* Flowing dashes — dasharray 20+30 matches the keyframe's 50 offset
+              for a seamless loop */}
           <path
+            className="current-connector-pulse"
             d={edgePath}
             fill="none"
             stroke={`url(#${gradientId})`}

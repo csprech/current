@@ -331,6 +331,49 @@ describe("EditableEdge", () => {
       expect(container.querySelector(".current-connector-pulse")).toBeInTheDocument();
     });
 
+    it("animates the dashed flow path, not the halo", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => {
+        return selector(createDefaultState({
+          nodes: [
+            { id: "node-1", type: "prompt", selected: false },
+            { id: "node-2", type: "nanoBanana", selected: false, data: { status: "loading" } },
+          ],
+        }));
+      });
+
+      const { container } = render(
+        <TestWrapper>
+          <EditableEdge {...createDefaultProps()} />
+        </TestWrapper>
+      );
+
+      // The flowPulse keyframes march stroke-dashoffset, so the class must sit
+      // on the path that actually has a dasharray — otherwise nothing moves.
+      const pulse = container.querySelector(".current-connector-pulse");
+      expect(pulse?.getAttribute("stroke-dasharray")).toBe("20 30");
+    });
+
+    it("pulses incoming wires for any running node type, not just image generators", () => {
+      for (const type of ["llmGenerate", "generateAudio", "videoAction", "removeBackground"]) {
+        mockUseWorkflowStore.mockImplementation((selector) => {
+          return selector(createDefaultState({
+            nodes: [
+              { id: "node-1", type: "prompt", selected: false },
+              { id: "node-2", type, selected: false, data: { status: "loading" } },
+            ],
+          }));
+        });
+
+        const { container, unmount } = render(
+          <TestWrapper>
+            <EditableEdge {...createDefaultProps()} />
+          </TestWrapper>
+        );
+        expect(container.querySelector(".current-connector-pulse"), `type: ${type}`).toBeInTheDocument();
+        unmount();
+      }
+    });
+
     it("should not show pulse animation when target node is not loading", () => {
       mockUseWorkflowStore.mockImplementation((selector) => {
         return selector(createDefaultState({
