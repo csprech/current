@@ -378,7 +378,7 @@ describe("QuickstartTemplatesView", () => {
       });
     });
 
-    it("should show 'No community workflows available' when list is empty", async () => {
+    it("should show 'No community templates yet' when list is empty", async () => {
       mockFetch.mockImplementation((url: string) => {
         if (url === "/api/community-workflows") {
           return Promise.resolve({
@@ -400,7 +400,7 @@ describe("QuickstartTemplatesView", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("No community workflows available")).toBeInTheDocument();
+        expect(screen.getByText(/No community templates yet/)).toBeInTheDocument();
       });
     });
 

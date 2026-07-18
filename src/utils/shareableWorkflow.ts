@@ -62,6 +62,45 @@ export function buildShareableWorkflow(input: ShareableWorkflowInput): WorkflowF
   };
 }
 
+// Generated results and run state — cleared for template publishing so
+// community files stay small and open fresh. Input media is kept: a
+// template's example inputs are part of what it teaches.
+const GENERATED_FIELDS = [
+  "outputImage",
+  "outputVideo",
+  "outputAudio",
+  "outputText",
+  "outputMask",
+  "imageHistory",
+  "selectedHistoryIndex",
+  "status",
+  "error",
+] as const;
+
+/**
+ * A publish-ready copy of a shareable workflow: generated outputs, run
+ * history, and run state stripped; output nodes emptied. The typed
+ * templateInterface is recomputed from the cleaned nodes.
+ */
+export function stripGeneratedMedia(workflow: WorkflowFile): WorkflowFile {
+  const nodes = workflow.nodes.map((node) => {
+    const data = { ...(node.data as Record<string, unknown>) };
+    for (const field of GENERATED_FIELDS) {
+      if (field in data) {
+        data[field] = Array.isArray(data[field]) ? [] : null;
+      }
+    }
+    if (node.type === "output" || node.type === "outputGallery") {
+      data.image = null;
+      data.video = null;
+      data.audio = null;
+    }
+    return { ...node, data } as WorkflowNode;
+  });
+
+  return { ...workflow, nodes, templateInterface: describeTemplateInterface(nodes) };
+}
+
 /** Filesystem-safe filename (no extension) derived from a workflow name. */
 export function shareableFilename(name: string): string {
   const base = (name || "workflow")

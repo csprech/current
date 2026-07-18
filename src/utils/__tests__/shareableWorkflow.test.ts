@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { buildShareableWorkflow, shareableFilename } from "../shareableWorkflow";
+import { buildShareableWorkflow, shareableFilename, stripGeneratedMedia } from "../shareableWorkflow";
 import type { WorkflowNode, WorkflowEdge } from "@/types";
 
-function node(id: string, data: Record<string, unknown>): WorkflowNode {
-  return { id, type: "nanoBanana", position: { x: 0, y: 0 }, data } as WorkflowNode;
+function node(id: string, data: Record<string, unknown>, type = "nanoBanana"): WorkflowNode {
+  return { id, type, position: { x: 0, y: 0 }, data } as WorkflowNode;
 }
 
 describe("buildShareableWorkflow", () => {
@@ -90,5 +90,44 @@ describe("shareableFilename", () => {
     expect(shareableFilename("My Cool Flow!")).toBe("my-cool-flow");
     expect(shareableFilename("")).toBe("workflow");
     expect(shareableFilename("   ")).toBe("workflow");
+  });
+});
+
+describe("stripGeneratedMedia", () => {
+  it("clears generated outputs and run state but keeps input media", () => {
+    const workflow = buildShareableWorkflow({
+      name: "Poster",
+      edges: [],
+      edgeStyle: "curved",
+      nodes: [
+        node("in1", { image: "data:image/png;base64,INPUT" }, "imageInput"),
+        node("gen1", {
+          outputImage: "data:image/png;base64,GENERATED",
+          imageHistory: [{ id: "h1" }],
+          selectedHistoryIndex: 2,
+          status: "complete",
+          error: "old error",
+          prompt: "keep me",
+        }),
+        node("out1", { image: "data:image/png;base64,RESULT", video: "data:video/mp4;base64,V" }, "output"),
+      ],
+    });
+
+    const cleaned = stripGeneratedMedia(workflow);
+    const byId = new Map(cleaned.nodes.map((n) => [n.id, n.data as Record<string, unknown>]));
+
+    expect(byId.get("in1")!.image).toBe("data:image/png;base64,INPUT");
+    expect(byId.get("gen1")).toMatchObject({
+      outputImage: null,
+      imageHistory: [],
+      selectedHistoryIndex: null,
+      status: null,
+      error: null,
+      prompt: "keep me",
+    });
+    expect(byId.get("out1")).toMatchObject({ image: null, video: null, audio: null });
+    // Interface recomputed from the cleaned nodes
+    expect(cleaned.templateInterface?.inputs.map((i) => i.nodeId)).toEqual(["in1"]);
+    expect(cleaned.templateInterface?.outputs.map((o) => o.nodeId)).toEqual(["out1"]);
   });
 });

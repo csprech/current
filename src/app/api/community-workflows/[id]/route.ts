@@ -1,62 +1,59 @@
 import { NextResponse } from "next/server";
-
-const COMMUNITY_WORKFLOWS_API_URL =
-  "https://nodebananapro.com/api/public/community-workflows";
+import {
+  resolveCommunityRepo,
+  communityRawUrl,
+  parseCommunityIndex,
+  entryFilePath,
+} from "@/lib/templates/communityRepo";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
 /**
- * GET: Get a presigned download URL for a community workflow
+ * GET: resolve a community template id to its raw.githubusercontent.com URL.
  *
- * Returns { success: true, downloadUrl: "..." } so the client can
- * download the workflow directly from R2 (avoids proxying 80-275MB files
- * through a serverless function).
+ * Returns { success: true, downloadUrl } so the client downloads the workflow
+ * file straight from GitHub's CDN (CORS-enabled) instead of proxying
+ * potentially large files through the server — the same two-step contract the
+ * quickstart UI has always used.
  */
 export async function GET(request: Request, { params }: RouteParams) {
+  const repo = resolveCommunityRepo();
+
   try {
     const { id } = await params;
 
-    const urlResponse = await fetch(
-      `${COMMUNITY_WORKFLOWS_API_URL}/${encodeURIComponent(id)}`,
-      {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60 },
-      }
-    );
+    const response = await fetch(communityRawUrl(repo, "index.json"), {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 60 },
+    });
 
-    if (!urlResponse.ok) {
-      if (urlResponse.status === 404) {
-        return NextResponse.json(
-          { success: false, error: `Workflow not found: ${id}` },
-          { status: 404 }
-        );
-      }
+    if (!response.ok) {
       return NextResponse.json(
-        { success: false, error: "Failed to load workflow" },
-        { status: urlResponse.status }
+        { success: false, error: "Community template index unavailable" },
+        { status: response.status === 404 ? 404 : 502 }
       );
     }
 
-    const urlData = await urlResponse.json();
-
-    if (!urlData.success || !urlData.downloadUrl) {
+    const entries = parseCommunityIndex(await response.json());
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) {
       return NextResponse.json(
-        { success: false, error: urlData.error || "Failed to get download URL" },
-        { status: 500 }
+        { success: false, error: `Template not found: ${id}` },
+        { status: 404 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      downloadUrl: urlData.downloadUrl,
+      downloadUrl: communityRawUrl(repo, entryFilePath(entry)),
     });
   } catch (error) {
-    console.error("Error getting community workflow URL:", error);
+    console.error("Error resolving community template:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to load workflow" },
-      { status: 500 }
+      { success: false, error: "Failed to load template" },
+      { status: 502 }
     );
   }
 }

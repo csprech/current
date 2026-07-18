@@ -16,6 +16,7 @@ export function QuickstartTemplatesView({
   onWorkflowSelected,
 }: QuickstartTemplatesViewProps) {
   const [communityWorkflows, setCommunityWorkflows] = useState<CommunityWorkflowMeta[]>([]);
+  const [communitySource, setCommunitySource] = useState<{ repo: string; browseUrl: string } | null>(null);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [loadingWorkflowId, setLoadingWorkflowId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +34,9 @@ export function QuickstartTemplatesView({
           setCommunityWorkflows(result.workflows);
         } else {
           console.error("Failed to fetch community workflows:", result.error);
+        }
+        if (result.source) {
+          setCommunitySource(result.source);
         }
       } catch (err) {
         console.error("Error fetching community workflows:", err);
@@ -243,7 +247,7 @@ export function QuickstartTemplatesView({
             </div>
           ) : communityWorkflows.length === 0 ? (
             <p className="text-sm text-neutral-500 py-4">
-              No community workflows available
+              No community templates yet — yours could be the first.
             </p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -322,6 +326,20 @@ export function QuickstartTemplatesView({
             </div>
           )}
 
+          {communitySource && (
+            <p className="text-[11px] text-neutral-500">
+              Templates live in{" "}
+              <a
+                href={communitySource.browseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-neutral-300"
+              >
+                {communitySource.repo}
+              </a>{" "}
+              on GitHub — publish yours from the Project menu (a pull request is the review queue).
+            </p>
+          )}
         </div>
 
         {/* Error */}
