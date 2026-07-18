@@ -7,6 +7,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GET as listTemplates } from "../route";
 import { GET as resolveTemplate } from "../[id]/route";
+import { GET as relayTemplate } from "../[id]/file/route";
 
 const INDEX = {
   templates: [
@@ -92,6 +93,33 @@ describe("community template routes", () => {
     const data = await response.json();
 
     expect(data.downloadUrl).toBe("https://raw.githubusercontent.com/acme/flows/main/custom/trailer.json");
+  });
+
+  it("relays the template file server-side for blocked networks", async () => {
+    fetchMock.mockImplementation((url: string) => {
+      if (String(url).endsWith("/index.json")) {
+        return Promise.resolve({ ok: true, status: 200, json: async () => INDEX });
+      }
+      if (String(url).endsWith("/templates/poster.json")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ "content-length": "26" }),
+          arrayBuffer: async () => new TextEncoder().encode('{"name":"Poster maker"}').buffer,
+        });
+      }
+      return Promise.reject(new TypeError("unexpected url"));
+    });
+
+    const response = await relayTemplate(new Request("http://x"), resolveParams("poster"));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ name: "Poster maker" });
+  });
+
+  it("404s the relay for unknown ids", async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => INDEX });
+    const response = await relayTemplate(new Request("http://x"), resolveParams("nope"));
+    expect(response.status).toBe(404);
   });
 
   it("404s unknown template ids", async () => {
