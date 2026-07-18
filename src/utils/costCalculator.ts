@@ -89,6 +89,9 @@ export function estimateNodeRunCost(node: WorkflowNode): number | null {
 
   if (node.type === "nanoBanana") {
     const data = node.data as NanoBananaNodeData;
+    if (data.selectedModel?.provider === "comfyui") {
+      return 0; // local daemon — free
+    }
     if (data.selectedModel) {
       const pricing =
         getModelCost(data.selectedModel.pricing) ??
@@ -209,6 +212,11 @@ export function calculatePredictedCost(
     resolution?: Resolution,
     selectedModelPricing?: SelectedModelPricing | null
   ): { unitCost: number; unit: string } | null {
+    // Local daemons run free regardless of any carried pricing
+    if (provider === "comfyui") {
+      return { unitCost: 0, unit: "image" };
+    }
+
     // Check external pricing map first
     if (modelPricing?.has(modelId)) {
       return modelPricing.get(modelId)!;

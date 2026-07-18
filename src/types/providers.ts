@@ -6,7 +6,7 @@
  */
 
 // Provider Types for multi-provider support (image/video generation + local LLMs)
-export type ProviderType = "gemini" | "openai" | "anthropic" | "replicate" | "fal" | "kie" | "wavespeed" | "ollama";
+export type ProviderType = "gemini" | "openai" | "anthropic" | "replicate" | "fal" | "kie" | "wavespeed" | "ollama" | "comfyui";
 
 // Model pricing info (stored when model is selected)
 export interface SelectedModelPricing {
@@ -29,7 +29,7 @@ export interface ProviderConfig {
   enabled: boolean;
   apiKey: string | null;
   apiKeyEnvVar?: string; // For providers using environment variables (e.g., Gemini)
-  /** For local providers (Ollama): daemon base URL instead of an API key. */
+  /** For local providers (Ollama, ComfyUI): daemon base URL instead of an API key. */
   baseUrl?: string | null;
 }
 

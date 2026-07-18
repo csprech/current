@@ -86,6 +86,7 @@ export function FTUXApiKeysStep({}: FTUXStepProps) {
     kie: false,
     wavespeed: false,
     ollama: false,
+    comfyui: false,
   });
   const [localKeys, setLocalKeys] = useState<Record<ProviderType, string>>(() => {
     const keys: Record<ProviderType, string> = {
@@ -97,6 +98,7 @@ export function FTUXApiKeysStep({}: FTUXStepProps) {
       kie: "",
       wavespeed: "",
       ollama: "",
+      comfyui: "",
     };
     for (const id of Object.keys(keys) as ProviderType[]) {
       const saved = providerSettings.providers[id]?.apiKey;

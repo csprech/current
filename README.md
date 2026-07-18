@@ -33,6 +33,7 @@ Arrange typed nodes on an infinite canvas, connect them, and run the graph in de
 | Inpainting masks | Paint a mask in the annotation editor; the generator edits only that region. Pad-then-mask gives you outpainting. |
 | Local action nodes | Image Action and Video Action run deterministic edits on-device — free, instant, offline. |
 | Many providers | Gemini, OpenAI, Anthropic, Replicate, fal.ai, Kie.ai, and WaveSpeed models from a single workflow. |
+| Local models | Ollama LLMs and ComfyUI image checkpoints run fully offline on your hardware — free, private, no API key. |
 | Fullscreen viewer | Press `F` on a generation node for a fullscreen viewer with history grid, promote-to-input, and downloads. |
 | Bulk editing | Select several generators and change model, aspect ratio, or variations across all of them at once. |
 | Headless runs | Execute any workflow from the CLI or `POST /api/run` — no browser required. |
@@ -72,6 +73,8 @@ REPLICATE_API_KEY=your_replicate_key    # Replicate models
 FAL_API_KEY=your_fal_key                # fal.ai models
 KIE_API_KEY=your_kie_api_key            # Kie.ai models (Sora, Veo, Kling, ...)
 WAVESPEED_API_KEY=your_wavespeed_key    # WaveSpeed models
+OLLAMA_URL=http://localhost:11434       # Local Ollama daemon (optional; no key needed)
+COMFYUI_URL=http://localhost:8188       # Local ComfyUI daemon (optional; no key needed)
 ```
 
 Keep `.env.local` private. It should never be committed.

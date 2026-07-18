@@ -95,6 +95,7 @@ export const defaultProviderSettings: ProviderSettings = {
     kie: { id: "kie", name: "Kie.ai", enabled: false, apiKey: null, apiKeyEnvVar: "KIE_API_KEY" },
     wavespeed: { id: "wavespeed", name: "WaveSpeed", enabled: false, apiKey: null, apiKeyEnvVar: "WAVESPEED_API_KEY" },
     ollama: { id: "ollama", name: "Ollama (local)", enabled: true, apiKey: null, baseUrl: "http://localhost:11434" },
+    comfyui: { id: "comfyui", name: "ComfyUI (local)", enabled: true, apiKey: null, baseUrl: "http://localhost:8188" },
   }
 };
 

@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { GenerateResponse } from "@/types";
 import { checkKieTaskOnce, fetchKieMediaResult, isVeoModel } from "../providers/kie";
+import { checkComfyUITaskOnce, resolveComfyUIBaseUrl, comfyUIUnreachableError } from "../providers/comfyui";
 import { checkReplicateTaskOnce } from "../providers/replicate";
 import { checkFalTaskOnce, isValidFalQueueUrl } from "../providers/fal";
 import { checkWaveSpeedTaskOnce, buildWaveSpeedPollUrl } from "../providers/wavespeed";
@@ -83,6 +84,24 @@ export async function POST(request: NextRequest) {
     }
 
     const capabilities = capabilitiesForMediaType(mediaType);
+
+    if (provider === 'comfyui') {
+      // Daemon address resolves from trusted sources only (header → env →
+      // localhost default) — never from the client-echoed pollContext.
+      const baseUrl = resolveComfyUIBaseUrl(request.headers.get("X-ComfyUI-URL"));
+      try {
+        const check = await checkComfyUITaskOnce(requestId, baseUrl, taskId);
+        return finishTask(body, check);
+      } catch (error) {
+        if (error instanceof TypeError) {
+          return NextResponse.json<GenerateResponse>(
+            { success: false, error: comfyUIUnreachableError(baseUrl) },
+            { status: 502 }
+          );
+        }
+        throw error;
+      }
+    }
 
     if (provider === 'replicate') {
       const apiKey = request.headers.get("X-Replicate-API-Key") || process.env.REPLICATE_API_KEY;

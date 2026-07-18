@@ -149,6 +149,7 @@ export function ProjectSetupModal({
     kie: false,
     wavespeed: false,
     ollama: false,
+    comfyui: false,
   });
   const [overrideActive, setOverrideActive] = useState<Record<ProviderType, boolean>>({
     gemini: false,
@@ -159,6 +160,7 @@ export function ProjectSetupModal({
     kie: false,
     wavespeed: false,
     ollama: false,
+    comfyui: false,
   });
   const [envStatus, setEnvStatus] = useState<EnvStatusResponse | null>(null);
 
@@ -202,7 +204,7 @@ export function ProjectSetupModal({
 
       // Sync local providers state
       setLocalProviders(providerSettings);
-      setShowApiKey({ gemini: false, openai: false, anthropic: false, replicate: false, fal: false, kie: false, wavespeed: false, ollama: false });
+      setShowApiKey({ gemini: false, openai: false, anthropic: false, replicate: false, fal: false, kie: false, wavespeed: false, ollama: false, comfyui: false });
       // Initialize override as active if user already has a key set
       setOverrideActive({
         gemini: !!providerSettings.providers.gemini?.apiKey,
@@ -213,6 +215,7 @@ export function ProjectSetupModal({
         kie: !!providerSettings.providers.kie?.apiKey,
         wavespeed: !!providerSettings.providers.wavespeed?.apiKey,
         ollama: false,
+        comfyui: false,
       });
       setError(null);
 
@@ -321,7 +324,7 @@ export function ProjectSetupModal({
 
   const handleSaveProviders = () => {
     // Save each provider's settings
-    const providerIds: ProviderType[] = ["gemini", "openai", "anthropic", "replicate", "fal", "kie", "wavespeed", "ollama"];
+    const providerIds: ProviderType[] = ["gemini", "openai", "anthropic", "replicate", "fal", "kie", "wavespeed", "ollama", "comfyui"];
     for (const providerId of providerIds) {
       const local = localProviders.providers[providerId];
       const current = providerSettings.providers[providerId];
@@ -865,7 +868,7 @@ export function ProjectSetupModal({
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <span className="text-sm font-medium text-neutral-100">Ollama</span>
-                  <p className="text-xs text-neutral-400">Local models — free, private, no API key.</p>
+                  <p className="text-xs text-neutral-400">Local LLMs — free, private, no API key.</p>
                 </div>
                 <input
                   type="text"
@@ -873,6 +876,24 @@ export function ProjectSetupModal({
                   onChange={(e) => updateLocalProvider("ollama", { baseUrl: e.target.value || null })}
                   placeholder="http://localhost:11434"
                   aria-label="Ollama base URL"
+                  className="w-48 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded-lg text-neutral-100 text-xs focus:outline-none focus:border-neutral-500"
+                />
+              </div>
+            </div>
+
+            {/* ComfyUI Provider (local — base URL instead of API key) */}
+            <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-sm font-medium text-neutral-100">ComfyUI</span>
+                  <p className="text-xs text-neutral-400">Local image generation on your GPU — free, private, no API key.</p>
+                </div>
+                <input
+                  type="text"
+                  value={localProviders.providers.comfyui?.baseUrl || ""}
+                  onChange={(e) => updateLocalProvider("comfyui", { baseUrl: e.target.value || null })}
+                  placeholder="http://localhost:8188"
+                  aria-label="ComfyUI base URL"
                   className="w-48 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded-lg text-neutral-100 text-xs focus:outline-none focus:border-neutral-500"
                 />
               </div>

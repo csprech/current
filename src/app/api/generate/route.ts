@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GenerateRequest, GenerateResponse, ModelType, SelectedModel, ProviderType } from "@/types";
 import { GenerationInput, ModelCapability } from "@/lib/providers/types";
 import { generateWithGemini, submitGeminiVideoTask } from "./providers/gemini";
+import { submitComfyUITask, resolveComfyUIBaseUrl, comfyUIUnreachableError } from "./providers/comfyui";
 import { submitReplicateTask } from "./providers/replicate";
 import { clearFalInputMappingCache as _clearFalInputMappingCache, submitFalTask } from "./providers/fal";
 import { submitKieTask } from "./providers/kie";
@@ -165,6 +166,64 @@ export async function POST(request: NextRequest) {
     console.log(`[API:${requestId}] Provider: ${provider}, Model: ${selectedModel?.modelId || model}`);
 
     // Route to appropriate provider
+    if (provider === "comfyui") {
+      if (!selectedModel?.modelId) {
+        return NextResponse.json<GenerateResponse>(
+          { success: false, error: "selectedModel with a checkpoint modelId is required for ComfyUI" },
+          { status: 400 }
+        );
+      }
+
+      const baseUrl = resolveComfyUIBaseUrl(request.headers.get("X-ComfyUI-URL"));
+
+      // The generic mask plumbing appends the mask as a final reference image
+      // plus a text instruction — meaningless to Stable Diffusion checkpoints.
+      // Strip both; ComfyUI inpainting needs a dedicated graph (out of v1 scope).
+      let comfyImages = images ? [...images] : [];
+      let comfyPrompt = prompt || "";
+      if (typeof maskImage === "string" && maskImage.length > 0) {
+        comfyImages = comfyImages.filter((img) => img !== maskImage);
+        comfyPrompt = comfyPrompt.replace(MASK_INSTRUCTION, "").trim();
+      }
+
+      const genInput: GenerationInput = {
+        model: {
+          id: selectedModel.modelId,
+          name: selectedModel.displayName || selectedModel.modelId,
+          provider: "comfyui",
+          capabilities: capabilitiesForMediaType(mediaType),
+          description: null,
+        },
+        prompt: comfyPrompt,
+        images: comfyImages,
+        parameters,
+      };
+
+      try {
+        const { taskId } = await submitComfyUITask(requestId, baseUrl, genInput, aspectRatio);
+        return NextResponse.json<GenerateResponse>({
+          success: true,
+          polling: true,
+          taskId,
+          pollProvider: 'comfyui',
+          pollModelId: selectedModel.modelId,
+          pollModelName: selectedModel.displayName || selectedModel.modelId,
+          pollMediaType: 'image',
+        });
+      } catch (error) {
+        const unreachable = error instanceof TypeError;
+        return NextResponse.json<GenerateResponse>(
+          {
+            success: false,
+            error: unreachable
+              ? comfyUIUnreachableError(baseUrl)
+              : error instanceof Error ? error.message : "ComfyUI task submission failed",
+          },
+          { status: unreachable ? 502 : 500 }
+        );
+      }
+    }
+
     if (provider === "replicate") {
       if (!selectedModel?.modelId || !selectedModel?.displayName) {
         return NextResponse.json<GenerateResponse>(

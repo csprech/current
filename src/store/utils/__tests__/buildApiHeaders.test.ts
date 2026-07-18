@@ -13,6 +13,7 @@ function makeSettings(
     wavespeed: { id: "wavespeed", name: "WaveSpeed", enabled: true, apiKey: null },
     openai: { id: "openai", name: "OpenAI", enabled: true, apiKey: null },
     ollama: { id: "ollama", name: "Ollama (local)", enabled: true, apiKey: null, baseUrl: null },
+    comfyui: { id: "comfyui", name: "ComfyUI (local)", enabled: true, apiKey: null, baseUrl: null },
   };
   for (const [key, val] of Object.entries(overrides)) {
     if (defaults[key]) {
@@ -66,6 +67,18 @@ describe("buildGenerateHeaders", () => {
 
   it("should handle unknown provider gracefully", () => {
     const headers = buildGenerateHeaders("unknown", makeSettings());
+    expect(headers).toEqual({ "Content-Type": "application/json" });
+  });
+
+  it("should send the daemon URL, not a key, for comfyui", () => {
+    const settings = makeSettings({ comfyui: { baseUrl: "http://gpu-box:8188" } });
+    const headers = buildGenerateHeaders("comfyui", settings);
+    expect(headers["X-ComfyUI-URL"]).toBe("http://gpu-box:8188");
+    expect(Object.keys(headers).filter((h) => h.toLowerCase().includes("key"))).toEqual([]);
+  });
+
+  it("should omit X-ComfyUI-URL when no base URL is configured", () => {
+    const headers = buildGenerateHeaders("comfyui", makeSettings());
     expect(headers).toEqual({ "Content-Type": "application/json" });
   });
 });

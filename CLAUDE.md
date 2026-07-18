@@ -39,6 +39,7 @@ FAL_API_KEY=...         # fal.ai models
 KIE_API_KEY=...         # Kie.ai models (Sora, Veo, Kling, ...)
 WAVESPEED_API_KEY=...   # WaveSpeed models
 OLLAMA_URL=...          # Local Ollama daemon (defaults to http://localhost:11434; no key needed)
+COMFYUI_URL=...         # Local ComfyUI daemon (defaults to http://localhost:8188; no key needed)
 ```
 
 ## Architecture Overview
@@ -109,6 +110,8 @@ LLM models:
 - Ollama (local, free, no key): free-text model name; installed models are discovered from the daemon via `/api/ollama/models` (`GET {base}/api/tags`). The shared provider/model catalog lives in `src/lib/llmCatalog.ts` — LLM UI surfaces import it instead of hardcoding lists. Base URL precedence: `X-Ollama-URL` header → `OLLAMA_URL` env → `http://localhost:11434`. Ollama LLM runs cost $0 in estimation.
 
 Additional providers (Replicate, fal.ai, Kie.ai, WaveSpeed) expose their catalogs through `/api/models`; the model browser and MCP `list_models` tool read from it.
+
+Image generation via local ComfyUI (`src/app/api/generate/providers/comfyui.ts`): installed checkpoints are discovered from `GET {base}/object_info/CheckpointLoaderSimple` and appear in the model browser as $0 models when the daemon is reachable (absent daemon = silently out of the catalog). Generation submits a standard checkpoint→KSampler graph to `POST /prompt` and polls `/history/{id}` through the shared submit+poll pipeline; img2img uploads the first reference image. Base URL precedence: `X-ComfyUI-URL` header → `COMFYUI_URL` env → `http://localhost:8188`. ComfyUI runs cost $0 in estimation.
 
 ## Node Types (27)
 

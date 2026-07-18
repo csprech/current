@@ -19,6 +19,7 @@ const PROVIDER_HEADER_MAP: Record<ProviderType, string> = {
   openai: "X-OpenAI-API-Key",
   anthropic: "X-Anthropic-API-Key",
   ollama: "", // local daemon — configured by URL (X-Ollama-URL), not a key
+  comfyui: "", // local daemon — configured by URL (X-ComfyUI-URL), not a key
 };
 
 /**
@@ -39,6 +40,14 @@ export function buildGenerateHeaders(
     const config = providerSettings.providers[providerKey];
     if (config?.apiKey) {
       headers[headerName] = config.apiKey;
+    }
+  }
+
+  // ComfyUI is addressed by daemon URL rather than an API key
+  if (providerKey === "comfyui") {
+    const config = providerSettings.providers.comfyui;
+    if (config?.baseUrl) {
+      headers["X-ComfyUI-URL"] = config.baseUrl;
     }
   }
 

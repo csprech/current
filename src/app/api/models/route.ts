@@ -37,6 +37,12 @@ import {
   setCachedWaveSpeedSchemas,
   WaveSpeedApiSchema,
 } from "@/lib/providers/cache";
+import {
+  fetchComfyUICheckpoints,
+  resolveComfyUIBaseUrl,
+  comfyUIUnreachableError,
+  checkpointDisplayName,
+} from "@/app/api/generate/providers/comfyui";
 
 // API base URLs
 const REPLICATE_API_BASE = "https://api.replicate.com/v1";
@@ -576,6 +582,21 @@ const GEMINI_VIDEO_MODELS: ProviderModel[] = [
 ];
 
 // WaveSpeed models are now fetched dynamically from https://api.wavespeed.ai/api/v3/models
+
+// ============ ComfyUI Helpers ============
+
+/** Map installed daemon checkpoints to $0 local models. */
+function mapComfyUICheckpoints(checkpoints: string[]): ProviderModel[] {
+  return checkpoints.map((checkpoint) => ({
+    id: checkpoint,
+    name: checkpointDisplayName(checkpoint),
+    description: "Local checkpoint via ComfyUI — free, private, runs on your GPU.",
+    provider: "comfyui" as const,
+    capabilities: ["text-to-image", "image-to-image"] as ModelCapability[],
+    coverImage: undefined,
+    pricing: { type: "per-run" as const, amount: 0, currency: "USD" },
+  }));
+}
 
 // ============ Replicate Types ============
 
@@ -1230,15 +1251,39 @@ export async function GET(
   if (kieKey) availableProviders.push("kie");
   if (wavespeedKey) availableProviders.push("wavespeed");
 
+  // ComfyUI daemon address (local — needs no key, availability = reachability)
+  const comfyUIBaseUrl = resolveComfyUIBaseUrl(request.headers.get("X-ComfyUI-URL"));
+
   // Determine which providers to fetch from (excluding gemini/kie - handled separately as hardcoded)
   const providersToFetch: ProviderType[] = [];
   let includeGemini = false;
   let includeKie = false;
+  let includeComfyUI = false;
 
   if (providerFilter) {
     if (providerFilter === "gemini") {
       // Only Gemini requested - no external API calls needed
       includeGemini = true;
+    } else if (providerFilter === "comfyui") {
+      // Only ComfyUI requested — probe the local daemon; unreachable is an
+      // explicit error here since the user asked for it specifically.
+      try {
+        const checkpoints = await fetchComfyUICheckpoints(comfyUIBaseUrl);
+        let comfyModels = mapComfyUICheckpoints(checkpoints);
+        if (searchQuery) comfyModels = filterModelsBySearch(comfyModels, searchQuery);
+        return NextResponse.json<ModelsSuccessResponse>({
+          success: true,
+          models: comfyModels,
+          cached: false,
+          providers: { comfyui: { success: true, count: comfyModels.length } },
+          availableProviders: ["gemini", "comfyui"],
+        });
+      } catch {
+        return NextResponse.json<ModelsErrorResponse>(
+          { success: false, error: comfyUIUnreachableError(comfyUIBaseUrl) },
+          { status: 502 }
+        );
+      }
     } else if (providerFilter === "kie") {
       // Only Kie requested - no external API calls needed (hardcoded models)
       if (kieKey) {
@@ -1275,6 +1320,7 @@ export async function GET(
   } else {
     // Include all providers that have keys configured
     includeGemini = true; // Gemini always available
+    includeComfyUI = true; // probed below — an absent daemon is a normal state
     includeKie = kieKey ? true : false; // Kie only if API key is configured
     if (wavespeedKey) {
       providersToFetch.push("wavespeed"); // WaveSpeed if key is configured
@@ -1468,6 +1514,23 @@ export async function GET(
       count: models.length,
       cached: fromCache,
     };
+  }
+
+  // Probe the local ComfyUI daemon last; an absent daemon (or one with no
+  // checkpoints installed) is a normal state and simply stays out of the catalog
+  if (includeComfyUI) {
+    try {
+      const checkpoints = await fetchComfyUICheckpoints(comfyUIBaseUrl);
+      if (checkpoints.length > 0) {
+        let comfyModels = mapComfyUICheckpoints(checkpoints);
+        if (searchQuery) comfyModels = filterModelsBySearch(comfyModels, searchQuery);
+        allModels.push(...comfyModels);
+        providerResults["comfyui"] = { success: true, count: comfyModels.length };
+        availableProviders.push("comfyui");
+      }
+    } catch {
+      // Daemon not running — not an error, just absent from the catalog
+    }
   }
 
   // Check if we got any models

@@ -28,7 +28,7 @@ const AI_NODE_DOCS: Record<NodeType, AINodeDoc> = {
   prompt: { io: "text? → text", purpose: "Text prompt box; can also relay and edit upstream text" },
   array: { io: "text → text (items)", purpose: "Split text into a list; connected generators run once per item (batch)" },
   promptConstructor: { io: "text* → text", purpose: "Prompt template combining upstream texts via @variables" },
-  nanoBanana: { io: "image*, text → image", purpose: "AI image generation; needs a connected text or a prompt typed on the node" },
+  nanoBanana: { io: "image*, text → image", purpose: "AI image generation; needs a connected text or a prompt typed on the node; cloud providers or local ComfyUI checkpoints (free, on-device)" },
   generateVideo: { io: "image/video/audio/text (per model) → video", purpose: "AI video generation; input handles adapt to the selected model" },
   generate3d: { io: "image?, text? → 3d", purpose: "AI 3D model generation (text-to-3D or image-to-3D)" },
   generateAudio: { io: "text → audio", purpose: "AI audio generation (speech, music, sound effects)" },

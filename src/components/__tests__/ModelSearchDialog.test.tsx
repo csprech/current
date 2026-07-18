@@ -756,6 +756,9 @@ describe("ModelSearchDialog", () => {
         expect(options.headers).toEqual({
           "X-Replicate-Key": "test-replicate-key",
           "X-Fal-Key": "test-fal-key",
+          // Always present: the default local ComfyUI daemon address rides
+          // along so the server probes it for installed checkpoints
+          "X-ComfyUI-URL": "http://localhost:8188",
         });
       });
     });

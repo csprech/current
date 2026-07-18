@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useWorkflowStore, useProviderApiKeys } from "@/store/workflowStore";
+import { getProviderSettings } from "@/store/utils/localStorage";
 import { deduplicatedFetch, clearFetchCache } from "@/utils/deduplicatedFetch";
 import { useReactFlow } from "@xyflow/react";
 import { ProviderType, RecentModel } from "@/types";
@@ -241,6 +242,12 @@ export function ModelSearchDialog({
       if (wavespeedApiKey) {
         headers["X-WaveSpeed-Key"] = wavespeedApiKey;
       }
+      // ComfyUI is addressed by daemon URL, not a key — forward the configured
+      // address so the server probes the right daemon for installed checkpoints
+      const comfyUIBaseUrl = getProviderSettings().providers.comfyui?.baseUrl;
+      if (comfyUIBaseUrl) {
+        headers["X-ComfyUI-URL"] = comfyUIBaseUrl;
+      }
 
       const response = await deduplicatedFetch(`/api/models?${params.toString()}`, {
         headers,
@@ -378,6 +385,8 @@ export function ModelSearchDialog({
         return "Kie.ai";
       case "wavespeed":
         return "WaveSpeed";
+      case "comfyui":
+        return "ComfyUI";
       default:
         return provider;
     }

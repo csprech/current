@@ -63,6 +63,13 @@ describe("estimateNodeRunCost", () => {
     expect(estimateNodeRunCost(node)).toBe(0);
   });
 
+  it("returns 0 for image generation on ComfyUI (local daemon, free)", () => {
+    const node = makeNode("1", "nanoBanana", {
+      selectedModel: { provider: "comfyui", modelId: "sd_xl_base_1.0.safetensors", displayName: "sd_xl_base_1.0" },
+    });
+    expect(estimateNodeRunCost(node)).toBe(0);
+  });
+
   it("still returns null for cloud llmGenerate providers", () => {
     const node = makeNode("1", "llmGenerate", { provider: "google", model: "gemini-3-flash-preview" });
     expect(estimateNodeRunCost(node)).toBeNull();
