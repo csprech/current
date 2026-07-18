@@ -58,6 +58,7 @@ const createDefaultProps = (overrides = {}) => ({
 const createDefaultState = (overrides = {}) => ({
   edgeStyle: "angular" as const,
   nodes: [],
+  edges: [],
   ...overrides,
 });
 
@@ -394,6 +395,83 @@ describe("EditableEdge", () => {
       const paths = container.querySelectorAll("path");
       // Base edge path + interaction path = 2 minimum
       expect(paths.length).toBeLessThanOrEqual(3);
+    });
+  });
+
+  describe("Image Order Badges", () => {
+    const twoImageEdges = [
+      { id: "edge-1", source: "node-1", target: "node-2", targetHandle: "image", data: {} },
+      { id: "edge-2", source: "node-3", target: "node-2", targetHandle: "image", data: {} },
+    ];
+
+    it("numbers each wire when several images feed the same input", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => {
+        return selector(createDefaultState({ edges: twoImageEdges }));
+      });
+
+      const first = render(
+        <TestWrapper>
+          <EditableEdge {...createDefaultProps({ id: "edge-1" })} />
+        </TestWrapper>
+      );
+      expect(first.container.querySelector('[aria-label="Image 1"]')).toHaveTextContent("1");
+      first.unmount();
+
+      const second = render(
+        <TestWrapper>
+          <EditableEdge {...createDefaultProps({ id: "edge-2", source: "node-3" })} />
+        </TestWrapper>
+      );
+      expect(second.container.querySelector('[aria-label="Image 2"]')).toHaveTextContent("2");
+    });
+
+    it("shows no badge for a lone image wire", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => {
+        return selector(createDefaultState({ edges: [twoImageEdges[0]] }));
+      });
+
+      const { container } = render(
+        <TestWrapper>
+          <EditableEdge {...createDefaultProps({ id: "edge-1" })} />
+        </TestWrapper>
+      );
+      expect(container.querySelector('[aria-label^="Image "]')).not.toBeInTheDocument();
+    });
+
+    it("ignores loop edges when counting image inputs", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => {
+        return selector(createDefaultState({
+          edges: [
+            twoImageEdges[0],
+            { ...twoImageEdges[1], data: { isLoop: true } },
+          ],
+        }));
+      });
+
+      const { container } = render(
+        <TestWrapper>
+          <EditableEdge {...createDefaultProps({ id: "edge-1" })} />
+        </TestWrapper>
+      );
+      expect(container.querySelector('[aria-label^="Image "]')).not.toBeInTheDocument();
+    });
+
+    it("does not number text wires", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => {
+        return selector(createDefaultState({
+          edges: [
+            { id: "edge-1", source: "node-1", target: "node-2", targetHandle: "text", data: {} },
+            { id: "edge-2", source: "node-3", target: "node-2", targetHandle: "text", data: {} },
+          ],
+        }));
+      });
+
+      const { container } = render(
+        <TestWrapper>
+          <EditableEdge {...createDefaultProps({ id: "edge-1", sourceHandleId: "text", targetHandleId: "text" })} />
+        </TestWrapper>
+      );
+      expect(container.querySelector('[aria-label^="Image "]')).not.toBeInTheDocument();
     });
   });
 

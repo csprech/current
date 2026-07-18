@@ -65,6 +65,20 @@ export function EditableEdge({
     return getHandlePresentation(normalizeHandleType(sourceHandleId || targetHandleId)).color;
   }, [hasPause, sourceHandleId, targetHandleId]);
 
+  // 1-based position of this wire among the images feeding the same "image"
+  // input, or 0 when it isn't part of a multi-image fan-in. Mirrors
+  // getConnectedInputs' collection order (state.edges order), which is exactly
+  // the order the images reach the model — so "image 2" in a prompt is the
+  // wire badged 2. Loop edges re-feed outputs and stay unnumbered.
+  const imageOrder = useWorkflowStore((state) => {
+    if (targetHandleId !== "image" || edgeData?.isLoop) return 0;
+    const siblings = state.edges.filter(
+      (e) => e.target === target && e.targetHandle === "image" && !e.data?.isLoop
+    );
+    if (siblings.length < 2) return 0;
+    return siblings.findIndex((e) => e.id === id) + 1;
+  });
+
   // Reference shared gradient by color key + selection state
   const gradientId = useMemo(() => {
     if (edgeData?.isLoop) {
@@ -261,6 +275,34 @@ export function EditableEdge({
         stroke="transparent"
         className="react-flow__edge-interaction"
       />
+
+      {/* Image-order badge: which reference this wire is when several images
+          feed one input ("image 2" in a prompt = the wire badged 2). Sits at
+          the wire's midpoint — at the shared target handle the wires converge
+          and the badges would stack unreadably. */}
+      {imageOrder > 0 && (
+        <g
+          transform={`translate(${labelX}, ${labelY})`}
+          className="pointer-events-none"
+          aria-label={`Image ${imageOrder}`}
+        >
+          <circle
+            r={8}
+            fill="var(--current-surface-elevated)"
+            stroke={edgeColor}
+            strokeWidth={1.5}
+          />
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={9}
+            fontWeight={600}
+            fill={edgeColor}
+          >
+            {imageOrder}
+          </text>
+        </g>
+      )}
 
       {/* Pause indicator near target connection point */}
       {hasPause && (
