@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { useMediaViewerStore } from "@/store/mediaViewerStore";
 import { formatCost, estimateNodeRunCost } from "@/utils/costCalculator";
+import { recallGeneration, rememberGeneration } from "@/utils/generationCache";
 import { downloadMedia } from "@/utils/downloadMedia";
 import type {
   CarouselImageItem,
@@ -31,7 +32,9 @@ async function loadHistoryMedia(
   cacheKey: string,
   itemId: string
 ): Promise<string | null> {
-  const cached = mediaCache.get(cacheKey);
+  // The executors drop each generation into the shared session cache, so the
+  // viewer can show this run's history even with no generations folder.
+  const cached = mediaCache.get(cacheKey) ?? recallGeneration(cacheKey);
   if (cached) return cached;
   if (!generationsPath) return null;
 
@@ -44,7 +47,10 @@ async function loadHistoryMedia(
     const result = await response.json();
     if (!result.success) return null;
     const media = result.video || result.image || null;
-    if (media) mediaCache.set(cacheKey, media);
+    if (media) {
+      mediaCache.set(cacheKey, media);
+      rememberGeneration(cacheKey, media);
+    }
     return media;
   } catch {
     return null;
@@ -162,7 +168,7 @@ export function NodeMediaViewerModal() {
       return;
     }
     const cacheKey = `${viewerNodeId}:${selectedItem.id}`;
-    const cached = mediaCache.get(cacheKey);
+    const cached = mediaCache.get(cacheKey) ?? recallGeneration(cacheKey);
     if (cached) {
       setSelectedMedia(cached);
       return;

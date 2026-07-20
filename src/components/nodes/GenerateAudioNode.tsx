@@ -19,6 +19,7 @@ import { InlinePromptField } from "./InlinePromptField";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { downloadMedia } from "@/utils/downloadMedia";
+import { recallGeneration, rememberGeneration, generationCacheKey } from "@/utils/generationCache";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 
@@ -129,12 +130,11 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
     regenerateNode(id);
   }, [id, regenerateNode]);
 
-  // Load audio by ID from generations folder
+  // Load audio by ID from the session cache, then the generations folder
   const loadAudioById = useCallback(async (audioId: string) => {
-    if (!generationsPath) {
-      console.error("Generations path not configured");
-      return null;
-    }
+    const cached = recallGeneration(generationCacheKey(id, audioId));
+    if (cached) return cached;
+    if (!generationsPath) return null;
 
     try {
       const response = await fetch("/api/load-generation", {
@@ -151,12 +151,14 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
         console.log(`Audio not found: ${audioId}`);
         return null;
       }
-      return result.audio || result.image;
+      const media = result.audio || result.image;
+      if (media) rememberGeneration(generationCacheKey(id, audioId), media);
+      return media;
     } catch (error) {
       console.warn("Error loading audio:", error);
       return null;
     }
-  }, [generationsPath]);
+  }, [id, generationsPath]);
 
   // Carousel navigation handlers
   const handleCarouselPrevious = useCallback(async () => {

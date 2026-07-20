@@ -10,6 +10,7 @@ import type {
   SelectedModel,
 } from "@/types";
 import { calculateGenerationCost } from "@/utils/costCalculator";
+import { rememberGeneration, rekeyGeneration, generationCacheKey } from "@/utils/generationCache";
 import { buildGenerateHeaders } from "@/store/utils/buildApiHeaders";
 import { pollGenerateTask } from "./pollTaskCompletion";
 import { runWithFallback } from "./runWithFallback";
@@ -186,6 +187,9 @@ async function executeNanoBananaOnce(
         const timestamp = Date.now();
         const imageId = `${timestamp}`;
 
+        // Keep this session's history navigable even without a generations folder
+        rememberGeneration(generationCacheKey(node.id, imageId), result.image);
+
         // Save to global history
         addToGlobalHistory({
           image: result.image,
@@ -248,6 +252,10 @@ async function executeNanoBananaOnce(
             .then((res) => res.json())
             .then((saveResult) => {
               if (saveResult.success && saveResult.imageId && saveResult.imageId !== imageId) {
+                rekeyGeneration(
+                  generationCacheKey(node.id, imageId),
+                  generationCacheKey(node.id, saveResult.imageId)
+                );
                 const currentNode = getNodes().find((n) => n.id === node.id);
                 if (currentNode) {
                   const currentData = currentNode.data as NanoBananaNodeData;

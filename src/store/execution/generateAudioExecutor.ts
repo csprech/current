@@ -6,6 +6,7 @@
  */
 
 import type { GenerateAudioNodeData, SelectedModel } from "@/types";
+import { rememberGeneration, rekeyGeneration, generationCacheKey } from "@/utils/generationCache";
 import { buildGenerateHeaders } from "@/store/utils/buildApiHeaders";
 import { pollGenerateTask } from "./pollTaskCompletion";
 import { runWithFallback } from "./runWithFallback";
@@ -152,6 +153,9 @@ export async function executeGenerateAudio(
         const timestamp = Date.now();
         const audioId = `${timestamp}`;
 
+        // Keep this session's history navigable even without a generations folder
+        rememberGeneration(generationCacheKey(node.id, audioId), audioData);
+
         // Add to node's audio history
         const newHistoryItem = {
           id: audioId,
@@ -189,6 +193,10 @@ export async function executeGenerateAudio(
             .then((res) => res.json())
             .then((saveResult) => {
               if (saveResult.success && saveResult.imageId && saveResult.imageId !== audioId) {
+                rekeyGeneration(
+                  generationCacheKey(node.id, audioId),
+                  generationCacheKey(node.id, saveResult.imageId)
+                );
                 const currentNode = getNodes().find((n) => n.id === node.id);
                 if (currentNode) {
                   const currentData = currentNode.data as GenerateAudioNodeData;

@@ -18,6 +18,7 @@ import { InlineParameterPanel } from "./InlineParameterPanel";
 import { InlinePromptField } from "./InlinePromptField";
 import { VariantCountPicker } from "./VariantCountPicker";
 import { useMediaViewerStore } from "@/store/mediaViewerStore";
+import { recallGeneration, rememberGeneration, generationCacheKey } from "@/utils/generationCache";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { ComfyUIParameters } from "./ComfyUIParameters";
 import { browseRegistry } from "@/utils/browseRegistry";
@@ -323,10 +324,11 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
   }, [id, regenerateNode]);
 
   const loadImageById = useCallback(async (imageId: string) => {
-    if (!generationsPath) {
-      console.error("Generations path not configured");
-      return null;
-    }
+    // This session's generations are cached in memory, so history works
+    // even when no generations folder is configured
+    const cached = recallGeneration(generationCacheKey(id, imageId));
+    if (cached) return cached;
+    if (!generationsPath) return null;
 
     try {
       const response = await fetch("/api/load-generation", {
@@ -344,12 +346,13 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
         console.log(`Image not found: ${imageId}`);
         return null;
       }
+      rememberGeneration(generationCacheKey(id, imageId), result.image);
       return result.image;
     } catch (error) {
       console.warn("Error loading image:", error);
       return null;
     }
-  }, [generationsPath]);
+  }, [id, generationsPath]);
 
   const handleCarouselPrevious = useCallback(async () => {
     const history = nodeData.imageHistory || [];

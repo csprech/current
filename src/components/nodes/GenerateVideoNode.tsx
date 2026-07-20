@@ -23,6 +23,7 @@ import { useMediaViewerStore } from "@/store/mediaViewerStore";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { downloadMedia } from "@/utils/downloadMedia";
+import { recallGeneration, rememberGeneration, generationCacheKey } from "@/utils/generationCache";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 
@@ -244,12 +245,11 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
     regenerateNode(id);
   }, [id, regenerateNode]);
 
-  // Load video by ID from generations folder
+  // Load video by ID from the session cache, then the generations folder
   const loadVideoById = useCallback(async (videoId: string) => {
-    if (!generationsPath) {
-      console.error("Generations path not configured");
-      return null;
-    }
+    const cached = recallGeneration(generationCacheKey(id, videoId));
+    if (cached) return cached;
+    if (!generationsPath) return null;
 
     try {
       const response = await fetch("/api/load-generation", {
@@ -267,12 +267,14 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
         console.log(`Video not found: ${videoId}`);
         return null;
       }
-      return result.video || result.image;
+      const media = result.video || result.image;
+      if (media) rememberGeneration(generationCacheKey(id, videoId), media);
+      return media;
     } catch (error) {
       console.warn("Error loading video:", error);
       return null;
     }
-  }, [generationsPath]);
+  }, [id, generationsPath]);
 
   // Carousel navigation handlers
   const handleCarouselPrevious = useCallback(async () => {

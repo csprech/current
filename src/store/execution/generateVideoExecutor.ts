@@ -6,6 +6,7 @@
  */
 
 import type { GenerateVideoNodeData, SelectedModel } from "@/types";
+import { rememberGeneration, rekeyGeneration, generationCacheKey } from "@/utils/generationCache";
 import { buildGenerateHeaders } from "@/store/utils/buildApiHeaders";
 import { pollGenerateTask } from "./pollTaskCompletion";
 import { runWithFallback } from "./runWithFallback";
@@ -165,6 +166,9 @@ async function executeGenerateVideoOnce(
         const timestamp = Date.now();
         const videoId = `${timestamp}`;
 
+        // Keep this session's history navigable even without a generations folder
+        rememberGeneration(generationCacheKey(node.id, videoId), outputContent);
+
         // Add to node's video history
         const newHistoryItem = {
           id: videoId,
@@ -206,6 +210,10 @@ async function executeGenerateVideoOnce(
             .then((res) => res.json())
             .then((saveResult) => {
               if (saveResult.success && saveResult.imageId && saveResult.imageId !== videoId) {
+                rekeyGeneration(
+                  generationCacheKey(node.id, videoId),
+                  generationCacheKey(node.id, saveResult.imageId)
+                );
                 const currentNode = getNodes().find((n) => n.id === node.id);
                 if (currentNode) {
                   const currentData = currentNode.data as GenerateVideoNodeData;
