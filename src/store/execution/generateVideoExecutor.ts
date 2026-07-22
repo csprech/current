@@ -7,6 +7,7 @@
 
 import type { GenerateVideoNodeData, SelectedModel } from "@/types";
 import { rememberGeneration, rekeyGeneration, generationCacheKey } from "@/utils/generationCache";
+import { nudgeUnsavedGeneration } from "@/utils/unsavedGenerationNudge";
 import { buildGenerateHeaders } from "@/store/utils/buildApiHeaders";
 import { pollGenerateTask } from "./pollTaskCompletion";
 import { runWithFallback } from "./runWithFallback";
@@ -231,6 +232,8 @@ async function executeGenerateVideoOnce(
             });
 
           trackSaveGeneration(videoId, savePromise);
+        } else {
+          nudgeUnsavedGeneration();
         }
       } else {
         updateNodeData(node.id, {

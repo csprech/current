@@ -28,6 +28,7 @@ import {
 } from "@/types";
 import { UndoManager, UndoSnapshot, clonePreservingStrings } from "./undoHistory";
 import { useToast } from "@/components/Toast";
+import { flushSessionGenerationsToFolder } from "@/utils/flushSessionGenerations";
 import { logger } from "@/utils/logger";
 import { externalizeWorkflowMedia, hydrateWorkflowMedia } from "@/utils/mediaStorage";
 import { buildShareableWorkflow } from "@/utils/shareableWorkflow";
@@ -2472,6 +2473,33 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       saveDirectoryPath: path,
       generationsPath: derivedGenerationsPath,
     });
+
+    // Media generated before this canvas had a generations folder exists only
+    // in the session cache — write it to disk now so history survives reload.
+    // Registered in pendingImageSyncs so the save that follows waits for the
+    // flush and serializes the renamed on-disk ids. Idempotent (the API
+    // dedupes by content hash), so every save may retry.
+    if (derivedGenerationsPath) {
+      const flushPromise = flushSessionGenerationsToFolder(
+        get().nodes,
+        derivedGenerationsPath,
+        () => get().nodes,
+        get().updateNodeData
+      )
+        .then((saved) => {
+          if (saved > 0) {
+            useToast
+              .getState()
+              .show(
+                `Saved ${saved} generation${saved === 1 ? "" : "s"} to the project folder`,
+                "success"
+              );
+          }
+        })
+        .catch(() => undefined);
+      pendingImageSyncs.set("session-generation-flush", flushPromise);
+      flushPromise.finally(() => pendingImageSyncs.delete("session-generation-flush"));
+    }
   },
 
   setWorkflowName: (name: string) => {
