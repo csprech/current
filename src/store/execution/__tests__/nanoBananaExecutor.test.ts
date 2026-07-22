@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { executeNanoBanana } from "../nanoBananaExecutor";
 import type { NodeExecutionContext } from "../types";
 import type { WorkflowNode } from "@/types";
+import { recallGeneration, generationCacheKey, clearGenerationCache } from "@/utils/generationCache";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -132,6 +133,26 @@ describe("executeNanoBanana", () => {
 
     const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
     expect(body.prompt).toBe("inline fox");
+  });
+
+  it("caches the generation so history stays navigable without a generations folder", async () => {
+    clearGenerationCache();
+    const node = makeNode();
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, image: "data:image/png;base64,kept" }),
+    });
+
+    const ctx = makeCtx(node); // generationsPath: null — nothing is written to disk
+
+    await executeNanoBanana(ctx);
+
+    const historyUpdate = (ctx.updateNodeData as ReturnType<typeof vi.fn>).mock.calls
+      .map(([, update]) => update as Record<string, unknown>)
+      .find((update) => update.imageHistory);
+    const itemId = (historyUpdate!.imageHistory as Array<{ id: string }>)[0].id;
+
+    expect(recallGeneration(generationCacheKey("gen-1", itemId))).toBe("data:image/png;base64,kept");
   });
 
   it("should prefer connected text over the inline prompt", async () => {
