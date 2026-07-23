@@ -29,6 +29,7 @@ import {
 import { UndoManager, UndoSnapshot, clonePreservingStrings } from "./undoHistory";
 import { useToast } from "@/components/Toast";
 import { flushSessionGenerationsToFolder } from "@/utils/flushSessionGenerations";
+import { computeRunSignature, GENERATOR_OUTPUT_FIELDS } from "@/lib/workflow/runSignature";
 import { logger } from "@/utils/logger";
 import { externalizeWorkflowMedia, hydrateWorkflowMedia } from "@/utils/mediaStorage";
 import { buildShareableWorkflow } from "@/utils/shareableWorkflow";
@@ -60,6 +61,8 @@ import {
   CONCURRENCY_SETTINGS_KEY,
   loadConcurrencySetting,
   saveConcurrencySetting,
+  loadSmartRerunSetting,
+  saveSmartRerunSetting,
   groupNodesByLevel,
   chunk,
   clearNodeImageRefs,
@@ -311,6 +314,7 @@ interface WorkflowStore {
   currentNodeIds: string[];  // Changed from currentNodeId for parallel execution
   pausedAtNodeId: string | null;
   maxConcurrentCalls: number;  // Configurable concurrency limit (1-10)
+  smartRerunEnabled: boolean;  // Reuse generator outputs when inputs are unchanged
   _abortController: AbortController | null;  // Internal: for cancellation
   _buildExecutionContext: (node: WorkflowNode, signal?: AbortSignal) => NodeExecutionContext;
   executeWorkflow: (startFromNodeId?: string) => Promise<void>;
@@ -319,6 +323,7 @@ interface WorkflowStore {
   stopWorkflow: () => void;
   mockTutorialExecution: () => Promise<void>;
   setMaxConcurrentCalls: (value: number) => void;
+  setSmartRerunEnabled: (enabled: boolean) => void;
 
   // Save/Load
   saveWorkflow: (name?: string) => void;
@@ -644,6 +649,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   currentNodeIds: [],  // Changed from currentNodeId for parallel execution
   pausedAtNodeId: null,
   maxConcurrentCalls: loadConcurrencySetting(),  // Default 3, configurable 1-10
+  smartRerunEnabled: loadSmartRerunSetting(),  // Skip unchanged generators on re-run
   _abortController: null,  // Internal: for cancellation
   globalImageHistory: [],
 
@@ -1319,6 +1325,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
     // Create AbortController for this execution run
     const abortController = new AbortController();
     const isResuming = startFromNodeId === get().pausedAtNodeId;
+    let reusedGenerationCount = 0;
     const resetSkippedNodes = () => {
       for (const skippedId of get().skippedNodeIds) {
         const skippedNode = get().nodes.find((n) => n.id === skippedId);
@@ -1422,12 +1429,55 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
         return;
       }
 
+      // Smart re-run: a generator whose inputs and settings match its last
+      // successful run still holds that output — reuse it instead of paying
+      // for an identical run. Explicit intents always re-run: "run from
+      // here" targets its start node, and per-node/selected runs never pass
+      // through this path.
+      const generatorOutputField = GENERATOR_OUTPUT_FIELDS[node.type ?? ""];
+      if (
+        generatorOutputField &&
+        get().smartRerunEnabled &&
+        node.id !== startFromNodeId &&
+        nodeData.status !== "error" &&
+        !!nodeData[generatorOutputField] &&
+        typeof nodeData.__lastRunSignature === "string"
+      ) {
+        const signature = computeRunSignature(
+          node.type ?? "",
+          nodeData,
+          get().getConnectedInputs(node.id)
+        );
+        if (signature === nodeData.__lastRunSignature) {
+          reusedGenerationCount++;
+          logger.info('node.execution', 'Reused cached output (inputs unchanged)', {
+            nodeId: node.id,
+            nodeType: node.type,
+          });
+          return;
+        }
+      }
+
       logger.info('node.execution', `Executing ${node.type} node`, {
         nodeId: node.id,
         nodeType: node.type,
       });
 
       const executionCtx = get()._buildExecutionContext(node, signal);
+
+      // After a successful generator run, record what produced the output so
+      // an unchanged re-run can skip this node.
+      const stampRunSignature = () => {
+        const fresh = get().nodes.find((n) => n.id === node.id);
+        if (!fresh) return;
+        get().updateNodeData(node.id, {
+          __lastRunSignature: computeRunSignature(
+            node.type ?? "",
+            fresh.data as Record<string, unknown>,
+            get().getConnectedInputs(node.id)
+          ),
+        } as Partial<WorkflowNodeData>);
+      };
 
       // Batch mode: for generate-type nodes, detect textItems and loop through them
       if (await runBatchIfApplicable(executionCtx)) {
@@ -1471,18 +1521,23 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
             break;
           case "nanoBanana":
             await executeNanoBanana(executionCtx);
+            stampRunSignature();
             break;
           case "generateVideo":
             await executeGenerateVideo(executionCtx);
+            stampRunSignature();
             break;
           case "generate3d":
             await executeGenerate3D(executionCtx);
+            stampRunSignature();
             break;
           case "generateAudio":
             await executeGenerateAudio(executionCtx);
+            stampRunSignature();
             break;
           case "llmGenerate":
             await executeLlmGenerate(executionCtx);
+            stampRunSignature();
             break;
           case "splitGrid":
             await executeSplitGrid(executionCtx);
@@ -1698,6 +1753,14 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       // Check if we completed or were aborted
       if (!abortController.signal.aborted && get().isRunning) {
         logger.info('workflow.end', 'Workflow execution completed successfully');
+        if (reusedGenerationCount > 0) {
+          useToast
+            .getState()
+            .show(
+              `Reused ${reusedGenerationCount} unchanged generation${reusedGenerationCount === 1 ? "" : "s"} — run a node directly to redo it`,
+              "info"
+            );
+        }
       }
 
       // Reset skipped nodes' status back to idle
@@ -1830,6 +1893,11 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
     const clamped = Math.max(1, Math.min(10, value));
     saveConcurrencySetting(clamped);
     set({ maxConcurrentCalls: clamped });
+  },
+
+  setSmartRerunEnabled: (enabled: boolean) => {
+    saveSmartRerunSetting(enabled);
+    set({ smartRerunEnabled: enabled });
   },
 
   regenerateNode: async (nodeId: string) => {

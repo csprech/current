@@ -19,6 +19,12 @@ export interface BaseNodeData extends Record<string, unknown> {
    * set to false; other node types ignore this.
    */
   isTemplateInput?: boolean;
+  /**
+   * Signature of the inputs + settings of this node's last successful run.
+   * Generate-family nodes use it to skip re-running (and re-billing) when
+   * nothing feeding them changed. See lib/workflow/runSignature.
+   */
+  __lastRunSignature?: string;
 }
 
 // Shape type discriminator

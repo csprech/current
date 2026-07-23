@@ -20,6 +20,8 @@ export function RunControl() {
     stopWorkflow,
     mockTutorialExecution,
     validateWorkflow,
+    smartRerunEnabled,
+    setSmartRerunEnabled,
   } = useWorkflowStore(useShallow((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -31,6 +33,8 @@ export function RunControl() {
     stopWorkflow: state.stopWorkflow,
     mockTutorialExecution: state.mockTutorialExecution,
     validateWorkflow: state.validateWorkflow,
+    smartRerunEnabled: state.smartRerunEnabled,
+    setSmartRerunEnabled: state.setSmartRerunEnabled,
   })));
   const initialTutorialState = useFTUXStore.getState();
   const [tutorialState, setTutorialState] = useState(() => ({
@@ -242,6 +246,15 @@ export function RunControl() {
             {selectedNodes.length > 0
               ? `Run ${selectedNodes.length} selected node${selectedNodes.length === 1 ? "" : "s"}`
               : "Run selected nodes"}
+          </button>
+          <button
+            type="button"
+            role="menuitemcheckbox"
+            aria-checked={smartRerunEnabled}
+            title="Skip generators whose inputs and settings are unchanged since their last run. Run a node directly to always regenerate it."
+            onClick={() => setSmartRerunEnabled(!smartRerunEnabled)}
+          >
+            {smartRerunEnabled ? "✓ " : ""}Reuse unchanged results
           </button>
         </div>
       )}

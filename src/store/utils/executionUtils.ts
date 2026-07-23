@@ -11,6 +11,7 @@ import { getSourceOutput } from "./connectedInputs";
 // Concurrency settings
 export const CONCURRENCY_SETTINGS_KEY = "current-concurrency-limit";
 export const DEFAULT_MAX_CONCURRENT_CALLS = 3;
+export const SMART_RERUN_KEY = "current-smart-rerun";
 
 /**
  * Provider credentials are user-configurable prerequisites, not application
@@ -35,6 +36,17 @@ export const loadConcurrencySetting = (): number => {
     }
   }
   return DEFAULT_MAX_CONCURRENT_CALLS;
+};
+
+/** Smart re-run (skip unchanged generators) — on unless explicitly disabled. */
+export const loadSmartRerunSetting = (): boolean => {
+  if (typeof window === "undefined") return true;
+  return localStorage.getItem(SMART_RERUN_KEY) !== "false";
+};
+
+export const saveSmartRerunSetting = (enabled: boolean): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SMART_RERUN_KEY, String(enabled));
 };
 
 /**
