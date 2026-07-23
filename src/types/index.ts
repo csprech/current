@@ -8,6 +8,7 @@
 // Domain re-exports
 export * from "./annotation";
 export * from "./nodes";
+export * from "./subjects";
 export * from "./providers";
 export * from "./models";
 export * from "./workflow";

@@ -89,12 +89,15 @@ function fnv1a(text: string): string {
 
 /**
  * Signature of what this run would consume: connected inputs + the node's
- * generation-relevant settings.
+ * generation-relevant settings. `extras` carries generation-relevant content
+ * that lives OUTSIDE node data — e.g. the resolved subject reference, whose
+ * photos can change without the node's `subjectId` changing.
  */
 export function computeRunSignature(
   nodeType: string,
   nodeData: Record<string, unknown>,
-  inputs: ConnectedInputs
+  inputs: ConnectedInputs,
+  extras?: unknown
 ): string {
   const settings: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(nodeData)) {
@@ -116,6 +119,7 @@ export function computeRunSignature(
       control: inputs.control ?? null,
     },
     settings,
+    extras: extras ?? null,
   });
 
   // Length folded in alongside the hash makes accidental collisions across

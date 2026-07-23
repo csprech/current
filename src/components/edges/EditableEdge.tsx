@@ -69,14 +69,22 @@ export function EditableEdge({
   // input, or 0 when it isn't part of a multi-image fan-in. Mirrors
   // getConnectedInputs' collection order (state.edges order), which is exactly
   // the order the images reach the model — so "image 2" in a prompt is the
-  // wire badged 2. Loop edges re-feed outputs and stay unnumbered.
+  // wire badged 2. An attached subject's reference photos are prepended by
+  // the executor, so they occupy the first slots and shift wire numbering.
+  // Loop edges re-feed outputs and stay unnumbered.
   const imageOrder = useWorkflowStore((state) => {
     if (targetHandleId !== "image" || edgeData?.isLoop) return 0;
+    const targetNode = state.nodes.find((n) => n.id === target);
+    const subjectId = (targetNode?.data as { subjectId?: string | null } | undefined)?.subjectId;
+    const subject = subjectId ? state.subjects?.find((s) => s.id === subjectId) : undefined;
+    const subjectImageCount = subject?.images.length ?? 0;
     const siblings = state.edges.filter(
       (e) => e.target === target && e.targetHandle === "image" && !e.data?.isLoop
     );
-    if (siblings.length < 2) return 0;
-    return siblings.findIndex((e) => e.id === id) + 1;
+    // A lone wire needs no badge — unless subject photos occupy the first
+    // slots, in which case its true position is worth showing.
+    if (siblings.length < 2 && subjectImageCount === 0) return 0;
+    return subjectImageCount + siblings.findIndex((e) => e.id === id) + 1;
   });
 
   // Reference shared gradient by color key + selection state

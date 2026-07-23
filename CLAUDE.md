@@ -116,6 +116,8 @@ Image generation via local ComfyUI (`src/app/api/generate/providers/comfyui.ts`)
 
 **ControlNet (ComfyUI only)**: the image generator grows a `control` target handle when its provider is comfyui; the connected image flows `ConnectedInputs.control` → executor `controlImage` → `/api/generate`. Node parameters `controlNetModel` / `controlNetStrength` / `controlPreprocessor` (`none|canny|depth`) drive a `ControlNetLoader`+`ControlNetApplyAdvanced` graph section — `canny` uses ComfyUI's builtin Canny node, `depth` requires the `comfyui_controlnet_aux` pack (detected via object_info; its required inputs are filled generically from the node's own spec). Installed ControlNets are discovered through `GET /api/comfyui/controlnets` (`useComfyUIControlNets` hook → `ComfyUIParameters` panel). The Image Action node's on-device Canny op produces ready-made hint maps (`preprocessor: none`).
 
+**Subject references**: `src/types/subjects.ts` defines the project-level subject library (named sets of up to 4 reference photos) persisted in `WorkflowFile.subjects` and managed in Library › Subjects (`SubjectLibrary.tsx`). Image generators attach one via `NanoBananaNodeData.subjectId` (picker in the settings panel; "Save as Subject" in the node ⋯ menu creates+attaches from the current output). At run time `nanoBananaExecutor` prepends the subject's photos to the model's image inputs with a consistency instruction — prepended, not appended, so an inpainting mask stays the final image; wire-order badges offset accordingly. Subject content feeds the smart re-run signature via `computeRunSignature`'s `extras` param, so editing a subject's photos invalidates cached runs.
+
 ## Node Types (27)
 
 | Family | Types |

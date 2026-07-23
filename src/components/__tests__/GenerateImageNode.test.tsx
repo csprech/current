@@ -111,6 +111,7 @@ describe("GenerateImageNode", () => {
         decrementModalCount: mockDecrementModalCount,
         providerSettings: defaultProviderSettings,
         generationsPath: "/test/generations",
+        subjects: [],
         isRunning: false,
         currentNodeIds: [],
         groups: {},

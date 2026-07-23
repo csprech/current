@@ -155,6 +155,57 @@ describe("executeNanoBanana", () => {
     expect(recallGeneration(generationCacheKey("gen-1", itemId))).toBe("data:image/png;base64,kept");
   });
 
+  it("prepends subject reference photos and a consistency instruction", async () => {
+    const node = makeNode({ subjectId: "subj-1" });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, image: "data:image/png;base64,result" }),
+    });
+
+    const ctx = makeCtx(node, {
+      getConnectedInputs: vi.fn().mockReturnValue({
+        images: ["data:connected-1"],
+        videos: [],
+        audio: [],
+        text: "on a beach at sunset",
+        dynamicInputs: {},
+        easeCurve: null,
+      }),
+      getSubjectById: vi.fn().mockReturnValue({
+        id: "subj-1",
+        name: "Maya",
+        description: "red-haired explorer",
+        images: ["data:ref-1", "data:ref-2"],
+        createdAt: 1,
+      }),
+    });
+
+    await executeNanoBanana(ctx);
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+    expect(body.images).toEqual(["data:ref-1", "data:ref-2", "data:connected-1"]);
+    expect(body.prompt).toContain("The first 2 input images are reference photos of Maya (red-haired explorer)");
+    expect(body.prompt).toContain("on a beach at sunset");
+  });
+
+  it("runs untouched when the attached subject no longer exists", async () => {
+    const node = makeNode({ subjectId: "gone" });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, image: "data:image/png;base64,result" }),
+    });
+
+    const ctx = makeCtx(node, {
+      getSubjectById: vi.fn().mockReturnValue(null),
+    });
+
+    await executeNanoBanana(ctx);
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+    expect(body.images).toEqual([]);
+    expect(body.prompt).toBe("test prompt");
+  });
+
   it("should prefer connected text over the inline prompt", async () => {
     const node = makeNode({ inlinePrompt: "inline fox" });
     mockFetch.mockResolvedValueOnce({

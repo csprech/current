@@ -58,6 +58,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
   const adaptiveOutputImage = useAdaptiveImageSrc(data.outputImage, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const generationsPath = useWorkflowStore((state) => state.generationsPath);
+  const subjects = useWorkflowStore((state) => state.subjects ?? []);
   // Use stable selector for API keys to prevent unnecessary re-fetches
   const { replicateApiKey, falApiKey, kieApiKey, replicateEnabled, kieEnabled } = useProviderApiKeys();
   const [isLoadingCarouselImage, setIsLoadingCarouselImage] = useState(false);
@@ -543,6 +544,28 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
           {settingsTab === "primary" && (
             <>
               <VariantCountPicker nodeId={id} value={nodeData.variantCount} />
+              {/* Subject reference: prepends the subject's photos on every run */}
+              {(subjects.length > 0 || nodeData.subjectId) && (
+                <div className="flex items-center gap-2 max-w-[280px]">
+                  <label className="text-[11px] text-neutral-400 shrink-0">Subject</label>
+                  <select
+                    value={nodeData.subjectId ?? ""}
+                    onChange={(event) => updateNodeData(id, { subjectId: event.target.value || null })}
+                    aria-label="Subject reference"
+                    className="nodrag nopan flex-1 min-w-0 text-[11px] py-1 px-2 bg-neutral-800 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 text-white"
+                  >
+                    <option value="">None</option>
+                    {subjects.map((subject) => (
+                      <option key={subject.id} value={subject.id}>
+                        {subject.name} ({subject.images.length} photo{subject.images.length === 1 ? "" : "s"})
+                      </option>
+                    ))}
+                    {nodeData.subjectId && !subjects.some((s) => s.id === nodeData.subjectId) && (
+                      <option value={nodeData.subjectId}>Missing subject</option>
+                    )}
+                  </select>
+                </div>
+              )}
               {/* Gemini-specific controls */}
               {isGeminiProvider && currentModelId && (() => {
                 const controls: React.ReactNode[] = [

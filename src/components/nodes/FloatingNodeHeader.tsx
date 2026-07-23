@@ -275,6 +275,18 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
     setIsMoreOpen(true);
   }, [id]);
 
+  const handleSaveAsSubject = useCallback(() => {
+    const store = useWorkflowStore.getState();
+    const node = store.nodes.find((n) => n.id === id);
+    const image = node ? getNodeImageSource(node.type, node.data) : null;
+    if (!image) return;
+    const created = store.addSubject({ name: `Subject ${store.subjects.length + 1}`, images: [image] });
+    store.updateNodeData(id, { subjectId: created.id });
+    useToast
+      .getState()
+      .show(`Saved as subject "${created.name}" and attached to this node — manage subjects in the Library panel`, "success");
+  }, [id]);
+
   const handleMoreMenuKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -739,6 +751,19 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                     }}
                   >
                     Copy Image
+                  </button>
+                )}
+                {type === "nanoBanana" && menuImageSrc && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    title="Turn this image into a reusable subject reference (kept consistent across generations)"
+                    onClick={() => {
+                      closeMoreMenu();
+                      handleSaveAsSubject();
+                    }}
+                  >
+                    Save as Subject
                   </button>
                 )}
                 {(type === "nanoBanana" || type === "generateVideo") && (

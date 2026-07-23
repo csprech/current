@@ -191,6 +191,7 @@ export interface NanoBananaNodeData extends BaseNodeData {
   inputPrompt: string | null;
   inlinePrompt?: string; // Prompt typed directly on the node; connected text takes precedence
   variantCount?: number; // Variations generated per run (1-4, default 1)
+  subjectId?: string | null; // Attached subject reference (project subject library)
   outputImage: string | null;
   outputImageRef?: string; // External image reference for storage optimization
   aspectRatio: AspectRatio;

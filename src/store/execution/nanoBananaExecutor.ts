@@ -82,6 +82,19 @@ async function executeNanoBananaOnce(
     promptText = Array.isArray(raw) ? (raw as string[])[0] ?? null : null;
   }
 
+  // Subject reference: prepend the library subject's photos and steer the
+  // model to keep that subject's identity. Prepended, not appended, so an
+  // inpainting mask (added last by the API route) stays the final image.
+  const subject = nodeData.subjectId ? ctx.getSubjectById?.(nodeData.subjectId) ?? null : null;
+  if (subject && subject.images.length > 0 && promptText) {
+    images = [...subject.images, ...images];
+    const refCount = subject.images.length;
+    const who = subject.description ? `${subject.name} (${subject.description})` : subject.name;
+    promptText =
+      `The first ${refCount} input image${refCount === 1 ? " is a reference photo" : "s are reference photos"} of ${who}. ` +
+      `Keep this exact subject's identity consistent in the result.\n\n${promptText}`;
+  }
+
   if (!promptText) {
     updateNodeData(node.id, {
       status: "error",

@@ -59,6 +59,7 @@ const createDefaultState = (overrides = {}) => ({
   edgeStyle: "angular" as const,
   nodes: [],
   edges: [],
+  subjects: [],
   ...overrides,
 });
 
@@ -454,6 +455,24 @@ describe("EditableEdge", () => {
         </TestWrapper>
       );
       expect(container.querySelector('[aria-label^="Image "]')).not.toBeInTheDocument();
+    });
+
+    it("offsets numbering past an attached subject's reference photos", () => {
+      mockUseWorkflowStore.mockImplementation((selector) => {
+        return selector(createDefaultState({
+          nodes: [{ id: "node-2", type: "nanoBanana", data: { subjectId: "subj-1" } }],
+          subjects: [{ id: "subj-1", name: "Maya", images: ["data:a", "data:b"], createdAt: 1 }],
+          edges: [twoImageEdges[0]],
+        }));
+      });
+
+      // The subject's two photos occupy slots 1-2, so the lone wire is image 3
+      const { container } = render(
+        <TestWrapper>
+          <EditableEdge {...createDefaultProps({ id: "edge-1" })} />
+        </TestWrapper>
+      );
+      expect(container.querySelector('[aria-label="Image 3"]')).toHaveTextContent("3");
     });
 
     it("does not number text wires", () => {

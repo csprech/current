@@ -25,6 +25,7 @@ import {
   CanvasNavigationSettings,
   MatchMode,
   MODEL_DISPLAY_NAMES,
+  SubjectReference,
 } from "@/types";
 import { UndoManager, UndoSnapshot, clonePreservingStrings } from "./undoHistory";
 import { useToast } from "@/components/Toast";
@@ -231,6 +232,8 @@ export interface WorkflowFile {
   edges: WorkflowEdge[];
   edgeStyle: EdgeStyle;
   groups?: Record<string, NodeGroup>;  // Optional for backward compatibility
+  /** Project subject library — named reference photo sets generators can attach. */
+  subjects?: SubjectReference[];
   /** Typed template interface (shareable exports) — how to drive this workflow as a form/API. */
   templateInterface?: import("@/lib/workflow/templateInterface").TemplateInterface;
 }
@@ -315,6 +318,7 @@ interface WorkflowStore {
   pausedAtNodeId: string | null;
   maxConcurrentCalls: number;  // Configurable concurrency limit (1-10)
   smartRerunEnabled: boolean;  // Reuse generator outputs when inputs are unchanged
+  subjects: SubjectReference[];  // Project subject library (named reference photo sets)
   _abortController: AbortController | null;  // Internal: for cancellation
   _buildExecutionContext: (node: WorkflowNode, signal?: AbortSignal) => NodeExecutionContext;
   executeWorkflow: (startFromNodeId?: string) => Promise<void>;
@@ -324,6 +328,9 @@ interface WorkflowStore {
   mockTutorialExecution: () => Promise<void>;
   setMaxConcurrentCalls: (value: number) => void;
   setSmartRerunEnabled: (enabled: boolean) => void;
+  addSubject: (subject: Omit<SubjectReference, "id" | "createdAt"> & { id?: string }) => SubjectReference;
+  updateSubject: (id: string, partial: Partial<Omit<SubjectReference, "id">>) => void;
+  deleteSubject: (id: string) => void;
 
   // Save/Load
   saveWorkflow: (name?: string) => void;
@@ -650,6 +657,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   pausedAtNodeId: null,
   maxConcurrentCalls: loadConcurrencySetting(),  // Default 3, configurable 1-10
   smartRerunEnabled: loadSmartRerunSetting(),  // Skip unchanged generators on re-run
+  subjects: [],  // Project subject library
   _abortController: null,  // Internal: for cancellation
   globalImageHistory: [],
 
@@ -1297,6 +1305,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
     addToGlobalHistory: (item) => get().addToGlobalHistory(item),
     generationsPath: get().generationsPath,
     saveDirectoryPath: get().saveDirectoryPath,
+    getSubjectById: (id: string) => get().subjects.find((s) => s.id === id) ?? null,
     trackSaveGeneration: (key: string, promise: Promise<void>) => {
       pendingImageSyncs.set(key, promise);
       promise.finally(() => pendingImageSyncs.delete(key));
@@ -1434,6 +1443,17 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       // for an identical run. Explicit intents always re-run: "run from
       // here" targets its start node, and per-node/selected runs never pass
       // through this path.
+      // Subject content lives outside node data — fold the resolved subject
+      // into the signature so editing its photos invalidates cached runs.
+      const signatureExtras = () => {
+        const subjectId = nodeData.subjectId;
+        if (typeof subjectId !== "string" || !subjectId) return null;
+        const subject = get().subjects.find((s) => s.id === subjectId);
+        return subject
+          ? { name: subject.name, description: subject.description ?? null, images: subject.images }
+          : null;
+      };
+
       const generatorOutputField = GENERATOR_OUTPUT_FIELDS[node.type ?? ""];
       if (
         generatorOutputField &&
@@ -1446,7 +1466,8 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
         const signature = computeRunSignature(
           node.type ?? "",
           nodeData,
-          get().getConnectedInputs(node.id)
+          get().getConnectedInputs(node.id),
+          signatureExtras()
         );
         if (signature === nodeData.__lastRunSignature) {
           reusedGenerationCount++;
@@ -1474,7 +1495,8 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
           __lastRunSignature: computeRunSignature(
             node.type ?? "",
             fresh.data as Record<string, unknown>,
-            get().getConnectedInputs(node.id)
+            get().getConnectedInputs(node.id),
+            signatureExtras()
           ),
         } as Partial<WorkflowNodeData>);
       };
@@ -1900,6 +1922,38 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
     set({ smartRerunEnabled: enabled });
   },
 
+  addSubject: (subject) => {
+    const created: SubjectReference = {
+      id: subject.id ?? `subject-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: subject.name,
+      description: subject.description,
+      images: subject.images,
+      createdAt: Date.now(),
+    };
+    set((state) => ({ subjects: [...state.subjects, created], hasUnsavedChanges: true }));
+    return created;
+  },
+
+  updateSubject: (id, partial) => {
+    set((state) => ({
+      subjects: state.subjects.map((s) => (s.id === id ? { ...s, ...partial, id } : s)),
+      hasUnsavedChanges: true,
+    }));
+  },
+
+  deleteSubject: (id) => {
+    set((state) => ({
+      subjects: state.subjects.filter((s) => s.id !== id),
+      // Detach the subject from any generator still pointing at it
+      nodes: state.nodes.map((n) =>
+        (n.data as Record<string, unknown>).subjectId === id
+          ? { ...n, data: { ...n.data, subjectId: null } as WorkflowNodeData }
+          : n
+      ) as WorkflowNode[],
+      hasUnsavedChanges: true,
+    }));
+  },
+
   regenerateNode: async (nodeId: string) => {
     const { nodes, updateNodeData, isRunning } = get();
 
@@ -2300,7 +2354,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   },
 
   saveWorkflow: (name?: string) => {
-    const { nodes, edges, edgeStyle, groups } = get();
+    const { nodes, edges, edgeStyle, groups, subjects } = get();
 
     const workflow: WorkflowFile = {
       version: 1,
@@ -2310,6 +2364,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       edges,
       edgeStyle,
       groups: groups && Object.keys(groups).length > 0 ? groups : undefined,
+      subjects: subjects.length > 0 ? subjects : undefined,
     };
 
     const json = JSON.stringify(workflow, null, 2);
@@ -2438,6 +2493,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       edges: hydratedWorkflow.edges,
       edgeStyle: hydratedWorkflow.edgeStyle || "angular",
       groups: hydratedWorkflow.groups || {},
+      subjects: hydratedWorkflow.subjects || [],
       isRunning: false,
       currentNodeIds: [],
       // Restore workflow ID and paths from localStorage if available
@@ -2483,6 +2539,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       nodes: [],
       edges: [],
       groups: {},
+      subjects: [],
       isRunning: false,
       currentNodeIds: [],
       // Reset auto-save state when clearing workflow
@@ -2662,6 +2719,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
         edges,
         edgeStyle,
         groups: groups && Object.keys(groups).length > 0 ? groups : undefined,
+        subjects: get().subjects.length > 0 ? get().subjects : undefined,
       };
 
       // If external media storage is enabled, externalize media before saving

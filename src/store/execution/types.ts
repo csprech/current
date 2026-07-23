@@ -11,6 +11,7 @@ import type {
   WorkflowNodeData,
   ProviderSettings,
   ImageHistoryItem,
+  SubjectReference,
 } from "@/types";
 import type { ConnectedInputs } from "@/store/utils/connectedInputs";
 
@@ -47,6 +48,8 @@ export interface NodeExecutionContext {
   saveDirectoryPath: string | null;
   trackSaveGeneration: (key: string, promise: Promise<void>) => void;
   appendOutputGalleryImage: (targetId: string, image: string) => void;
+  /** Resolve a project-library subject; optional so test fixtures stay light. */
+  getSubjectById?: (id: string) => SubjectReference | null;
   get: () => unknown;
 }
 

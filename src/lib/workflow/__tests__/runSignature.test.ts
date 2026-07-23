@@ -95,6 +95,28 @@ describe("computeRunSignature", () => {
     expect(new Set([plain, masked, controlled]).size).toBe(3);
   });
 
+  it("folds extras (resolved subject content) into the signature", () => {
+    const without = computeRunSignature("nanoBanana", baseData, inputs());
+    const withSubject = computeRunSignature("nanoBanana", baseData, inputs(), {
+      name: "Maya",
+      description: null,
+      images: ["data:ref-1"],
+    });
+    const withEditedSubject = computeRunSignature("nanoBanana", baseData, inputs(), {
+      name: "Maya",
+      description: null,
+      images: ["data:ref-1", "data:ref-2"],
+    });
+    expect(new Set([without, withSubject, withEditedSubject]).size).toBe(3);
+    expect(
+      computeRunSignature("nanoBanana", baseData, inputs(), {
+        name: "Maya",
+        description: null,
+        images: ["data:ref-1"],
+      })
+    ).toBe(withSubject);
+  });
+
   it("covers exactly the five generate-family node types", () => {
     expect(Object.keys(GENERATOR_OUTPUT_FIELDS).sort()).toEqual([
       "generate3d",
